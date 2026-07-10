@@ -1,0 +1,59 @@
+{
+  "name": "skill-dockyard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Git-native skill governance for AI-heavy engineering teams.",
+  "bin": {
+    "skill-dockyard": "./bin/run.js"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node20 --out-dir dist --clean",
+    "cli": "tsx src/cli/dev.ts",
+    "prepare": "npm run cli:build"
+  },
+  "dependencies": {
+    "@oclif/core": "^4.11.14",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.110.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.562.0",
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "oclif": {
+    "bin": "skill-dockyard",
+    "commands": "./dist/commands",
+    "topicSeparator": " "
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

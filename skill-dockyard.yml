@@ -1,0 +1,32 @@
+workspace:
+  name: Skill Dockyard Local
+  reviewer: Local Reviewer
+
+repos:
+  - name: sample
+    path: ./tests/fixtures/sample-repo
+    include:
+      - "**/AGENTS.md"
+      - "**/CLAUDE.md"
+      - "**/SKILL.md"
+      - ".github/agents/*.md"
+      - "skills/**"
+      - "prompts/**"
+      - "ai/**"
+      - ".cursor/rules/**"
+      - "mcp.json"
+      - ".mcp/**"
+    exclude:
+      - "**/node_modules/**"
+      - "**/.git/**"
+
+riskRules:
+  approvedMcpServers:
+    - github
+    - filesystem-readonly
+  highImpactTools:
+    - shell
+    - exec
+    - stripe
+    - github:write
+    - database:write
