@@ -34,7 +34,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
         kind: "inline_credentials",
         severity: "high",
         message: "Possible inline credential found in an AI artifact.",
-        evidence: match[0]
+        evidence: redactCredential(match[0])
       });
       break;
     }
@@ -82,4 +82,9 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
   }
 
   return risks;
+}
+
+function redactCredential(value: string) {
+  if (value.length <= 18) return value;
+  return `${value.slice(0, 18)}...`;
 }

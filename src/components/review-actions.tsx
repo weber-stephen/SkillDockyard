@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Check, CircleSlash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export function ReviewActions({ artifactId, versionId }: { artifactId: string; versionId: string }) {
   const [note, setNote] = useState("");
+  const [reviewerName, setReviewerName] = useState("Local Reviewer");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -21,7 +23,7 @@ export function ReviewActions({ artifactId, versionId }: { artifactId: string; v
         versionId,
         decision,
         note,
-        reviewerName: "Local Reviewer"
+        reviewerName
       })
     });
     setPending(false);
@@ -34,6 +36,7 @@ export function ReviewActions({ artifactId, versionId }: { artifactId: string; v
         <h2 className="font-black">Reviewer Decision</h2>
         <p className="text-sm text-muted-foreground">Approval is tied to this exact content hash.</p>
       </div>
+      <Input placeholder="Reviewer name" value={reviewerName} onChange={(event) => setReviewerName(event.target.value)} />
       <Textarea placeholder="Add a reviewer note..." value={note} onChange={(event) => setNote(event.target.value)} />
       <div className="flex flex-wrap gap-2">
         <Button disabled={pending} onClick={() => submit("approved")}>

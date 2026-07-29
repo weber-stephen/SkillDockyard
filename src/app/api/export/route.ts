@@ -1,19 +1,70 @@
 import { NextResponse } from "next/server";
-import { listArtifacts } from "@/lib/data";
+import { listGovernanceExportRows } from "@/lib/data";
+import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
+import { ensureWorkspaceId } from "@/lib/settings";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const format = url.searchParams.get("format") ?? "json";
-  const artifacts = await listArtifacts();
+  const rows = await listGovernanceExportRows();
+
+  if (hasSupabaseConfig()) {
+    try {
+      const supabase = createServerSupabase();
+      await supabase.from("export_runs").insert({
+        workspace_id: await ensureWorkspaceId(),
+        format,
+        artifact_count: rows.length
+      });
+    } catch {
+      // Export downloads should not fail because bookkeeping failed.
+    }
+  }
 
   if (format === "csv") {
-    const header = ["name", "type", "repo", "path", "owner", "status", "risk_count", "updated_at"];
-    const rows = artifacts.map((artifact) =>
-      [artifact.name, artifact.type, artifact.repo_name, artifact.path, artifact.owner ?? "", artifact.status, artifact.risk_count, artifact.updated_at]
-        .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+    const header = [
+      "name",
+      "type",
+      "repo",
+      "path",
+      "owner",
+      "status",
+      "risk_count",
+      "current_content_hash",
+      "approved_content_hash",
+      "current_commit_sha",
+      "tools",
+      "mcp_servers",
+      "risk_kinds",
+      "risk_severities",
+      "last_reviewer",
+      "last_decision",
+      "updated_at"
+    ];
+    const csvRows = rows.map((artifact) =>
+      [
+        artifact.name,
+        artifact.type,
+        artifact.repo_name,
+        artifact.path,
+        artifact.owner ?? "",
+        artifact.status,
+        artifact.risk_count,
+        artifact.current_content_hash ?? "",
+        artifact.approved_content_hash ?? "",
+        artifact.current_commit_sha ?? "",
+        artifact.tools.join(";"),
+        artifact.mcp_servers.join(";"),
+        artifact.risk_kinds.join(";"),
+        artifact.risk_severities.join(";"),
+        artifact.last_reviewer ?? "",
+        artifact.last_decision ?? "",
+        artifact.updated_at
+      ]
+        .map(csvCell)
         .join(",")
     );
-    return new Response([header.join(","), ...rows].join("\n"), {
+    return new Response([header.join(","), ...csvRows].join("\n"), {
       headers: {
         "Content-Type": "text/csv",
         "Content-Disposition": "attachment; filename=skill-dockyard-export.csv"
@@ -21,5 +72,9 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.json({ generatedAt: new Date().toISOString(), artifacts });
+  return NextResponse.json({ generatedAt: new Date().toISOString(), artifacts: rows });
+}
+
+function csvCell(value: unknown) {
+  return `"${String(value).replaceAll('"', '""')}"`;
 }

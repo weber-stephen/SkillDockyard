@@ -15,7 +15,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node20 --out-dir dist --clean",
-    "cli": "tsx src/cli/dev.ts",
+    "cli": "npm run cli:build --silent && node bin/run.js",
     "prepare": "npm run cli:build"
   },
   "dependencies": {

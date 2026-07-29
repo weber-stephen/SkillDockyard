@@ -7,6 +7,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const artifact = await getArtifactDetail(id);
   if (!artifact || !artifact.current_version) notFound();
+  const diff = buildLineDiff(artifact.approved_version?.content_snapshot ?? "", artifact.current_version.content_snapshot);
 
   return (
     <div className="space-y-6">
@@ -30,12 +31,18 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Diff Basis</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Comparing the current content hash against the last approved hash. A full visual diff can be added after the first pilot confirms review workflow value.
+              Comparing the current content hash against the last approved hash.
             </p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <Hash label="Current" value={artifact.current_version.content_hash} />
               <Hash label="Approved" value={artifact.approved_version?.content_hash ?? "None"} />
             </div>
+          </div>
+          <div className="rounded-md border border-border bg-panel p-5">
+            <h2 className="font-black">Line Diff</h2>
+            <pre className="mt-4 max-h-[360px] overflow-auto rounded-md bg-muted p-4 text-xs leading-6">
+              {diff.length ? diff.map((line, index) => <DiffLine key={`${line.kind}-${index}`} line={line} />) : "No approved baseline yet."}
+            </pre>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Current Content</h2>
@@ -61,6 +68,33 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       </section>
     </div>
   );
+}
+
+function buildLineDiff(previous: string, current: string) {
+  if (!previous) return [];
+  const previousLines = previous.split("\n");
+  const currentLines = current.split("\n");
+  const rows: Array<{ kind: "same" | "added" | "removed"; value: string }> = [];
+  const max = Math.max(previousLines.length, currentLines.length);
+
+  for (let index = 0; index < max; index += 1) {
+    const before = previousLines[index];
+    const after = currentLines[index];
+    if (before === after && before !== undefined) {
+      rows.push({ kind: "same", value: before });
+    } else {
+      if (before !== undefined) rows.push({ kind: "removed", value: before });
+      if (after !== undefined) rows.push({ kind: "added", value: after });
+    }
+  }
+
+  return rows;
+}
+
+function DiffLine({ line }: { line: { kind: "same" | "added" | "removed"; value: string } }) {
+  const prefix = line.kind === "added" ? "+ " : line.kind === "removed" ? "- " : "  ";
+  const color = line.kind === "added" ? "text-emerald-700" : line.kind === "removed" ? "text-red-700" : "text-muted-foreground";
+  return <span className={`block ${color}`}>{prefix}{line.value || " "}</span>;
 }
 
 function Hash({ label, value }: { label: string; value: string }) {

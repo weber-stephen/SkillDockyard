@@ -78,6 +78,22 @@ supabase/migrations/0001_initial_schema.sql
 
 The app falls back to fixture data when Supabase environment variables are not set, so the product surface is explorable before backend setup.
 
+### Environment variables
+
+Copy `.env.example` to `.env.local` or `.env`, then fill in these values from your Supabase project:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SKILL_DOCKYARD_WORKSPACE_ID=
+```
+
+| Variable | Where to get it | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Dashboard -> your project -> Project Settings -> API -> Project URL | This is safe to expose to the browser. The app uses it to connect to Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard -> your project -> Project Settings -> API -> Project API keys -> `service_role` / `secret` key | Keep this server-only. Required for live Supabase mode because prototype API routes write through service-role-only RLS policies. |
+| `SKILL_DOCKYARD_WORKSPACE_ID` | Optional: copy a row id from the `workspaces` table. | If omitted, the app creates or reuses a workspace named `Default`. |
+
 ## Architecture
 
 ```mermaid

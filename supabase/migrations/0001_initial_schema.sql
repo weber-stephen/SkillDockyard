@@ -21,6 +21,17 @@ create table workspace_members (
   created_at timestamptz not null default now()
 );
 
+create table workspace_settings (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  config_file text not null default 'skill-dockyard.yml',
+  approved_mcp_servers text[] not null default '{}',
+  high_impact_tools text[] not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(workspace_id)
+);
+
 create table repos (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
@@ -117,7 +128,8 @@ create table audit_events (
   created_at timestamptz not null default now()
 );
 
-create view artifact_catalog as
+create view artifact_catalog
+with (security_invoker = true) as
 select
   a.id,
   a.workspace_id,
@@ -141,6 +153,7 @@ group by a.id, r.name;
 
 alter table workspaces enable row level security;
 alter table workspace_members enable row level security;
+alter table workspace_settings enable row level security;
 alter table repos enable row level security;
 alter table scan_runs enable row level security;
 alter table artifacts enable row level security;
@@ -150,13 +163,18 @@ alter table approvals enable row level security;
 alter table export_runs enable row level security;
 alter table audit_events enable row level security;
 
-create policy "service role full access workspaces" on workspaces for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access workspace_members" on workspace_members for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access repos" on repos for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access scan_runs" on scan_runs for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access artifacts" on artifacts for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access artifact_versions" on artifact_versions for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access risk_flags" on risk_flags for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access approvals" on approvals for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access export_runs" on export_runs for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
-create policy "service role full access audit_events" on audit_events for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
+grant usage on schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to service_role;
+grant select on artifact_catalog to service_role;
+
+create policy "service role full access workspaces" on workspaces for all to service_role using (true) with check (true);
+create policy "service role full access workspace_members" on workspace_members for all to service_role using (true) with check (true);
+create policy "service role full access workspace_settings" on workspace_settings for all to service_role using (true) with check (true);
+create policy "service role full access repos" on repos for all to service_role using (true) with check (true);
+create policy "service role full access scan_runs" on scan_runs for all to service_role using (true) with check (true);
+create policy "service role full access artifacts" on artifacts for all to service_role using (true) with check (true);
+create policy "service role full access artifact_versions" on artifact_versions for all to service_role using (true) with check (true);
+create policy "service role full access risk_flags" on risk_flags for all to service_role using (true) with check (true);
+create policy "service role full access approvals" on approvals for all to service_role using (true) with check (true);
+create policy "service role full access export_runs" on export_runs for all to service_role using (true) with check (true);
+create policy "service role full access audit_events" on audit_events for all to service_role using (true) with check (true);

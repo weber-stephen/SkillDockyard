@@ -5,7 +5,7 @@
   --foreground: oklch(0.19 0.03 70);
   --panel: oklch(0.985 0.01 84);
   --primary: oklch(0.32 0.075 159);
-  --primary-foreground: oklch(0.98 0.01 84);
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.88 0.035 74);
   --secondary-foreground: oklch(0.22 0.03 70);
   --muted: oklch(0.91 0.018 80);

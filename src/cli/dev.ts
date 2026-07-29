@@ -1,3 +1,6 @@
 import { execute } from "@oclif/core";
 
-await execute({ dir: process.cwd(), development: true });
+execute({ dir: process.cwd(), development: true }).catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

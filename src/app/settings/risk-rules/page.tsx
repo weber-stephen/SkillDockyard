@@ -1,9 +1,8 @@
 import { Badge } from "@/components/ui/badge";
+import { getSettings } from "@/lib/settings";
 
-const mcp = ["github", "filesystem-readonly"];
-const tools = ["shell", "exec", "stripe", "github:write", "database:write"];
-
-export default function RiskRulesPage() {
+export default async function RiskRulesPage() {
+  const settings = await getSettings();
   return (
     <div className="space-y-6">
       <header className="border-b border-border pb-6">
@@ -11,8 +10,8 @@ export default function RiskRulesPage() {
         <p className="mt-2 text-muted-foreground">Deterministic checks remain authoritative even when AI summaries are added.</p>
       </header>
       <section className="grid gap-4 md:grid-cols-2">
-        <RulePanel title="Approved MCP Servers" items={mcp} />
-        <RulePanel title="High-Impact Tools" items={tools} />
+        <RulePanel title="Approved MCP Servers" items={settings.approvedMcpServers} />
+        <RulePanel title="High-Impact Tools" items={settings.highImpactTools} />
       </section>
     </div>
   );

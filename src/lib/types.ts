@@ -24,6 +24,16 @@ export interface Workspace {
   created_at: string;
 }
 
+export interface WorkspaceSettings {
+  id: string;
+  workspace_id: string;
+  config_file: string;
+  approved_mcp_servers: string[];
+  high_impact_tools: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface RepoRecord {
   id: string;
   workspace_id: string;
@@ -123,4 +133,25 @@ export interface ScanArtifactInput {
     message: string;
     evidence: string | null;
   }>;
+}
+
+export interface GovernanceExportRow {
+  id: string;
+  name: string;
+  type: ArtifactType;
+  repo_name: string;
+  path: string;
+  owner: string | null;
+  status: ArtifactStatus;
+  risk_count: number;
+  current_content_hash: string | null;
+  approved_content_hash: string | null;
+  current_commit_sha: string | null;
+  tools: string[];
+  mcp_servers: string[];
+  risk_kinds: RiskFlagKind[];
+  risk_severities: RiskSeverity[];
+  last_reviewer: string | null;
+  last_decision: Approval["decision"] | null;
+  updated_at: string;
 }
