@@ -1,0 +1,53 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { ArrowRight, Check, FileSearch, Send, Terminal, X } from "lucide-react";
+import { ProductLink as Link } from "@/components/product-link";
+import { Button } from "@/components/ui/button";
+import type { OnboardingPath, OnboardingState } from "@/lib/onboarding";
+
+const paths: Array<{ id: OnboardingPath; title: string; body: string; bestFor: string; action: string; href: string; icon: typeof Send }> = [
+  { id: "share", title: "Add a skill manually", body: "Save a workflow from a file, document, or chat.", bestFor: "Best if the skill is not already installed on this computer.", action: "Add a skill", href: "/submit", icon: Send },
+  { id: "scan", title: "Import installed skills", body: "Bring in skills already installed in Codex or Claude Code.", bestFor: "Best if you already use Codex or Claude Code. Requires one Terminal command.", action: "Import my skills", href: "#scanner", icon: FileSearch }
+];
+
+export function SetupHub({ initialState, hasArtifacts, artifactCount = hasArtifacts ? 1 : 0, compact = false }: { initialState: OnboardingState; hasArtifacts: boolean; artifactCount?: number; compact?: boolean }) {
+  const [state, setState] = useState(initialState);
+  const [busy, setBusy] = useState<OnboardingPath | null>(null);
+  const [dismissed, setDismissed] = useState(initialState.dismissedAt !== null);
+  const [showScanner, setShowScanner] = useState(initialState.selectedPath === "scan");
+  const completed = Boolean(state.firstSubmissionAt || state.firstScanAt || hasArtifacts);
+
+  async function select(path: OnboardingPath) {
+    setBusy(path);
+    try {
+      const response = await fetch("/api/onboarding", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+      if (response.ok) setState(await response.json());
+    } finally { setBusy(null); }
+  }
+
+  async function dismiss() {
+    setDismissed(true);
+    await fetch("/api/onboarding", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ dismissed: true }) });
+  }
+
+  if (dismissed) return null;
+  if (compact) return <section className="flex flex-col gap-4 border border-primary/25 bg-primary/[0.055] px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Library setup</p><p className="mt-1 text-sm font-semibold">{completed ? "Your first outcome is complete. Keep building your private library." : "Choose one practical way to start your library."}</p></div><div className="flex gap-2"><Button asChild size="sm" variant="outline"><Link href="/getting-started">Open setup</Link></Button><Button size="sm" variant="ghost" onClick={dismiss} aria-label="Dismiss library setup"><X className="h-4 w-4" /></Button></div></section>;
+
+  return <div className="space-y-8">
+    <section className="border-b border-border pb-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{completed ? "Your private library" : "Set up your library"}</p><h1 className="mt-4 max-w-3xl text-4xl font-black leading-[0.95] sm:text-6xl">{completed ? artifactCount ? "Your first skill is in your library." : "Your import is complete." : "Add your first skill."}</h1><p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{completed ? artifactCount ? `Your library contains ${artifactCount} ${artifactCount === 1 ? "skill" : "skills"}. Add another whenever you are ready; everything stays private until you choose to publish it.` : "No skills were found this time. You can add one manually or try another import whenever you are ready." : "Choose the easiest way to start. Everything in your library stays private until you choose to publish it."}</p></section>
+    <section className="grid gap-px overflow-hidden border border-border bg-border lg:grid-cols-2" aria-label="Choose a setup path">{paths.map((path) => { const Icon = path.icon; const selected = state.selectedPath === path.id; const done = (path.id === "share" && state.firstSubmissionAt) || (path.id === "scan" && state.firstScanAt); return <article key={path.id} className="flex min-h-80 flex-col bg-panel p-6"><div className="flex items-center justify-between"><Icon className="h-5 w-5 text-primary" />{done ? <span className="inline-flex items-center gap-1 text-xs font-bold text-primary"><Check className="h-3.5 w-3.5" />Complete</span> : null}</div><h2 className="mt-8 text-2xl font-black">{path.title}</h2><p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">{path.body}</p><p className="mt-4 max-w-sm text-xs font-semibold leading-5 text-foreground/80">{path.bestFor}</p><div className="mt-auto pt-7">{path.id === "scan" ? <Button variant={showScanner || selected ? "default" : "outline"} onClick={() => { setShowScanner(true); void select(path.id); requestAnimationFrame(() => document.getElementById("scanner")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} disabled={busy === path.id}>{path.action}<ArrowRight className="h-4 w-4" /></Button> : <Button asChild variant={selected ? "default" : "outline"} onClick={() => void select(path.id)}><Link href={path.href}>{path.action}<ArrowRight className="h-4 w-4" /></Link></Button>}</div></article>; })}</section>
+    {showScanner ? <ScannerSetup /> : null}
+  </div>;
+}
+
+type Token = { id: string; token_hint: string; created_at: string; revoked_at: string | null };
+function ScannerSetup() {
+  const [token, setToken] = useState<string | null>(null); const [tokens, setTokens] = useState<Token[]>([]); const [message, setMessage] = useState<string | null>(null); const [loading, setLoading] = useState(false); const [copied, setCopied] = useState(false); const [origin, setOrigin] = useState("https://your-skill-dockyard");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const command = `npm run cli -- scan --installed --endpoint ${origin}/api/scan --token ${token}`;
+  async function createToken() { setLoading(true); setMessage(null); try { const res = await fetch("/api/scan-tokens", { method: "POST" }); const data = await res.json(); if (!res.ok) throw new Error(data.error); setToken(data.token); setTokens((items) => [{ id: data.id, token_hint: data.token_hint, created_at: data.created_at, revoked_at: null }, ...items]); } catch (error) { setMessage(error instanceof Error ? error.message : "Could not create a scan token."); } finally { setLoading(false); } }
+  async function copyCommand() { try { await navigator.clipboard.writeText(command); setCopied(true); } catch { setMessage("Could not copy the command. Select and copy it from the box instead."); } }
+  async function revoke(id: string) { await fetch("/api/scan-tokens", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }); setTokens((items) => items.map((item) => item.id === id ? { ...item, revoked_at: new Date().toISOString() } : item)); if (token) setToken(null); }
+  return <section id="scanner" className="grid scroll-mt-6 gap-6 border border-border bg-panel p-6 lg:grid-cols-[0.8fr_1.2fr]"><div><div className="flex items-center gap-2 text-primary"><Terminal className="h-4 w-4" /><span className="text-xs font-bold uppercase tracking-[0.16em]">Import installed skills</span></div><h2 className="mt-4 text-2xl font-black">Bring your existing skills into this library.</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">This import looks in the standard Codex and Claude Code skill folders on this computer.</p><p className="mt-3 text-sm leading-6 text-muted-foreground">It uploads each discovered skill’s name, location, and instructions to your workspace. It does not read or upload other repository files.</p><div className="mt-6 border-l-2 border-primary pl-4"><p className="text-sm font-bold">Step 1 of 3 — Create a one-time import code</p><p className="mt-1 text-xs leading-5 text-muted-foreground">This secure, revocable code only authorizes this import.</p></div><Button className="mt-4" onClick={createToken} disabled={loading}>{loading ? "Creating import code…" : "Create import code"}</Button>{message ? <p className="mt-3 text-sm text-destructive">{message}</p> : null}</div><div className="min-w-0">{token ? <><p className="text-sm font-bold">Step 2 of 3 — Run this once in Terminal</p><div className="mt-2 text-sm leading-6 text-muted-foreground"><p>Open Terminal in your Skill Dockyard folder, paste this command, then press Return.</p><ol className="mt-2 list-decimal space-y-1 pl-5"><li>In Finder, locate the folder named <code>SkillDockyard</code>.</li><li>Right-click it and choose <strong className="font-semibold text-foreground">New Terminal at Folder</strong>. If you do not see that option, open Terminal and type <code>cd </code>, then drag the SkillDockyard folder into the window and press Return.</li><li>Paste the command below and press Return.</li></ol></div><pre className="mt-3 overflow-x-auto border border-border bg-background p-4 text-xs leading-6"><code>{command}</code></pre><Button className="mt-3" variant="outline" size="sm" onClick={() => void copyCommand()}>{copied ? "Command copied" : "Copy command"}</Button><p className="mt-3 border border-primary/25 bg-primary/[0.055] p-3 text-sm leading-6">Keep this command private. The one-time import code is shown only once; create another if it is lost.</p><div className="mt-5 border-t border-border pt-5"><p className="text-sm font-bold">Step 3 of 3 — Check your library</p><p className="mt-1 text-sm leading-6 text-muted-foreground">After the command finishes, refresh this page to confirm your imported skills and see the updated skill count.</p><Button className="mt-3" variant="outline" onClick={() => window.location.reload()}>Refresh setup</Button></div></> : <div className="border border-dashed border-border bg-background p-5"><p className="text-sm font-bold">Your next step is simple</p><p className="mt-2 text-sm leading-6 text-muted-foreground">Create a one-time import code. Then we will give you one command to run in Terminal.</p></div>}{tokens.length ? <div className="mt-4 space-y-2"><p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Import codes created this session</p>{tokens.map((item) => <div key={item.id} className="flex items-center justify-between border border-border px-3 py-2 text-sm"><span>Ending in <code>{item.token_hint}</code>{item.revoked_at ? " · revoked" : ""}</span>{!item.revoked_at ? <Button size="sm" variant="ghost" onClick={() => void revoke(item.id)}>Revoke</Button> : null}</div>)}</div> : null}</div></section>;
+}

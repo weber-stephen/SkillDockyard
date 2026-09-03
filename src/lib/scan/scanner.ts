@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
@@ -10,11 +11,14 @@ import type { ArtifactType, ScanArtifactInput } from "@/lib/types";
 
 export interface ScanOptions {
   repo?: string;
+  installed?: boolean;
   config: SkillDockyardConfig;
 }
 
 export async function scanRepos(options: ScanOptions): Promise<ScanArtifactInput[]> {
-  const repos: RepoConfig[] = options.repo
+  const repos: RepoConfig[] = options.installed
+    ? getInstalledSkillSources()
+    : options.repo
     ? [{ path: options.repo }]
     : options.config.repos.length
       ? options.config.repos
@@ -25,6 +29,13 @@ export async function scanRepos(options: ScanOptions): Promise<ScanArtifactInput
     results.push(...(await scanRepo(repo, options.config)));
   }
   return results;
+}
+
+export function getInstalledSkillSources(homeDirectory = os.homedir()): RepoConfig[] {
+  return [
+    { name: "Codex skills", path: path.join(homeDirectory, ".codex", "skills"), include: ["**/SKILL.md"] },
+    { name: "Claude Code skills", path: path.join(homeDirectory, ".claude", "skills"), include: ["**/SKILL.md"] }
+  ].filter((source) => fs.existsSync(source.path));
 }
 
 export async function scanRepo(repo: RepoConfig, config: SkillDockyardConfig): Promise<ScanArtifactInput[]> {
@@ -157,11 +168,11 @@ function extractMcpUrls(content: string) {
 }
 
 function summarizeChange(name: string, description: string | null, tools: string[], mcpServers: string[], riskCount: number) {
-  const parts = [`${name} was scanned from Git and indexed for review.`];
+  const parts = [`${name} was added to your library from a local scan.`];
   if (description) parts.push(description);
   if (tools.length) parts.push(`Detected tools: ${tools.join(", ")}.`);
   if (mcpServers.length) parts.push(`Detected MCP references: ${mcpServers.join(", ")}.`);
-  if (riskCount) parts.push(`${riskCount} deterministic risk flag${riskCount === 1 ? "" : "s"} need reviewer attention.`);
+  if (riskCount) parts.push(`${riskCount} trust note${riskCount === 1 ? "" : "s"} should be understood before publishing.`);
   return parts.join(" ");
 }
 

@@ -17,10 +17,24 @@ export type RiskFlagKind =
   | "missing_owner";
 
 export type RiskSeverity = "low" | "medium" | "high";
+export type WorkspaceRole = "owner" | "reviewer" | "editor" | "viewer";
+export type ShareTargetType = "user" | "workspace";
+export type ShareStatus = "pending" | "active" | "revoked" | "declined";
+export type SharePermission = "propose";
+export type ArtifactAccessScope = "owned_workspace" | "shared_user" | "shared_workspace";
 
 export interface Workspace {
   id: string;
   name: string;
+  created_at: string;
+}
+
+export interface WorkspaceMembership {
+  id: string;
+  workspace_id: string;
+  user_id: string | null;
+  email: string | null;
+  role: WorkspaceRole;
   created_at: string;
 }
 
@@ -59,6 +73,11 @@ export interface Artifact {
   approved_version_id: string | null;
   risk_count: number;
   updated_at: string;
+  access_scope?: ArtifactAccessScope;
+  can_propose_update?: boolean;
+  can_publish?: boolean;
+  can_manage_shares?: boolean;
+  source_workspace_name?: string | null;
 }
 
 export interface ArtifactVersion {
@@ -73,6 +92,8 @@ export interface ArtifactVersion {
   mcp_servers: string[];
   tags: string[];
   status: ArtifactStatus;
+  created_by_user_id?: string | null;
+  source_share_id?: string | null;
   created_at: string;
 }
 
@@ -102,6 +123,25 @@ export interface ArtifactDetail extends Artifact {
   approved_version: ArtifactVersion | null;
   risks: RiskFlag[];
   approvals: Approval[];
+  shares?: ArtifactShare[];
+}
+
+export interface ArtifactShare {
+  id: string;
+  artifact_id: string;
+  source_workspace_id: string;
+  target_type: ShareTargetType;
+  target_user_id: string | null;
+  target_workspace_id: string | null;
+  target_email: string | null;
+  target_workspace_name: string | null;
+  permission: SharePermission;
+  status: ShareStatus;
+  created_by_user_id: string | null;
+  created_at: string;
+  activated_at: string | null;
+  revoked_at: string | null;
+  declined_at: string | null;
 }
 
 export interface ScanArtifactInput {

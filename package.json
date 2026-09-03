@@ -2,7 +2,7 @@
   "name": "skill-dockyard",
   "version": "0.1.0",
   "private": true,
-  "description": "Git-native skill governance for AI-heavy engineering teams.",
+  "description": "Shared skill library for teams preserving AI skill improvements.",
   "bin": {
     "skill-dockyard": "./bin/run.js"
   },

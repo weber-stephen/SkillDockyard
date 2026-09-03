@@ -3,8 +3,8 @@ workspace:
   reviewer: Local Reviewer
 
 repos:
-  - name: sample
-    path: ./tests/fixtures/sample-repo
+  - name: skill-dockyard-example-repo
+    path: ../skill-dockyard-example-repo
     include:
       - "**/AGENTS.md"
       - "**/CLAUDE.md"

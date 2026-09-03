@@ -33,7 +33,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "inline_credentials",
         severity: "high",
-        message: "Possible inline credential found in an AI artifact.",
+        message: "Possible inline credential should be removed before publishing.",
         evidence: redactCredential(match[0])
       });
       break;
@@ -45,7 +45,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "local_mcp",
         severity: "medium",
-        message: "References a local or private MCP server that may not be centrally governed.",
+        message: "Local MCP dependency may not work for every teammate.",
         evidence: server
       });
     }
@@ -54,7 +54,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "unapproved_mcp",
         severity: "medium",
-        message: `References an MCP server that is not in the approved list: ${server}.`,
+        message: `New MCP dependency should be understood before publishing: ${server}.`,
         evidence: server
       });
     }
@@ -66,7 +66,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "high_impact_tool",
         severity: "high",
-        message: `References a high-impact tool: ${tool}.`,
+        message: tool.toLowerCase() === "stripe" ? "Billing-related capability was added." : `New ${tool} usage should be understood before publishing.`,
         evidence: tool
       });
     }
@@ -76,7 +76,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
     risks.push({
       kind: "missing_owner",
       severity: "low",
-      message: "No owner could be resolved from Git metadata.",
+      message: "Assign an owner before publishing this skill.",
       evidence: null
     });
   }

@@ -6,9 +6,10 @@ import { ensureWorkspaceId } from "@/lib/settings";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const format = url.searchParams.get("format") ?? "json";
-  const rows = await listGovernanceExportRows();
+  const demo = url.searchParams.get("demo") === "1";
+  const rows = await listGovernanceExportRows(demo);
 
-  if (hasSupabaseConfig()) {
+  if (hasSupabaseConfig() && !demo) {
     try {
       const supabase = createServerSupabase();
       await supabase.from("export_runs").insert({

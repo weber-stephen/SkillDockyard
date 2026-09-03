@@ -6,8 +6,8 @@ export default async function RiskRulesPage() {
   return (
     <div className="space-y-6">
       <header className="border-b border-border pb-6">
-        <h1 className="text-3xl font-black">Risk Rules</h1>
-        <p className="mt-2 text-muted-foreground">Deterministic checks remain authoritative even when AI summaries are added.</p>
+        <h1 className="text-3xl font-black">Trust Rules</h1>
+        <p className="mt-2 text-muted-foreground">Compatibility checks help authors understand new tools and dependencies before publishing.</p>
       </header>
       <section className="grid gap-4 md:grid-cols-2">
         <RulePanel title="Approved MCP Servers" items={settings.approvedMcpServers} />

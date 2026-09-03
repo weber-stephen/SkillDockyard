@@ -46,7 +46,7 @@ export function SettingsForm({ configFile, approvedMcpServers, highImpactTools, 
       <div>
         <h2 className="font-black">Workspace Settings</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {mode === "demo" ? "Demo mode is read-only until Supabase environment variables are configured." : "Saved to Supabase for scanner and review workflows."}
+          {mode === "demo" ? "Demo mode is read-only until Supabase environment variables are configured." : "Saved to Supabase for scanner and publish workflows."}
         </p>
       </div>
       <label className="grid gap-2 text-sm font-semibold">

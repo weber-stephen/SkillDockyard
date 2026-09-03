@@ -1,14 +1,9 @@
 import { Badge } from "@/components/ui/badge";
-import type { ArtifactStatus } from "@/lib/types";
+import { getSharingStatusView } from "@/lib/sharing";
+import type { Artifact } from "@/lib/types";
 
-const statusLabels: Record<ArtifactStatus, string> = {
-  approved: "Approved",
-  deprecated: "Deprecated",
-  needs_reapproval: "Needs review",
-  unreviewed: "Unreviewed"
-};
-
-export function StatusBadge({ status }: { status: ArtifactStatus }) {
-  const variant = status === "approved" ? "success" : status === "needs_reapproval" ? "risk" : "muted";
-  return <Badge variant={variant}>{statusLabels[status]}</Badge>;
+export function StatusBadge({ artifact }: { artifact: Pick<Artifact, "status" | "current_version_id" | "approved_version_id"> }) {
+  const view = getSharingStatusView(artifact);
+  const variant = view.status === "published" ? "success" : view.status === "improvement_available" ? "risk" : "muted";
+  return <Badge variant={variant}>{view.label}</Badge>;
 }

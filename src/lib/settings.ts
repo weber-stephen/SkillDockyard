@@ -1,4 +1,6 @@
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
+import { getProductMode } from "@/lib/product-mode";
+import { requireWorkspaceId } from "@/lib/supabase/auth";
 import type { WorkspaceSettings } from "@/lib/types";
 
 export const defaultSettings = {
@@ -21,26 +23,11 @@ export function normalizeStringList(value: unknown) {
 }
 
 export async function ensureWorkspaceId() {
-  const configured = process.env.SKILL_DOCKYARD_WORKSPACE_ID;
-  if (configured) return configured;
-
-  const supabase = createServerSupabase();
-  const workspaceName = process.env.SKILL_DOCKYARD_WORKSPACE_NAME ?? "Default";
-  const { data: existing, error: existingError } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("name", workspaceName)
-    .maybeSingle();
-  if (existingError) throw existingError;
-  if (existing?.id) return existing.id as string;
-
-  const { data, error } = await supabase.from("workspaces").insert({ name: workspaceName }).select("id").single();
-  if (error) throw error;
-  return data.id as string;
+  return requireWorkspaceId();
 }
 
 export async function getSettings(): Promise<SettingsPayload> {
-  if (!hasSupabaseConfig()) {
+  if ((await getProductMode()) === "demo") {
     return {
       configFile: defaultSettings.config_file,
       approvedMcpServers: defaultSettings.approved_mcp_servers,
@@ -49,6 +36,7 @@ export async function getSettings(): Promise<SettingsPayload> {
       workspaceId: null
     };
   }
+  if (!hasSupabaseConfig()) throw new Error("The live app is not configured.");
 
   const workspaceId = await ensureWorkspaceId();
   const supabase = createServerSupabase();
@@ -70,7 +58,7 @@ export async function updateSettings(input: {
   approvedMcpServers?: unknown;
   highImpactTools?: unknown;
 }) {
-  if (!hasSupabaseConfig()) {
+  if (!hasSupabaseConfig() || (await getProductMode()) === "demo") {
     throw new Error("Supabase is not configured.");
   }
 

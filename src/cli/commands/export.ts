@@ -22,6 +22,6 @@ export default class Export extends Command {
     const output = flags.format === "csv" ? toCsv(artifacts) : JSON.stringify({ generatedAt: new Date().toISOString(), artifacts }, null, 2);
     const outputPath = path.resolve(flags.output ?? `skill-dockyard-export.${flags.format}`);
     fs.writeFileSync(outputPath, output, "utf8");
-    this.log(`Exported ${artifacts.length} artifacts to ${outputPath}`);
+    this.log(`Exported ${artifacts.length} skill file${artifacts.length === 1 ? "" : "s"} to ${outputPath}`);
   }
 }

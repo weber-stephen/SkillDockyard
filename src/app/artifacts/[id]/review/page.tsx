@@ -2,12 +2,14 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ReviewActions } from "@/components/review-actions";
 import { getArtifactDetail } from "@/lib/data";
+import { getPublishRecommendation, getSharingStatusView } from "@/lib/sharing";
 
 export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const artifact = await getArtifactDetail(id);
   if (!artifact || !artifact.current_version) notFound();
   const diff = buildLineDiff(artifact.approved_version?.content_snapshot ?? "", artifact.current_version.content_snapshot);
+  const sharing = getSharingStatusView(artifact);
 
   return (
     <div className="space-y-6">
@@ -16,42 +18,47 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <Badge variant="outline">{artifact.repo_name}</Badge>
           <Badge variant="outline">{artifact.path}</Badge>
         </div>
-        <h1 className="text-3xl font-black">Review {artifact.name}</h1>
-        <p className="mt-2 text-muted-foreground">Reviewer-facing summary, deterministic risks, and hash-tied approval.</p>
+        <h1 className="text-3xl font-black">Compare {artifact.name}</h1>
+        <p className="mt-2 max-w-3xl text-muted-foreground">This is the owner or reviewer step. Compare the proposed update with the shared version, check the trust notes, and decide whether teammates should receive it.</p>
       </header>
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_0.75fr]">
-        <div className="space-y-4">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
+        <div className="min-w-0 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            <Interpretation title="What changed?" body={artifact.current_version.summary ?? "The current copy differs from the published shared version."} />
+            <Interpretation title="Why preserve it?" body="Publishing keeps this team improvement from being lost in local copies or repo-specific edits." />
+            <Interpretation title="Publish recommendation" body={getPublishRecommendation(artifact)} />
+          </div>
           <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Plain-English Summary</h2>
+            <h2 className="font-black">Current Change</h2>
             <p className="mt-3 leading-7 text-muted-foreground">
-              {artifact.current_version.summary ?? "No generated summary yet. The deterministic risk flags are still available for review."}
+              {artifact.current_version.summary ?? sharing.description}
             </p>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Diff Basis</h2>
+            <h2 className="font-black">Version Integrity</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Comparing the current content hash against the last approved hash.
+              Comparing the current copy hash against the published shared version hash.
             </p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Hash label="Current" value={artifact.current_version.content_hash} />
-              <Hash label="Approved" value={artifact.approved_version?.content_hash ?? "None"} />
+              <Hash label="Current copy" value={artifact.current_version.content_hash} />
+              <Hash label="Published version" value={artifact.approved_version?.content_hash ?? "None"} />
             </div>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Line Diff</h2>
-            <pre className="mt-4 max-h-[360px] overflow-auto rounded-md bg-muted p-4 text-xs leading-6">
-              {diff.length ? diff.map((line, index) => <DiffLine key={`${line.kind}-${index}`} line={line} />) : "No approved baseline yet."}
+            <pre className="mt-4 max-h-[360px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">
+              {diff.length ? diff.map((line, index) => <DiffLine key={`${line.kind}-${index}`} line={line} />) : "No published baseline yet."}
             </pre>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Current Content</h2>
-            <pre className="mt-4 max-h-[520px] overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version.content_snapshot}</pre>
+            <pre className="mt-4 max-h-[520px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version.content_snapshot}</pre>
           </div>
         </div>
-        <div className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Risk Flags</h2>
+            <h2 className="font-black">Compatibility and Trust Signals</h2>
             <div className="mt-4 space-y-3">
               {artifact.risks.map((risk) => (
                 <div key={risk.id} className="rounded-sm border border-amber-500/30 bg-amber-500/10 p-3">
@@ -60,12 +67,21 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
                   {risk.evidence ? <code className="mt-2 block text-xs">{risk.evidence}</code> : null}
                 </div>
               ))}
-              {!artifact.risks.length ? <p className="text-sm text-muted-foreground">No risks detected.</p> : null}
+              {!artifact.risks.length ? <p className="text-sm text-muted-foreground">No trust notes detected.</p> : null}
             </div>
           </div>
-          <ReviewActions artifactId={artifact.id} versionId={artifact.current_version.id} />
-        </div>
+          <ReviewActions artifactId={artifact.id} versionId={artifact.current_version.id} canPublish={Boolean(artifact.can_publish)} />
+        </aside>
       </section>
+    </div>
+  );
+}
+
+function Interpretation({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-md border border-border bg-panel p-4">
+      <div className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{title}</div>
+      <p className="mt-3 text-sm leading-6">{body}</p>
     </div>
   );
 }
