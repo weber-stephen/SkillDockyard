@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getViewerContext, computeArtifactPermission } from "@/lib/access";
-import type { ArtifactShare, ShareTargetType, Workspace } from "@/lib/types";
+import { isMissingSupabaseSchemaError, schemaUnavailableMessage, SchemaUnavailableError } from "@/lib/supabase/errors";
+import type { ArtifactShare, SharePermission, ShareTargetType, Workspace } from "@/lib/types";
 
 export async function getArtifactShares(artifactId: string) {
   const supabase = createServerSupabase();
@@ -9,6 +10,7 @@ export async function getArtifactShares(artifactId: string) {
     .select("*")
     .eq("artifact_id", artifactId)
     .order("created_at", { ascending: false });
+  if (error && isMissingSupabaseSchemaError(error)) return [];
   if (error) throw error;
   return (data ?? []) as ArtifactShare[];
 }
@@ -21,6 +23,7 @@ export async function getPendingInvites() {
     .select("*")
     .eq("status", "pending")
     .eq("target_email", user.email ?? "");
+  if (error && isMissingSupabaseSchemaError(error)) return [];
   if (error) throw error;
   const shares = (data ?? []) as ArtifactShare[];
   if (!shares.length) return [];
@@ -57,6 +60,7 @@ export async function createShare(input: {
   targetEmail?: string;
   targetWorkspaceId?: string;
   targetWorkspaceName?: string;
+  permission: SharePermission;
 }) {
   const { user, memberships, workspaces } = await getViewerContext();
   const supabase = createServerSupabase();
@@ -76,13 +80,14 @@ export async function createShare(input: {
     userId: user.id
   });
   if (!permission?.canManageShares) throw new Error("Only source workspace owners or reviewers can share this skill.");
+  if (input.permission !== "propose" && input.permission !== "view") throw new Error("Choose a valid sharing permission.");
 
   const payload: Record<string, string | null> = {
     artifact_id: input.artifactId,
     source_workspace_id: artifact.workspace_id,
     target_type: input.targetType,
     target_email: normalizeEmail(input.targetEmail),
-    permission: "propose",
+    permission: input.permission,
     status: input.targetType === "workspace" && input.targetWorkspaceId ? "active" : "pending",
     created_by_user_id: user.id,
     target_user_id: null,
@@ -95,6 +100,7 @@ export async function createShare(input: {
   if (input.targetType === "workspace" && !payload.target_workspace_id && !payload.target_email) throw new Error("Choose a workspace or enter the workspace owner email.");
 
   const { data, error } = await supabase.from("artifact_shares").insert(payload).select("*").single();
+  if (error && isMissingSupabaseSchemaError(error)) throw new SchemaUnavailableError(schemaUnavailableMessage("Sharing"));
   if (error) throw error;
   await recordShareAudit(artifact.workspace_id, input.artifactId, user.email ?? "Unknown", "skill_shared", {
     shareId: data.id,

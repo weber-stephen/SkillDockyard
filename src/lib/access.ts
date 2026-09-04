@@ -51,6 +51,10 @@ export function canPublishRole(role: WorkspaceRole) {
   return role === "owner" || role === "reviewer";
 }
 
+export function canProposeRole(role: WorkspaceRole) {
+  return role === "owner" || role === "reviewer" || role === "editor";
+}
+
 export function computeArtifactPermission(input: {
   artifact: Artifact;
   memberships: WorkspaceMembership[];
@@ -64,7 +68,7 @@ export function computeArtifactPermission(input: {
   if (membership) {
     return {
       accessScope: "owned_workspace",
-      canProposeUpdate: true,
+      canProposeUpdate: canProposeRole(membership.role),
       canPublish: canPublishRole(membership.role),
       canManageShares: canPublishRole(membership.role),
       sourceWorkspaceName: sourceWorkspace?.name ?? null,

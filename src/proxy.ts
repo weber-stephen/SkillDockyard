@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const productPrefixes = ["/artifacts", "/submit", "/exports", "/getting-started", "/settings"];
+const productPrefixes = ["/artifacts", "/invites", "/submit", "/exports", "/getting-started", "/settings"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

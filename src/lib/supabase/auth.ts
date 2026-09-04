@@ -4,7 +4,12 @@ import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 
-export class AuthenticationRequiredError extends Error {}
+export class AuthenticationRequiredError extends Error {
+  constructor() {
+    super("Authentication is required.");
+    this.name = "AuthenticationRequiredError";
+  }
+}
 
 function getPublicKey() {
   return process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

@@ -20,7 +20,7 @@ export type RiskSeverity = "low" | "medium" | "high";
 export type WorkspaceRole = "owner" | "reviewer" | "editor" | "viewer";
 export type ShareTargetType = "user" | "workspace";
 export type ShareStatus = "pending" | "active" | "revoked" | "declined";
-export type SharePermission = "propose";
+export type SharePermission = "view" | "propose";
 export type ArtifactAccessScope = "owned_workspace" | "shared_user" | "shared_workspace";
 
 export interface Workspace {
@@ -78,6 +78,7 @@ export interface Artifact {
   can_publish?: boolean;
   can_manage_shares?: boolean;
   source_workspace_name?: string | null;
+  source_share_id?: string | null;
 }
 
 export interface ArtifactVersion {

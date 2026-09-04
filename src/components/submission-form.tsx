@@ -43,7 +43,7 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
   const pathname = usePathname();
 
   const selectedArtifact = useMemo(() => artifacts.find((artifact) => artifact.id === artifactId) ?? null, [artifactId, artifacts]);
-  const canUpdate = artifacts.length > 0;
+  const canUpdate = Boolean(selectedArtifact?.can_propose_update);
   const selectedOwner = owner === "__custom__" ? customOwner : owner;
   const selectedRepoName = repoName === "__custom__" ? customRepoName : repoName;
   const selectedTools = [...tools, customTool].map((value) => value.trim()).filter(Boolean);
@@ -167,12 +167,12 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
             >
               {artifacts.map((artifact) => (
                 <option key={artifact.id} value={artifact.id}>
-                  {artifact.name} - {artifact.repo_name}{artifact.access_scope?.startsWith("shared_") ? " (shared)" : ""}
+                  {artifact.name} - {artifact.repo_name}{artifact.access_scope?.startsWith("shared_") ? " (shared)" : ""}{artifact.can_propose_update ? "" : " (view only)"}
                 </option>
               ))}
             </select>
             <span className="block text-xs leading-5 text-muted-foreground">
-              Choose the skill this update should be compared against. Shared recipients can propose updates; source workspace reviewers still control publishing.
+              Choose the skill this proposal should be compared against. Editors and shared recipients with proposal access can suggest changes; source workspace owners and reviewers still control publishing.
             </span>
           </label>
         ) : null}

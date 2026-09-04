@@ -1,8 +1,9 @@
 import { InviteInbox } from "@/components/invite-inbox";
 import { getPendingInvites } from "@/lib/shares";
+import { getProductMode } from "@/lib/product-mode";
 
 export default async function InvitesPage() {
-  const invites = await getPendingInvites();
+  const invites = (await getProductMode()) === "demo" ? [] : await getPendingInvites();
 
   return (
     <div className="space-y-6">

@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       body.mode === "update" && existingArtifact ? existingArtifact.workspace_id : undefined,
       {
         createdByUserId: viewer.user.id,
-        sourceShareId: existingArtifact?.access_scope?.startsWith("shared_") ? existingArtifact.shares?.[0]?.id ?? null : null
+        sourceShareId: existingArtifact?.source_share_id ?? null
       }
     );
     const ingested = result.artifacts[0];

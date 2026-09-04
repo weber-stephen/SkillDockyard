@@ -70,6 +70,11 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
               You can propose updates to this shared skill. Publishing still requires a source workspace owner or reviewer.
             </div>
           ) : null}
+          {!artifact.can_manage_shares && !artifact.can_propose_update && artifact.access_scope?.startsWith("shared_") ? (
+            <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground">
+              You have view-only access to this shared skill. You can download and compare it, but you cannot propose updates or publish changes.
+            </div>
+          ) : null}
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Published Version</h2>
             {artifact.approved_version ? (

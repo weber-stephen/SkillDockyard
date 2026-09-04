@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureWorkspaceId } from "@/lib/settings";
+import { isMissingSupabaseSchemaError, schemaUnavailableMessage, SchemaUnavailableError } from "@/lib/supabase/errors";
 import type { ScanArtifactInput } from "@/lib/types";
 
 export interface IngestedArtifact {
@@ -72,29 +73,33 @@ export async function ingestArtifacts(
         .single();
       if (artifactError) throw artifactError;
 
-      const { data: version, error: versionError } = await supabase
+      const versionPayload = {
+        artifact_id: artifact.id,
+        scan_run_id: scanRun.id,
+        commit_sha: item.version.commit_sha,
+        branch_ref: item.repo.branch_ref,
+        content_hash: item.version.content_hash,
+        content_snapshot: item.version.content_snapshot,
+        summary: item.version.summary,
+        tools: item.version.tools,
+        mcp_servers: item.version.mcp_servers,
+        tags: item.version.tags,
+        status,
+        created_by_user_id: options?.createdByUserId ?? null,
+        source_share_id: options?.sourceShareId ?? null
+      };
+      let versionResult = await supabase
         .from("artifact_versions")
-        .upsert(
-          {
-            artifact_id: artifact.id,
-            scan_run_id: scanRun.id,
-            commit_sha: item.version.commit_sha,
-            branch_ref: item.repo.branch_ref,
-            content_hash: item.version.content_hash,
-            content_snapshot: item.version.content_snapshot,
-            summary: item.version.summary,
-            tools: item.version.tools,
-            mcp_servers: item.version.mcp_servers,
-            tags: item.version.tags,
-            status,
-            created_by_user_id: options?.createdByUserId ?? null,
-            source_share_id: options?.sourceShareId ?? null
-          },
-          { onConflict: "artifact_id,content_hash" }
-        )
+        .upsert(versionPayload, { onConflict: "artifact_id,content_hash" })
         .select("id")
         .single();
-      if (versionError) throw versionError;
+      if (versionResult.error && isMissingSupabaseSchemaError(versionResult.error)) {
+        if (options?.sourceShareId) throw new SchemaUnavailableError(schemaUnavailableMessage("Shared skill updates"));
+        const { created_by_user_id: _createdByUserId, source_share_id: _sourceShareId, ...legacyVersionPayload } = versionPayload;
+        versionResult = await supabase.from("artifact_versions").upsert(legacyVersionPayload, { onConflict: "artifact_id,content_hash" }).select("id").single();
+      }
+      if (versionResult.error) throw versionResult.error;
+      const version = versionResult.data;
 
       const { error: updateArtifactError } = await supabase.from("artifacts").update({ current_version_id: version.id }).eq("id", artifact.id);
       if (updateArtifactError) throw updateArtifactError;

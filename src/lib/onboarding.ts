@@ -1,5 +1,7 @@
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { requireWorkspaceId } from "@/lib/supabase/auth";
+import { getProductMode } from "@/lib/product-mode";
+import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 
 export const onboardingPaths = ["share", "explore", "scan"] as const;
 export type OnboardingPath = (typeof onboardingPaths)[number];
@@ -32,15 +34,16 @@ export function onboardingComplete(state: OnboardingState) {
 }
 
 export async function getOnboardingState(): Promise<OnboardingState> {
-  if (!hasSupabaseConfig()) return emptyState;
+  if (!hasSupabaseConfig() || (await getProductMode()) === "demo") return emptyState;
   const workspaceId = await requireWorkspaceId();
   const { data, error } = await createServerSupabase().from("workspace_onboarding").select("selected_path, explored_demo_at, first_submission_at, first_scan_at, dismissed_at").eq("workspace_id", workspaceId).maybeSingle();
+  if (error && isMissingSupabaseSchemaError(error)) return emptyState;
   if (error) throw error;
   return present(data as OnboardingRow | null);
 }
 
 export async function updateOnboarding(input: { path?: OnboardingPath; exploredDemo?: boolean; dismissed?: boolean }) {
-  if (!hasSupabaseConfig()) return emptyState;
+  if (!hasSupabaseConfig() || (await getProductMode()) === "demo") return emptyState;
   const workspaceId = await requireWorkspaceId();
   const now = new Date().toISOString();
   const payload = {
@@ -51,6 +54,7 @@ export async function updateOnboarding(input: { path?: OnboardingPath; exploredD
     updated_at: now
   };
   const { data, error } = await createServerSupabase().from("workspace_onboarding").upsert(payload, { onConflict: "workspace_id" }).select("selected_path, explored_demo_at, first_submission_at, first_scan_at, dismissed_at").single();
+  if (error && isMissingSupabaseSchemaError(error)) return emptyState;
   if (error) throw error;
   return present(data as OnboardingRow);
 }
@@ -60,5 +64,5 @@ export async function recordOnboardingMilestone(workspaceId: string, milestone: 
   const now = new Date().toISOString();
   const field = milestone === "submission" ? "first_submission_at" : "first_scan_at";
   const { error } = await createServerSupabase().from("workspace_onboarding").upsert({ workspace_id: workspaceId, [field]: now, updated_at: now }, { onConflict: "workspace_id", ignoreDuplicates: false });
-  if (error) throw error;
+  if (error && isMissingSupabaseSchemaError(error)) return;
 }

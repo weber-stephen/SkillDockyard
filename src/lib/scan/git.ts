@@ -13,20 +13,28 @@ function runGit(repoRoot: string, args: string[]) {
   }
 }
 
+function isRepositoryRoot(repoRoot: string) {
+  return runGit(repoRoot, ["rev-parse", "--show-toplevel"]) === path.resolve(repoRoot);
+}
+
 export function getCommitSha(repoRoot: string, filePath?: string) {
+  if (!isRepositoryRoot(repoRoot)) return null;
   const args = filePath ? ["log", "-n", "1", "--pretty=format:%H", "--", filePath] : ["rev-parse", "HEAD"];
   return runGit(repoRoot, args);
 }
 
 export function getBranch(repoRoot: string) {
+  if (!isRepositoryRoot(repoRoot)) return null;
   return runGit(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]);
 }
 
 export function getLastModifier(repoRoot: string, filePath: string) {
+  if (!isRepositoryRoot(repoRoot)) return null;
   return runGit(repoRoot, ["log", "-n", "1", "--pretty=format:%an <%ae>", "--", filePath]);
 }
 
 export function getRepoName(repoRoot: string) {
+  if (!isRepositoryRoot(repoRoot)) return path.basename(repoRoot);
   const remote = runGit(repoRoot, ["config", "--get", "remote.origin.url"]);
   if (!remote) return path.basename(repoRoot);
   return remote.replace(/\.git$/, "").split(/[/:]/).pop() ?? path.basename(repoRoot);

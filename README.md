@@ -123,11 +123,15 @@ git push -u origin main
 
 ## Supabase
 
-Create a project and apply both migrations, in order:
+Create a project and apply every migration in filename order:
 
 ```bash
 supabase/migrations/0001_initial_schema.sql
 supabase/migrations/0002_personal_workspaces.sql
+supabase/migrations/0003_workspace_settings_repair.sql
+supabase/migrations/20260901023409_onboarding_and_scan_tokens.sql
+supabase/migrations/20260902120000_artifact_sharing.sql
+supabase/migrations/20260903041344_permission_model.sql
 ```
 
 The app falls back to fixture data when Supabase environment variables are not set, so the product surface is explorable before backend setup.

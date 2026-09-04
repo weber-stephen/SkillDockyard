@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ArtifactDetail } from "@/lib/types";
@@ -13,11 +14,13 @@ export function ShareSkillPanel({
   workspaces: Array<{ id: string; name: string }>;
 }) {
   const [targetType, setTargetType] = useState<"user" | "workspace">("user");
+  const [sharePermission, setSharePermission] = useState<"propose" | "view">("propose");
   const [targetEmail, setTargetEmail] = useState("");
   const [targetWorkspaceId, setTargetWorkspaceId] = useState("");
   const [targetWorkspaceName, setTargetWorkspaceName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const router = useRouter();
 
   async function submit() {
     setPending(true);
@@ -28,6 +31,7 @@ export function ShareSkillPanel({
       body: JSON.stringify({
         artifactId: artifact.id,
         targetType,
+        permission: sharePermission,
         targetEmail,
         targetWorkspaceId: targetType === "workspace" ? targetWorkspaceId || undefined : undefined,
         targetWorkspaceName: targetType === "workspace" ? targetWorkspaceName || undefined : undefined
@@ -36,6 +40,7 @@ export function ShareSkillPanel({
     const payload = await response.json();
     setPending(false);
     setMessage(response.ok ? "Share created. Access begins after acceptance unless the workspace is already active." : payload.error ?? "We could not share that skill.");
+    if (response.ok) router.refresh();
   }
 
   return (
@@ -52,6 +57,18 @@ export function ShareSkillPanel({
       </div>
 
       <div className="mt-4 space-y-4">
+        <label className="block space-y-2">
+          <span className="text-sm font-bold">What can they do?</span>
+          <select
+            className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+            value={sharePermission}
+            onChange={(event) => setSharePermission(event.target.value === "view" ? "view" : "propose")}
+          >
+            <option value="propose">Can propose updates</option>
+            <option value="view">Can view only</option>
+          </select>
+          <span className="block text-xs leading-5 text-muted-foreground">Proposed changes still need approval from a source workspace owner or reviewer.</span>
+        </label>
         {targetType === "user" ? (
           <label className="block space-y-2">
             <span className="text-sm font-bold">Recipient email</span>
@@ -100,7 +117,17 @@ export function ShareSkillPanel({
                 <div className="font-semibold">
                   {share.target_type === "workspace" ? share.target_workspace_name || "Workspace share" : share.target_email || "Individual share"}
                 </div>
-                <p className="mt-1 text-muted-foreground">Status: {share.status}. Permission: {share.permission}.</p>
+                <p className="mt-1 text-muted-foreground">Status: {share.status === "active" ? "Active" : share.status === "pending" ? "Waiting for acceptance" : share.status === "revoked" ? "Revoked" : "Declined"}. Permission: {share.permission === "view" ? "View only" : "Can propose updates"}.</p>
+                {share.status === "active" ? (
+                  <button
+                    type="button"
+                    className="mt-2 text-sm font-bold text-destructive underline underline-offset-4"
+                    onClick={() => void revokeShare(share.id)}
+                    disabled={pending}
+                  >
+                    Revoke access
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>
@@ -108,4 +135,14 @@ export function ShareSkillPanel({
       ) : null}
     </section>
   );
+
+  async function revokeShare(shareId: string) {
+    setPending(true);
+    setMessage(null);
+    const response = await fetch(`/api/shares/${shareId}/revoke`, { method: "POST" });
+    const payload = await response.json();
+    setPending(false);
+    setMessage(response.ok ? "Access revoked." : payload.error ?? "We could not revoke that share.");
+    if (response.ok) router.refresh();
+  }
 }

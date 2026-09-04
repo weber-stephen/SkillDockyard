@@ -3,6 +3,7 @@ import { computeArtifactPermission, getViewerContext } from "@/lib/access";
 import { getArtifactShares } from "@/lib/shares";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getProductMode } from "@/lib/product-mode";
+import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 import type { Artifact, ArtifactDetail, GovernanceExportRow } from "@/lib/types";
 
 export async function listArtifacts(): Promise<Artifact[]> {
@@ -17,7 +18,7 @@ export async function listArtifacts(): Promise<Artifact[]> {
     .select("*")
     .eq("status", "active")
     .or(`target_user_id.eq.${user.id},target_workspace_id.in.(${workspaceIds.length ? workspaceIds.join(",") : "00000000-0000-0000-0000-000000000000"})`);
-  if (sharedError) throw sharedError;
+  if (sharedError && !isMissingSupabaseSchemaError(sharedError)) throw sharedError;
 
   const sharedArtifactIds = [...new Set((sharedRows ?? []).map((row) => row.artifact_id as string))];
   const filters: string[] = [];
@@ -48,7 +49,8 @@ export async function listArtifacts(): Promise<Artifact[]> {
       can_propose_update: permission.canProposeUpdate,
       can_publish: permission.canPublish,
       can_manage_shares: permission.canManageShares,
-      source_workspace_name: permission.sourceWorkspaceName
+      source_workspace_name: permission.sourceWorkspaceName,
+      source_share_id: permission.share?.id ?? null
     }];
   });
 }
@@ -76,11 +78,17 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
   });
   if (!permission) return null;
 
-  const [{ data: versions }, { data: risks }, { data: approvals }] = await Promise.all([
+  const [versionsResult, risksResult, approvalsResult] = await Promise.all([
     supabase.from("artifact_versions").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
     supabase.from("risk_flags").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
     supabase.from("approvals").select("*").eq("artifact_id", id).order("created_at", { ascending: false })
   ]);
+  for (const result of [versionsResult, risksResult, approvalsResult]) {
+    if (result.error && !isMissingSupabaseSchemaError(result.error)) throw result.error;
+  }
+  const versions = versionsResult.data;
+  const risks = risksResult.data;
+  const approvals = approvalsResult.data;
 
   const current = versions?.find((version) => version.id === artifact.current_version_id) ?? versions?.[0] ?? null;
   const approved = versions?.find((version) => version.id === artifact.approved_version_id) ?? null;
@@ -92,6 +100,7 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
     can_publish: permission.canPublish,
     can_manage_shares: permission.canManageShares,
     source_workspace_name: permission.sourceWorkspaceName,
+    source_share_id: permission.share?.id ?? null,
     current_version: current,
     approved_version: approved,
     risks: risks ?? [],

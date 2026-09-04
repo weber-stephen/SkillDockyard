@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revokeShare } from "@/lib/shares";
+import { getSupabaseErrorStatus } from "@/lib/supabase/errors";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -7,6 +8,6 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     const share = await revokeShare(id);
     return NextResponse.json({ ok: true, share });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "We could not revoke that share." }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "We could not revoke that share." }, { status: getSupabaseErrorStatus(error) });
   }
 }
