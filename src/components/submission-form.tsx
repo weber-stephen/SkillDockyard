@@ -181,7 +181,7 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
                 selected={visibility === "workspace"}
                 onSelect={() => setVisibility("workspace")}
                 title="Workspace skill"
-                body="A workspace owner or reviewer must approve it before teammates can use it."
+                body="A workspace owner or reviewer must publish it before teammates can use it."
               />
             </div>
           </fieldset>
