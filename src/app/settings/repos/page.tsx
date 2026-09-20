@@ -8,7 +8,7 @@ export default async function RepoSettingsPage() {
   return (
     <div className="space-y-6">
       <header className="border-b border-border pb-6">
-        <h1 className="text-3xl font-black">Repo Settings</h1>
+        <h1 className="text-3xl font-black">Repository and scanner settings</h1>
         <p className="mt-2 text-muted-foreground">Configure the local scanner inputs used to find skills and improvements for this account.</p>
       </header>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">

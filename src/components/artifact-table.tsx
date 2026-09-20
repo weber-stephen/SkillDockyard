@@ -2,7 +2,7 @@
 
 import { ProductLink as Link } from "@/components/product-link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Search, Send } from "lucide-react";
+import { AlertTriangle, GitCompareArrows, Search, Send } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
     const needle = query.trim().toLowerCase();
     if (!needle) return allArtifacts;
     return allArtifacts.filter((artifact) =>
-      [artifact.name, artifact.repo_name, artifact.path, artifact.owner, artifact.status, artifact.type, getSharingStatusView(artifact).label, isLocalDraftArtifact(artifact) ? "Local draft" : ""]
+      [artifact.name, artifact.path, artifact.owner, artifact.status, artifact.type, getSharingStatusView(artifact).label, artifact.created_by_viewer ? "created by you" : "", isLocalDraftArtifact(artifact) ? "Local draft" : ""]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
@@ -46,18 +46,24 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-black">Your Skill Library</h2>
-          <p className="text-sm text-muted-foreground">Owned skills, shared skills, submissions, and local improvements you can review or update.</p>
+          <p className="text-sm text-muted-foreground">Skills you created, workspace skills, and skills shared with you.</p>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <Button asChild>
             <Link href="/submit">
-              Submit Skill
+              Add a new skill
               <Send className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/submit/update">
+              Propose an update
+              <GitCompareArrows className="h-4 w-4" />
             </Link>
           </Button>
           <label className="relative w-full sm:w-80">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search skill, repo, owner..." value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input className="pl-9" placeholder="Search skills..." value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
         </div>
       </div>
@@ -66,8 +72,8 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Skill</TableHead>
-              <TableHead>Library Status</TableHead>
-              <TableHead>Owner</TableHead>
+              <TableHead>Relationship</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Current Change</TableHead>
               <TableHead>Updated</TableHead>
             </TableRow>
@@ -83,21 +89,26 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       <div>
                         <span className="block font-bold">{artifact.name}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">
-                          {artifact.repo_name} / {artifact.path}
+                          {artifact.owner ? `Maintained by ${artifact.owner}` : "Saved in this browser"}
                         </span>
                       </div>
                     ) : (
                       <Link href={`/artifacts/${artifact.id}`} className="group block">
                         <span className="block font-bold group-hover:underline">{artifact.name}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">
-                          {artifact.repo_name} / {artifact.path}
+                          {artifact.owner ? `Maintained by ${artifact.owner}` : "No maintainer listed"}
                         </span>
                       </Link>
                     )}
                   </TableCell>
+                  <TableCell><div className="space-y-2">
+                    {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : artifact.visibility === "private" ? <Badge variant="secondary">Owned by you</Badge> : artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with workspace</Badge> : <Badge variant="outline">Workspace skill</Badge>}
+                    {!localDraft && artifact.source_workspace_name ? <span className="block text-xs text-muted-foreground">Managed by {artifact.source_workspace_name}</span> : null}
+                  </div></TableCell>
                   <TableCell>
                     <div className="space-y-2">
                       {localDraft ? <Badge variant="muted">Local draft</Badge> : <StatusBadge artifact={artifact} />}
+                      {!localDraft && artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : null}
                       {!localDraft && artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : null}
                       {!localDraft && artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with workspace</Badge> : null}
                       {artifact.risk_count > 0 ? (
@@ -108,11 +119,12 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       ) : null}
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{artifact.owner ?? "Unassigned"}</TableCell>
                   <TableCell className="max-w-sm text-sm text-muted-foreground">
                     {localDraft
                       ? "Saved in this browser. Connect Supabase before teammates can use it."
-                      : `${sharing.description}${artifact.can_publish ? " You can publish this skill." : artifact.can_propose_update ? " You can propose updates." : ""}`}
+                      : artifact.visibility === "private"
+                        ? "Private to you. Submit it for workspace review when it is ready."
+                        : `${sharing.description}${artifact.can_publish ? " You can publish this skill." : artifact.can_propose_update ? " You can propose updates." : ""}`}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(artifact.updated_at)}</TableCell>
                 </TableRow>

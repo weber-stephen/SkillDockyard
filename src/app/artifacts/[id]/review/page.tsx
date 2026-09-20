@@ -3,12 +3,20 @@ import { Badge } from "@/components/ui/badge";
 import { ReviewActions } from "@/components/review-actions";
 import { getArtifactDetail } from "@/lib/data";
 import { getPublishRecommendation, getSharingStatusView } from "@/lib/sharing";
+import { getProposal } from "@/lib/proposals";
+import { getProductMode } from "@/lib/product-mode";
 
-export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams?: Promise<{ proposal?: string }> }) {
   const { id } = await params;
   const artifact = await getArtifactDetail(id);
   if (!artifact || !artifact.current_version) notFound();
-  const diff = buildLineDiff(artifact.approved_version?.content_snapshot ?? "", artifact.current_version.content_snapshot);
+  const demo = (await getProductMode()) === "demo";
+  const query = searchParams ? await searchParams : {};
+  const selectedProposal = query.proposal ? await getProposal(query.proposal) : artifact.current_proposal ? await getProposal(artifact.current_proposal.id) : null;
+  const proposal = selectedProposal?.artifact_id === artifact.id ? selectedProposal : null;
+  const reviewVersion = proposal?.candidate_version ?? artifact.current_version;
+  const baselineVersion = proposal?.base_version ?? artifact.approved_version;
+  const diff = buildLineDiff(baselineVersion?.content_snapshot ?? "", reviewVersion.content_snapshot);
   const sharing = getSharingStatusView(artifact);
 
   return (
@@ -18,31 +26,32 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <Badge variant="outline">{artifact.repo_name}</Badge>
           <Badge variant="outline">{artifact.path}</Badge>
         </div>
-        <h1 className="text-3xl font-black">Compare {artifact.name}</h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">This is the owner or reviewer step. Compare the proposed update with the shared version, check the trust notes, and decide whether teammates should receive it.</p>
+        <h1 className="text-3xl font-black">Review {artifact.name}</h1>
+        <p className="mt-2 max-w-3xl text-muted-foreground">Compare the pending proposal with the published version, check the trust notes, and decide whether teammates should receive it.</p>
+        {proposal ? <div className="mt-4 flex flex-wrap gap-2"><Badge variant="risk">{proposal.kind === "update" ? "Pending update" : "New skill proposal"}</Badge><Badge variant="outline">Submitted {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(proposal.created_at))}</Badge>{proposal.submitter_email ? <Badge variant="outline">{proposal.submitter_email}</Badge> : null}</div> : <div className="mt-4 rounded-md border border-border bg-panel p-3 text-sm text-muted-foreground">No first-class pending proposal is attached to this version. This may be legacy or demo data.</div>}
       </header>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
         <div className="min-w-0 space-y-4">
           <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            <Interpretation title="What changed?" body={artifact.current_version.summary ?? "The current copy differs from the published shared version."} />
+            <Interpretation title="What changed?" body={reviewVersion.summary ?? "The proposed copy differs from the published shared version."} />
             <Interpretation title="Why preserve it?" body="Publishing keeps this team improvement from being lost in local copies or repo-specific edits." />
             <Interpretation title="Publish recommendation" body={getPublishRecommendation(artifact)} />
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Current Change</h2>
             <p className="mt-3 leading-7 text-muted-foreground">
-              {artifact.current_version.summary ?? sharing.description}
+              {reviewVersion.summary ?? sharing.description}
             </p>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Version Integrity</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Comparing the current copy hash against the published shared version hash.
+              Comparing the proposed copy hash against the published shared version hash.
             </p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Hash label="Current copy" value={artifact.current_version.content_hash} />
-              <Hash label="Published version" value={artifact.approved_version?.content_hash ?? "None"} />
+              <Hash label={proposal ? "Pending proposal" : "Current copy"} value={reviewVersion.content_hash} />
+              <Hash label="Published version" value={baselineVersion?.content_hash ?? "None"} />
             </div>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
@@ -52,9 +61,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
             </pre>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Current Content</h2>
-            <pre className="mt-4 max-h-[520px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version.content_snapshot}</pre>
+            <h2 className="font-black">Proposed Content</h2>
+            <pre className="mt-4 max-h-[520px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{reviewVersion.content_snapshot}</pre>
           </div>
+          {proposal?.reviews?.length ? <div className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Review history</h2><div className="mt-4 space-y-3">{proposal.reviews.map((review) => <div key={review.id} className="rounded-sm border border-border bg-background p-3"><div className="flex flex-wrap justify-between gap-2 text-sm font-bold"><span>{review.decision === "published" ? "Published" : review.decision === "changes_requested" ? "Changes requested" : "Rejected"}</span><span className="text-xs font-normal text-muted-foreground">{review.reviewer_name} · {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(review.created_at))}</span></div>{review.note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.note}</p> : null}</div>)}</div></div> : null}
         </div>
         <aside className="min-w-0 space-y-4">
           <div className="rounded-md border border-border bg-panel p-5">
@@ -70,7 +80,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
               {!artifact.risks.length ? <p className="text-sm text-muted-foreground">No trust notes detected.</p> : null}
             </div>
           </div>
-          <ReviewActions artifactId={artifact.id} versionId={artifact.current_version.id} canPublish={Boolean(artifact.can_publish)} />
+          {proposal ? <ReviewActions artifactId={artifact.id} versionId={reviewVersion.id} proposalId={proposal.id} proposalStatus={proposal.status} canPublish={Boolean(artifact.can_publish)} /> : demo && artifact.can_publish ? <ReviewActions artifactId={artifact.id} versionId={reviewVersion.id} canPublish={true} /> : null}
         </aside>
       </section>
     </div>

@@ -82,17 +82,46 @@ export async function createShare(input: {
   if (!permission?.canManageShares) throw new Error("Only source workspace owners or reviewers can share this skill.");
   if (input.permission !== "propose" && input.permission !== "view") throw new Error("Choose a valid sharing permission.");
 
+  const targetEmail = normalizeEmail(input.targetEmail);
+  let resolvedTargetWorkspaceId = input.targetWorkspaceId ?? null;
+  let resolvedTargetWorkspaceName = stringOrNull(input.targetWorkspaceName);
+  if (input.targetType === "workspace" && resolvedTargetWorkspaceId) {
+    const { data: targetWorkspace, error: targetWorkspaceError } = await supabase
+      .from("workspaces")
+      .select("id, name")
+      .eq("id", resolvedTargetWorkspaceId)
+      .maybeSingle();
+    if (targetWorkspaceError) throw targetWorkspaceError;
+    if (!targetWorkspace) throw new Error("That workspace could not be found.");
+    resolvedTargetWorkspaceName = targetWorkspace.name as string;
+  }
+  if (input.targetType === "workspace" && !resolvedTargetWorkspaceId && targetEmail) {
+    const { data: ownerMemberships, error: ownerMembershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id")
+      .ilike("email", targetEmail)
+      .eq("role", "owner");
+    if (ownerMembershipError) throw ownerMembershipError;
+    const workspaceIds = [...new Set((ownerMemberships ?? []).map((membership) => membership.workspace_id as string))];
+    if (workspaceIds.length !== 1) {
+      throw new Error(workspaceIds.length > 1
+        ? "This owner belongs to multiple workspaces. Choose a specific workspace before inviting it."
+        : "The workspace owner could not be matched to a workspace.");
+    }
+    resolvedTargetWorkspaceId = workspaceIds[0];
+  }
+
   const payload: Record<string, string | null> = {
     artifact_id: input.artifactId,
     source_workspace_id: artifact.workspace_id,
     target_type: input.targetType,
-    target_email: normalizeEmail(input.targetEmail),
+    target_email: targetEmail,
     permission: input.permission,
     status: input.targetType === "workspace" && input.targetWorkspaceId ? "active" : "pending",
     created_by_user_id: user.id,
     target_user_id: null,
-    target_workspace_id: input.targetType === "workspace" ? input.targetWorkspaceId ?? null : null,
-    target_workspace_name: input.targetType === "workspace" ? stringOrNull(input.targetWorkspaceName) : null,
+    target_workspace_id: input.targetType === "workspace" ? resolvedTargetWorkspaceId : null,
+    target_workspace_name: input.targetType === "workspace" ? resolvedTargetWorkspaceName : null,
     activated_at: input.targetType === "workspace" && input.targetWorkspaceId ? new Date().toISOString() : null
   };
 
@@ -124,15 +153,24 @@ export async function acceptShareInvite(shareId: string) {
       ? { status: "active", target_user_id: user.id, activated_at: new Date().toISOString() }
       : {
           status: "active",
-          target_workspace_id: memberships[0]?.workspace_id ?? null,
+          target_workspace_id: share.target_workspace_id,
           activated_at: new Date().toISOString()
         };
 
-  if (share.target_type === "workspace" && !updatePayload.target_workspace_id) {
-    throw new Error("You need a workspace before accepting this workspace share.");
+  if (share.target_type === "workspace") {
+    const targetMembership = memberships.find((membership) => membership.workspace_id === share.target_workspace_id);
+    if (!targetMembership || targetMembership.role !== "owner") {
+      throw new Error("You must be the owner of the invited workspace before accepting this share.");
+    }
   }
 
-  const { data: updated, error: updateError } = await supabase.from("artifact_shares").update(updatePayload).eq("id", shareId).select("*").single();
+  const { data: updated, error: updateError } = await supabase
+    .from("artifact_shares")
+    .update(updatePayload)
+    .eq("id", shareId)
+    .eq("status", "pending")
+    .select("*")
+    .single();
   if (updateError) throw updateError;
   await recordShareAudit(share.source_workspace_id, share.artifact_id, user.email ?? "Unknown", "share_accepted", {
     shareId

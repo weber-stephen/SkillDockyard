@@ -81,4 +81,15 @@ describe("artifact permissions", () => {
   it("ignores revoked shares", () => {
     expect(computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [{ ...share("propose"), status: "revoked" }], userId: "recipient" })).toBeNull();
   });
+
+  it("keeps private artifacts visible only to their creator", () => {
+    const privateArtifact = { ...artifact, visibility: "private" as const, created_by_user_id: "creator" };
+    expect(computeArtifactPermission({ artifact: privateArtifact, memberships: [membership("owner")], workspaces, shares: [], userId: "creator" })).toMatchObject({
+      canEditPrivate: true,
+      canPublish: false,
+      canManageShares: false,
+      canProposeUpdate: false
+    });
+    expect(computeArtifactPermission({ artifact: privateArtifact, memberships: [membership("owner")], workspaces, shares: [], userId: "user" })).toBeNull();
+  });
 });

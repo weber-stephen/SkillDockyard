@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { onboardingComplete, type OnboardingState } from "@/lib/onboarding";
 
-const empty: OnboardingState = { selectedPath: null, exploredDemoAt: null, firstSubmissionAt: null, firstScanAt: null, dismissedAt: null };
+const empty: OnboardingState = { selectedPath: null, exploredDemoAt: null, firstSubmissionAt: null, firstScanAt: null, firstStarterAt: null, dismissedAt: null };
 
 describe("workspace onboarding", () => {
   it("requires a real product milestone before setup is complete", () => {

@@ -2,11 +2,13 @@ import crypto from "node:crypto";
 import matter from "gray-matter";
 import { detectRisks } from "@/lib/scan/risk";
 import type { Artifact, ArtifactDetail, ArtifactType, ScanArtifactInput } from "@/lib/types";
+import { INGEST_LIMITS, isSnapshotWithinLimit } from "@/lib/ingest-limits";
 
 export type SubmissionMode = "new" | "update";
 
 export interface ManualSubmissionInput {
   mode: SubmissionMode;
+  visibility?: unknown;
   artifactId?: unknown;
   name?: unknown;
   owner?: unknown;
@@ -37,6 +39,8 @@ export function buildManualSubmission(
     riskRules: SubmissionRiskRules;
   }
 ): ManualSubmissionResult {
+  const inputError = validateManualSubmissionInput(input);
+  if (inputError) throw new Error(inputError);
   const mode = input.mode === "update" ? "update" : "new";
   const existing = options.existingArtifact ?? null;
   if (mode === "update" && !existing) {
@@ -54,14 +58,13 @@ export function buildManualSubmission(
   if (!name) throw new Error("Give this skill a clear name.");
 
   const owner = stringValue(input.owner) || (mode === "update" && existing ? existing.owner : null);
-  if (!owner) throw new Error("Add the person or team responsible for this skill.");
 
   const changeSummary = stringValue(input.changeSummary);
   if (!changeSummary) {
     throw new Error(mode === "update" ? "Tell reviewers what improved in this update." : "Tell reviewers why this skill should be shared.");
   }
 
-  const repoName = mode === "update" && existing ? existing.repo_name : stringValue(input.repoName) || "manual-submissions";
+  const repoName = mode === "update" && existing ? existing.repo_name : "manual-submissions";
   const path = mode === "update" && existing ? existing.path : cleanPath(stringValue(input.path)) || `submitted/${slugify(name)}.md`;
   const type: ArtifactType = mode === "update" && existing ? existing.type : inferSubmittedType(path);
   const tools = normalizeList(input.tools).length ? normalizeList(input.tools) : extractFrontmatterList(parsed.data.tools);
@@ -112,8 +115,31 @@ export function buildManualSubmission(
     successMessage:
       mode === "update"
         ? "We saved this as the current copy. Compare it with the published version before publishing."
-        : "We saved this as a new skill proposal. Publish it when it should become part of your library."
+        : "We saved this as a new skill submission. Publish it when it should become part of your library."
   };
+}
+
+export function validateManualSubmissionInput(input: unknown) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return "Request body must be an object.";
+  const body = input as Record<string, unknown>;
+  if (body.mode !== "new" && body.mode !== "update") return "Choose whether this is a new skill or an update.";
+  if (body.visibility !== undefined && body.visibility !== "private" && body.visibility !== "workspace") return "Choose whether this skill is private or shared with the workspace.";
+  if (body.mode === "update" && body.visibility === "private") return "Updates to shared skills must be submitted to the workspace review queue.";
+  for (const field of ["name", "owner", "repoName", "path", "changeSummary", "artifactId"]) {
+    const value = body[field];
+    if (value !== undefined && value !== null && typeof value !== "string") return `The ${field} field must be text.`;
+    if (typeof value === "string" && value.length > INGEST_LIMITS.maxStringLength) return `The ${field} field is too long.`;
+  }
+  if (typeof body.skillText !== "string" || !isSnapshotWithinLimit(body.skillText)) return "Skill instructions are missing or too large.";
+  for (const field of ["tools", "mcpServers"]) {
+    const value = body[field];
+    if (Array.isArray(value) && (value.length > INGEST_LIMITS.maxListItems || value.some((item) => typeof item !== "string" || item.length > INGEST_LIMITS.maxListItemLength))) {
+      return `The ${field} list is too large or contains an invalid item.`;
+    }
+    if (typeof value === "string" && value.length > INGEST_LIMITS.maxStringLength) return `The ${field} list is too long.`;
+    if (value !== undefined && value !== null && !Array.isArray(value) && typeof value !== "string") return `The ${field} field must be a list or comma-separated text.`;
+  }
+  return null;
 }
 
 export function normalizeList(value: unknown) {

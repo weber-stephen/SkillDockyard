@@ -2,31 +2,31 @@
 
 import { ProductLink as Link } from "@/components/product-link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
 import { ArrowRight, CheckCircle2, ChevronDown, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { clearLocalDrafts, readLocalDrafts, writeLocalDraft, type LocalDraftArtifact } from "@/lib/local-drafts";
 import type { SubmissionOptions } from "@/lib/submission-options";
-import type { Artifact } from "@/lib/types";
+import type { Artifact, ArtifactDetail } from "@/lib/types";
+import { getSkillWritingChecks, skillTemplate } from "@/lib/skill-writing";
 
 interface SubmissionResponse {
   saved: boolean;
   message: string;
+  visibility?: "private" | "workspace";
   artifactId: string | null;
   compareHref: string | null;
   trustNotes: number;
 }
 
-export function SubmissionForm({ artifacts, options, supabaseConfigured }: { artifacts: Artifact[]; options: SubmissionOptions; supabaseConfigured: boolean }) {
-  const [mode, setMode] = useState<"new" | "update">(artifacts.length ? "update" : "new");
-  const [artifactId, setArtifactId] = useState(artifacts[0]?.id ?? "");
+export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDemo, initialArtifactId }: { mode: "new" | "update"; artifacts: Artifact[]; artifactDetails: ArtifactDetail[]; options: SubmissionOptions; isDemo: boolean; initialArtifactId?: string }) {
+  const updateableArtifacts = artifacts.filter((artifact) => artifact.can_propose_update);
+  const [artifactId, setArtifactId] = useState(initialArtifactId && updateableArtifacts.some((artifact) => artifact.id === initialArtifactId) ? initialArtifactId : updateableArtifacts[0]?.id ?? "");
   const [name, setName] = useState("");
   const [owner, setOwner] = useState("");
   const [customOwner, setCustomOwner] = useState("");
-  const [repoName, setRepoName] = useState(options.libraryAreas[0] ?? "General Skills");
-  const [customRepoName, setCustomRepoName] = useState("");
+  const [repoName] = useState("manual-submissions");
   const [path, setPath] = useState("");
   const [changeSummary, setChangeSummary] = useState("");
   const [skillText, setSkillText] = useState("");
@@ -40,12 +40,13 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
   const [result, setResult] = useState<SubmissionResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
-  const pathname = usePathname();
-
+  const [visibility, setVisibility] = useState<"private" | "workspace">("private");
+  const [baselineSkillText, setBaselineSkillText] = useState("");
   const selectedArtifact = useMemo(() => artifacts.find((artifact) => artifact.id === artifactId) ?? null, [artifactId, artifacts]);
+  const selectedDetail = useMemo(() => artifactDetails.find((detail) => detail.id === artifactId) ?? null, [artifactDetails, artifactId]);
   const canUpdate = Boolean(selectedArtifact?.can_propose_update);
   const selectedOwner = owner === "__custom__" ? customOwner : owner;
-  const selectedRepoName = repoName === "__custom__" ? customRepoName : repoName;
+  const selectedRepoName = repoName;
   const selectedTools = [...tools, customTool].map((value) => value.trim()).filter(Boolean);
   const selectedMcpServers = [...mcpServers, customMcpServer].map((value) => value.trim()).filter(Boolean);
 
@@ -60,17 +61,40 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
     };
   }, []);
 
+  useEffect(() => {
+    if (mode !== "update" || !selectedDetail?.current_version) return;
+    const snapshot = selectedDetail.current_version.content_snapshot || "";
+    setSkillText(snapshot);
+    setBaselineSkillText(snapshot);
+    setOwner(selectedDetail.owner || "");
+    setChangeSummary("");
+    setTools([]);
+    setCustomTool("");
+    setMcpServers([]);
+    setCustomMcpServer("");
+    setStep(1);
+    setError(null);
+    setResult(null);
+  }, [mode, selectedDetail]);
+
+  function selectArtifact(nextArtifactId: string) {
+    const hasUnsavedChanges = skillText !== baselineSkillText || Boolean(changeSummary.trim());
+    if (hasUnsavedChanges && !window.confirm("Switch skill? Your unsaved update will be replaced.")) return;
+    setArtifactId(nextArtifactId);
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
     setResult(null);
 
-    const response = await fetch(`/api/submissions${pathname.startsWith("/demo") ? "?demo=1" : ""}`, {
+    const response = await fetch(`/api/submissions${isDemo ? "?demo=1" : ""}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mode,
+        visibility: mode === "new" ? visibility : "workspace",
         artifactId: mode === "update" ? artifactId : undefined,
         name: mode === "new" ? name : selectedArtifact?.name,
         owner: selectedOwner,
@@ -104,9 +128,10 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
       setResult({
         ...payload,
         saved: true,
+        visibility: "private",
         artifactId: null,
         compareHref: null,
-        message: "Saved in this browser. Connect Supabase when you want teammates to see it."
+        message: "Saved as a demo draft in this browser. It was not sent to reviewers or teammates."
       });
       return;
     }
@@ -126,35 +151,40 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
     <section className="rounded-md border border-border bg-panel p-5">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-xl font-black">Skill Submission</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">No command line required. Paste the skill and explain why it belongs in the library or why a shared skill should be improved.</p>
-        </div>
-        <div className="grid grid-cols-2 rounded-md border border-border p-1 text-sm font-semibold">
-          <button
-            type="button"
-            className={mode === "update" ? "rounded-sm bg-primary px-3 py-2 text-white" : "rounded-sm px-3 py-2 text-muted-foreground"}
-            onClick={() => setMode("update")}
-            disabled={!canUpdate}
-          >
-            Update
-          </button>
-          <button
-            type="button"
-            className={mode === "new" ? "rounded-sm bg-primary px-3 py-2 text-white" : "rounded-sm px-3 py-2 text-muted-foreground"}
-            onClick={() => setMode("new")}
-          >
-            New skill
-          </button>
+          <h2 className="text-xl font-black">{mode === "update" ? "Update details" : "New skill details"}</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{mode === "update" ? "Start from the published skill, make the improvement, and send it to review." : "Capture a reusable workflow, then choose whether to keep it private or share it with your workspace."}</p>
         </div>
       </div>
 
-      <div className="mb-5 flex items-center gap-3 text-sm"><span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold ${step === 1 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>1</span><span className={step === 1 ? "font-bold" : "text-muted-foreground"}>Skill and value</span><span className="h-px w-6 bg-border" /><span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold ${step === 2 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>2</span><span className={step === 2 ? "font-bold" : "text-muted-foreground"}>Library details</span></div>
+        <div className="mb-5 flex items-center gap-3 text-sm"><span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold ${step === 1 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>1</span><span className={step === 1 ? "font-bold" : "text-muted-foreground"}>Skill and value</span><span className="h-px w-6 bg-border" /><span className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold ${step === 2 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>2</span><span className={step === 2 ? "font-bold" : "text-muted-foreground"}>Optional details</span></div>
 
       <form className="space-y-5" onSubmit={onSubmit}>
-        {!supabaseConfigured ? (
+        {isDemo ? (
           <div className="rounded-md border border-border bg-background p-3 text-sm leading-6 text-muted-foreground">
-            Submissions save in this browser until Supabase is connected. They are drafts only; teammates will not see them yet.
+            Demo only: this submission is saved in this browser as a draft. It is not sent to reviewers or shared with teammates.
           </div>
+        ) : null}
+        {step === 1 && mode === "new" ? (
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-bold">Who should see this skill?</legend>
+            <p className="text-xs leading-5 text-muted-foreground">Choose whether to keep this as a personal draft or send it to your workspace review queue.</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <VisibilityOption
+                value="private"
+                selected={visibility === "private"}
+                onSelect={() => setVisibility("private")}
+                title="Private to me"
+                body="Only you can see it until you submit it for review."
+              />
+              <VisibilityOption
+                value="workspace"
+                selected={visibility === "workspace"}
+                onSelect={() => setVisibility("workspace")}
+                title="Workspace skill"
+                body="A workspace owner or reviewer must approve it before teammates can use it."
+              />
+            </div>
+          </fieldset>
         ) : null}
         {step === 1 && mode === "update" ? (
           <label className="block space-y-2">
@@ -162,49 +192,34 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
               value={artifactId}
-              onChange={(event) => setArtifactId(event.target.value)}
+              onChange={(event) => selectArtifact(event.target.value)}
               disabled={!canUpdate}
             >
-              {artifacts.map((artifact) => (
+              {updateableArtifacts.map((artifact) => (
                 <option key={artifact.id} value={artifact.id}>
                   {artifact.name} - {artifact.repo_name}{artifact.access_scope?.startsWith("shared_") ? " (shared)" : ""}{artifact.can_propose_update ? "" : " (view only)"}
                 </option>
               ))}
             </select>
             <span className="block text-xs leading-5 text-muted-foreground">
-              Choose the skill this proposal should be compared against. Editors and shared recipients with proposal access can suggest changes; source workspace owners and reviewers still control publishing.
+              Start from the latest skill content, make your changes, and explain what improved. Editors and shared recipients with submission access can suggest changes; source workspace owners and reviewers still control publishing.
             </span>
           </label>
         ) : null}
 
-        {step === 2 && mode === "new" ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Skill name" help="Use the name teammates will recognize." value={name} onChange={setName} />
-            <SelectField
-              label="Where should teammates find it?"
-              help="Choose the library area where this skill belongs."
-              value={repoName}
-              onChange={setRepoName}
-              options={options.libraryAreas}
-              customLabel="Add another area"
-            />
-            {repoName === "__custom__" ? (
-              <Field label="New library area" help="Example: Support Ops or Platform Skills." value={customRepoName} onChange={setCustomRepoName} />
-            ) : null}
-          </div>
-        ) : null}
+        {step === 2 && mode === "new" ? <Field label="Skill name" help="Use the name teammates will recognize." value={name} onChange={setName} /> : null}
 
         {step === 2 ? <div className="grid gap-4 md:grid-cols-2">
           <SelectField
-            label="Responsible team"
+            label="Maintained by (optional)"
             help="Who should answer questions about this skill?"
             value={owner}
             onChange={setOwner}
             options={options.owners}
-            customLabel="Add another owner"
+            customLabel="Add another maintainer"
           />
           {owner === "__custom__" ? (
-            <Field label="New responsible team" help="Example: @platform or Support Ops." value={customOwner} onChange={setCustomOwner} />
+            <Field label="New maintainer" help="Example: @platform or Support Ops. This is contact information, not access control." value={customOwner} onChange={setCustomOwner} />
           ) : null}
         </div> : null}
 
@@ -222,7 +237,7 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
         </label> : null}
 
         {step === 1 ? <label className="block space-y-2">
-          <span className="text-sm font-bold">Skill instructions</span>
+          <span className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold">Skill instructions <Button type="button" size="sm" variant="outline" onClick={() => { if (!skillText.trim() || window.confirm("Replace the current instructions with the guided template?")) setSkillText(skillTemplate); }}>Use guided template</Button></span>
           <Textarea
             className="min-h-72 font-mono text-xs leading-6"
             value={skillText}
@@ -230,16 +245,8 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
             placeholder={"Paste the full skill here. Include the role, steps, tools, boundaries, and examples teammates should receive."}
           />
           <span className="block text-xs leading-5 text-muted-foreground">Do not paste passwords, API keys, customer data, or private tokens.</span>
+          <WritingChecklist content={skillText} />
         </label> : null}
-
-        {step === 2 ? <ChecklistField
-          label="MCP servers or local services"
-          help="Optional. Select known services this skill depends on."
-          options={options.mcpServers}
-          selected={mcpServers}
-          onChange={setMcpServers}
-        /> : null}
-        {step === 2 ? <Field label="Add another MCP server or local service" help="Optional. Example: localhost:3333." value={customMcpServer} onChange={setCustomMcpServer} /> : null}
 
         {step === 2 ? <div className="rounded-md border border-border bg-background">
           <button
@@ -251,7 +258,9 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
             <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
           </button>
           {showAdvanced ? (
-            <div className="border-t border-border p-4">
+            <div className="space-y-5 border-t border-border p-4">
+              <ChecklistField label="Connectors" help="Optional. Select the connections or local services this skill needs." options={options.mcpServers} selected={mcpServers} onChange={setMcpServers} />
+              <Field label="Add another connector" help="Optional. Example: localhost:3333." value={customMcpServer} onChange={setCustomMcpServer} />
               <Field label="File path, if known" help="Optional. Example: skills/campaign-brief-builder/SKILL.md." value={path} onChange={setPath} />
             </div>
           ) : null}
@@ -262,7 +271,7 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
 
         <div className="flex flex-wrap gap-3">
           {step === 1 ? <Button type="button" onClick={continueToDetails} disabled={mode === "update" && !canUpdate}>Continue<ArrowRight className="h-4 w-4" /></Button> : <Button type="submit" disabled={submitting || (mode === "update" && !canUpdate)}>
-            {submitting ? "Checking submission..." : "Submit Skill"}
+            {submitting ? "Checking submission..." : isDemo ? "Save demo draft" : mode === "update" ? "Submit update" : "Submit new skill"}
             <Send className="h-4 w-4" />
           </Button>}
           {step === 2 ? <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button> : null}
@@ -271,9 +280,14 @@ export function SubmissionForm({ artifacts, options, supabaseConfigured }: { art
           </Button>
         </div>
       </form>
-      {!supabaseConfigured ? <LocalDraftsPanel drafts={localDrafts} onClear={() => clearLocalDrafts(window.localStorage)} /> : null}
+      {isDemo ? <LocalDraftsPanel drafts={localDrafts} onClear={() => clearLocalDrafts(window.localStorage)} /> : null}
     </section>
   );
+}
+
+function WritingChecklist({ content }: { content: string }) {
+  const checks = getSkillWritingChecks(content);
+  return <span className="block rounded-md border border-border bg-background p-3"><span className="block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Writing guide</span><span className="mt-2 grid gap-1.5">{checks.map((check) => <span key={check.label} className="flex items-center gap-2 text-xs"><CheckCircle2 className={`h-3.5 w-3.5 ${check.complete ? "text-primary" : "text-muted-foreground/50"}`} /><span className={check.complete ? "text-foreground" : "text-muted-foreground"}>{check.label}{check.required ? "" : " (recommended)"}</span></span>)}</span></span>;
 }
 
 function Field({
@@ -375,6 +389,7 @@ function ChecklistField({
 
 function SubmissionSuccess({ result }: { result: SubmissionResponse }) {
   const href = result.compareHref ?? (result.artifactId ? `/artifacts/${result.artifactId}` : "/artifacts");
+  const isPrivate = result.visibility === "private";
   return (
     <div className="rounded-md border border-border bg-background p-4">
       <div className="flex gap-3">
@@ -382,12 +397,16 @@ function SubmissionSuccess({ result }: { result: SubmissionResponse }) {
         <div className="space-y-2">
           <p className="text-sm font-bold">{result.message}</p>
           <p className="text-xs leading-5 text-muted-foreground">
-            Skill Dockyard found {result.trustNotes} trust note{result.trustNotes === 1 ? "" : "s"} to review before publishing.
+            Skill Dockyard found {result.trustNotes} trust note{result.trustNotes === 1 ? "" : "s"} to review{isPrivate ? "." : " before publishing."}
           </p>
-          <p className="text-xs leading-5 text-muted-foreground">Next, the skill owner can compare this change with the shared version and decide whether to publish it for the team.</p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            {isPrivate
+              ? "This draft is private to you. Open it when you are ready to submit it to the workspace review queue."
+              : "A workspace owner or reviewer can compare the submission and publish it for the team."}
+          </p>
           <Button asChild variant="outline" size="sm">
             <Link href={href}>
-              {result.compareHref ? "Compare Versions" : "Open Skill Library"}
+              {isPrivate ? "Open Private Draft" : result.compareHref ? "Compare Versions" : "Open Skill Library"}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -397,13 +416,30 @@ function SubmissionSuccess({ result }: { result: SubmissionResponse }) {
   );
 }
 
+function VisibilityOption({ value, selected, onSelect, title, body }: { value: "private" | "workspace"; selected: boolean; onSelect: () => void; title: string; body: string }) {
+  return (
+    <label className={`block cursor-pointer rounded-md border p-4 transition-colors ${selected ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/50"}`}>
+      <input className="sr-only" type="radio" name="submission-visibility" value={value} checked={selected} onChange={onSelect} />
+      <span className="flex items-start gap-3">
+        <span className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border ${selected ? "border-primary" : "border-muted-foreground/50"}`}>
+          {selected ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+        </span>
+        <span>
+          <span className="block text-sm font-bold">{title}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{body}</span>
+        </span>
+      </span>
+    </label>
+  );
+}
+
 function LocalDraftsPanel({ drafts, onClear }: { drafts: LocalDraftArtifact[]; onClear: () => void }) {
   return (
     <div className="mt-6 rounded-md border border-border bg-background p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-black">Local Drafts</h3>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Saved in this browser only. Connect Supabase when these should be shared with teammates.</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Demo drafts are saved in this browser only and are not shared with teammates.</p>
         </div>
         {drafts.length ? (
           <Button type="button" variant="outline" size="sm" onClick={onClear}>

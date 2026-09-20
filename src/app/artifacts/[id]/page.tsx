@@ -12,6 +12,9 @@ import { formatDate } from "@/lib/utils";
 import { SkillDownloadPanel } from "@/components/skill-download-panel";
 import { listSharableWorkspaces } from "@/lib/shares";
 import { ShareSkillPanel } from "@/components/share-skill-panel";
+import { PrivateDraftActions } from "@/components/private-draft-actions";
+import { getSkillAdoption } from "@/lib/adoption";
+import { getProductMode } from "@/lib/product-mode";
 
 export default async function ArtifactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,6 +24,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
   const sharing = getSharingStatusView(artifact);
   const portable = getPortableSkillStatus(artifact);
   const hasPendingChange = Boolean(artifact.current_version_id && artifact.current_version_id !== artifact.approved_version_id);
+  const adoption = (await getProductMode()) === "demo" ? { personal: [], aggregate: null } : await getSkillAdoption(artifact.id, artifact.approved_version_id, Boolean(artifact.can_publish));
 
   return (
     <div className="space-y-6">
@@ -31,6 +35,8 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             <Badge variant="outline">{getArtifactTypeLabel(artifact.type)}</Badge>
             {artifact.access_scope === "shared_user" ? <Badge variant="secondary">Shared with you</Badge> : null}
             {artifact.access_scope === "shared_workspace" ? <Badge variant="secondary">Shared with your workspace</Badge> : null}
+            {artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : null}
+            {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : null}
           </div>
           <h1 className="text-3xl font-black">{artifact.name}</h1>
           <p className="mt-2 max-w-3xl text-muted-foreground">
@@ -38,17 +44,17 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           </p>
         </div>
         <Button asChild>
-          <Link href={`/artifacts/${artifact.id}/review`}>
-            Compare Versions
+          <Link href={artifact.visibility === "private" ? `/artifacts/${artifact.id}` : `/artifacts/${artifact.id}/review`}>
+            {artifact.visibility === "private" ? "View private draft" : artifact.current_proposal ? "Review pending submission" : "Compare versions"}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
       </header>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <Info label="Repo" value={artifact.repo_name} />
-        <Info label="Owner" value={artifact.owner ?? "Unassigned"} />
-        <Info label="Source Workspace" value={artifact.source_workspace_name ?? "Private workspace"} />
+        <Info label="Relationship" value={artifact.visibility === "private" ? "Owned by you" : artifact.access_scope?.startsWith("shared_") ? "Shared with you" : artifact.created_by_viewer ? "Created by you" : "Workspace skill"} />
+        <Info label="Maintained by" value={artifact.owner ?? "Not listed"} />
+        <Info label="Managed by" value={artifact.source_workspace_name ?? "Your workspace"} />
         <Info label="Updated" value={formatDate(artifact.updated_at)} />
         <Info label="Trust Notes" value={artifact.risk_count.toString()} />
       </section>
@@ -63,19 +69,18 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           <pre className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
         <aside className="min-w-0 space-y-4">
-          <SkillDownloadPanel artifactId={artifact.id} approvedHash={artifact.approved_version?.content_hash ?? null} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} />
+          {(adoption.aggregate || adoption.personal.length) ? <section className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Downloads and updates</h2>{adoption.aggregate ? <div className="mt-3 grid grid-cols-3 gap-3 text-center"><Metric label="Downloads" value={adoption.aggregate.downloads} /><Metric label="CLI installs" value={adoption.aggregate.managedInstalls} /><Metric label="Need update" value={adoption.aggregate.outdatedInstalls} /></div> : null}{adoption.personal.length ? <div className="mt-4 space-y-2">{adoption.personal.map((item, index) => <p key={`${item.target}-${index}`} className="text-sm text-muted-foreground"><strong className="text-foreground">Your {item.target === "codex" ? "Codex" : "Claude Code"} install:</strong> {item.updateAvailable ? "Update available" : "Up to date"}</p>)}</div> : <p className="mt-3 text-sm text-muted-foreground">CLI-managed installs will show their update status here.</p>}</section> : null}
+          <SkillDownloadPanel artifactId={artifact.id} approvedHash={(artifact.visibility === "private" ? artifact.current_version?.content_hash : artifact.approved_version?.content_hash) ?? null} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} />
+          {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
           {artifact.can_manage_shares ? <ShareSkillPanel artifact={artifact} workspaces={sharableWorkspaces} /> : null}
-          {!artifact.can_manage_shares && artifact.can_propose_update ? (
-            <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground">
-              You can propose updates to this shared skill. Publishing still requires a source workspace owner or reviewer.
-            </div>
-          ) : null}
+          {artifact.can_propose_update ? <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground"><p>You can submit an update to this skill. The published version stays active until a source workspace owner or reviewer approves the submission.</p><Button asChild variant="outline" size="sm" className="mt-4"><Link href={`/artifacts/${artifact.id}/update`}>Submit an update<ArrowRight className="h-3.5 w-3.5" /></Link></Button></div> : null}
           {!artifact.can_manage_shares && !artifact.can_propose_update && artifact.access_scope?.startsWith("shared_") ? (
             <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground">
               You have view-only access to this shared skill. You can download and compare it, but you cannot propose updates or publish changes.
             </div>
           ) : null}
           <div className="rounded-md border border-border bg-panel p-5">
+            {artifact.current_proposal ? <div className="mb-4 rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-6"><div className="font-bold">Pending submission</div><p className="mt-1 text-muted-foreground">This change is not published yet. Teammates will continue receiving the published version until an owner or reviewer approves it.</p></div> : null}
             <h2 className="font-black">Published Version</h2>
             {artifact.approved_version ? (
               <div className="mt-3 space-y-3">
@@ -93,7 +98,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             </div>
             <div className="mb-4 grid gap-3">
               <Panel title="Tools" items={artifact.current_version?.tools ?? []} empty="No tools detected." />
-              <Panel title="MCP Servers" items={artifact.current_version?.mcp_servers ?? []} empty="No MCP servers detected." />
+              <Panel title="Connectors" items={artifact.current_version?.mcp_servers ?? []} empty="No connectors detected." />
             </div>
             <div className="space-y-3">
               {artifact.risks.length ? (
@@ -132,4 +137,8 @@ function Panel({ title, items, empty }: { title: string; items: string[]; empty:
       </div>
     </div>
   );
+}
+
+function Metric({ label, value }: { label: string; value: number }) {
+  return <div className="rounded-sm bg-muted p-3"><div className="text-xl font-black">{value}</div><div className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</div></div>;
 }

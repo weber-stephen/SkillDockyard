@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web App Security Audit"
+  short_description: "Audit web apps, REST APIs, and databases for security risks"
+  default_prompt: "Use $web-app-security-audit to perform an authorized, non-destructive security audit of this web application, its REST APIs, and database."

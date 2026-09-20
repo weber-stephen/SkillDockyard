@@ -54,7 +54,7 @@ export function SettingsForm({ configFile, approvedMcpServers, highImpactTools, 
         <Input value={currentConfigFile} onChange={(event) => setCurrentConfigFile(event.target.value)} />
       </label>
       <label className="grid gap-2 text-sm font-semibold">
-        Approved MCP servers
+        Allowed connectors
         <Textarea value={mcpServers} onChange={(event) => setMcpServers(event.target.value)} />
       </label>
       <label className="grid gap-2 text-sm font-semibold">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getArtifactDetail } from "@/lib/data";
+import { getViewerContext } from "@/lib/access";
 
 export async function POST(request: Request) {
   if (new URL(request.url).searchParams.get("demo") === "1") return NextResponse.json({ ok: true, demo: true });
@@ -10,22 +11,21 @@ export async function POST(request: Request) {
   }
 
   const supabase = createServerSupabase();
-  const { artifactId, versionId, decision, note, reviewerName } = body;
+  const { artifactId, versionId, decision, note } = body;
   if (!artifactId || !versionId) {
     return NextResponse.json({ error: "artifactId and versionId are required." }, { status: 400 });
   }
   if (decision !== "approved" && decision !== "deprecated") {
     return NextResponse.json({ error: "decision must be approved or deprecated." }, { status: 400 });
   }
-  if (typeof reviewerName !== "string" || !reviewerName.trim()) {
-    return NextResponse.json({ error: "reviewerName is required." }, { status: 400 });
-  }
-
   const detail = await getArtifactDetail(artifactId);
   if (!detail) return NextResponse.json({ error: "Artifact not found." }, { status: 404 });
   if (!detail.can_publish) {
     return NextResponse.json({ error: "Only source workspace owners or reviewers can publish this skill." }, { status: 403 });
   }
+  if (detail.current_version_id !== versionId) return NextResponse.json({ error: "That version is no longer the current proposal. Refresh before deciding." }, { status: 409 });
+  const { user } = await getViewerContext();
+  const reviewerName = user.email ?? "Workspace reviewer";
 
   const { data: artifact, error: artifactLookupError } = await supabase
     .from("artifacts")
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   const { error: approvalError } = await supabase.from("approvals").insert({
     artifact_id: artifactId,
     artifact_version_id: versionId,
-    reviewer_name: reviewerName.trim(),
+    reviewer_name: reviewerName,
     decision,
     note: typeof note === "string" && note.trim() ? note.trim() : null
   });
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   await supabase.from("audit_events").insert({
     workspace_id: artifact.workspace_id,
     artifact_id: artifactId,
-    actor_name: reviewerName.trim(),
+    actor_name: reviewerName,
     event_type: decision,
     metadata: { versionId, note: typeof note === "string" ? note : null }
   });

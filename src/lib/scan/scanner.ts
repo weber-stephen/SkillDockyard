@@ -171,7 +171,7 @@ function summarizeChange(name: string, description: string | null, tools: string
   const parts = [`${name} was added to your library from a local scan.`];
   if (description) parts.push(description);
   if (tools.length) parts.push(`Detected tools: ${tools.join(", ")}.`);
-  if (mcpServers.length) parts.push(`Detected MCP references: ${mcpServers.join(", ")}.`);
+  if (mcpServers.length) parts.push(`Detected connectors: ${mcpServers.join(", ")}.`);
   if (riskCount) parts.push(`${riskCount} trust note${riskCount === 1 ? "" : "s"} should be understood before publishing.`);
   return parts.join(" ");
 }

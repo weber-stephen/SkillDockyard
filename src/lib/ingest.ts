@@ -1,7 +1,8 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureWorkspaceId } from "@/lib/settings";
 import { isMissingSupabaseSchemaError, schemaUnavailableMessage, SchemaUnavailableError } from "@/lib/supabase/errors";
-import type { ScanArtifactInput } from "@/lib/types";
+import type { ArtifactVisibility, ScanArtifactInput } from "@/lib/types";
+import { isSnapshotWithinLimit, validateIngestBatch, validateIngestItemShape } from "@/lib/ingest-limits";
 
 export interface IngestedArtifact {
   artifactId: string;
@@ -15,8 +16,11 @@ export async function ingestArtifacts(
   options?: {
     createdByUserId?: string | null;
     sourceShareId?: string | null;
+    visibility?: ArtifactVisibility;
+    sourceTemplateKey?: string | null;
   }
 ): Promise<{ workspaceId: string; artifacts: IngestedArtifact[] }> {
+  if (!validateIngestBatch(artifacts)) throw new Error("The scan payload exceeds an allowed limit or has an invalid shape.");
   const resolvedWorkspaceId = workspaceId ?? await ensureWorkspaceId();
   const supabase = createServerSupabase();
   const { data: scanRun, error: scanError } = await supabase
@@ -44,7 +48,7 @@ export async function ingestArtifacts(
 
       const { data: existing, error: existingError } = await supabase
         .from("artifacts")
-        .select("id, approved_version_id")
+        .select("id, approved_version_id, visibility, created_by_user_id, source_template_key")
         .eq("workspace_id", resolvedWorkspaceId)
         .eq("repo_id", repo.id)
         .eq("path", item.artifact.path)
@@ -52,21 +56,25 @@ export async function ingestArtifacts(
       if (existingError) throw existingError;
 
       const status = existing?.approved_version_id ? "needs_reapproval" : "unreviewed";
+      const artifactPayload = {
+        id: existing?.id,
+        workspace_id: resolvedWorkspaceId,
+        repo_id: repo.id,
+        name: item.artifact.name,
+        slug: item.artifact.slug,
+        type: item.artifact.type,
+        path: item.artifact.path,
+        description: item.artifact.description,
+        owner: item.artifact.owner,
+        status,
+        ...(options?.visibility ? { visibility: options.visibility } : {}),
+        ...(options?.createdByUserId ? { created_by_user_id: options.createdByUserId } : {}),
+        ...(options?.sourceTemplateKey ? { source_template_key: options.sourceTemplateKey } : {})
+      };
       const { data: artifact, error: artifactError } = await supabase
         .from("artifacts")
         .upsert(
-          {
-            id: existing?.id,
-            workspace_id: resolvedWorkspaceId,
-            repo_id: repo.id,
-            name: item.artifact.name,
-            slug: item.artifact.slug,
-            type: item.artifact.type,
-            path: item.artifact.path,
-            description: item.artifact.description,
-            owner: item.artifact.owner,
-            status
-          },
+          artifactPayload,
           { onConflict: "workspace_id,repo_id,path" }
         )
         .select("id")
@@ -150,6 +158,7 @@ async function createRepo(workspaceId: string, item: ScanArtifactInput) {
 }
 
 export function validateScanItem(item: ScanArtifactInput) {
+  if (!validateIngestItemShape(item)) return "Each submitted skill must use the expected bounded format.";
   if (!item?.repo?.name) return "Each skill must include a repo name.";
   if (!item.repo.root_path) return "Each skill must include a source location.";
   if (!item?.artifact?.name) return "Each skill needs a name.";
@@ -157,6 +166,7 @@ export function validateScanItem(item: ScanArtifactInput) {
   if (!item.artifact.type) return "Each skill needs a type.";
   if (!item?.version?.content_hash) return "Each submitted version needs a content hash.";
   if (!item.version.content_snapshot) return "Paste the skill instructions before submitting.";
+  if (!isSnapshotWithinLimit(item.version.content_snapshot)) return "Skill instructions are too large.";
   return null;
 }
 

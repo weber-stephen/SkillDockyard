@@ -1,4 +1,5 @@
 export type ArtifactStatus = "unreviewed" | "approved" | "needs_reapproval" | "deprecated";
+export type ArtifactVisibility = "private" | "workspace";
 
 export type ArtifactType =
   | "agent_doc"
@@ -22,6 +23,10 @@ export type ShareTargetType = "user" | "workspace";
 export type ShareStatus = "pending" | "active" | "revoked" | "declined";
 export type SharePermission = "view" | "propose";
 export type ArtifactAccessScope = "owned_workspace" | "shared_user" | "shared_workspace";
+export type WorkspaceInviteStatus = "pending" | "accepted" | "declined" | "revoked" | "expired";
+export type ProposalKind = "new" | "update";
+export type ProposalStatus = "pending_review" | "changes_requested" | "rejected" | "published" | "superseded" | "withdrawn";
+export type ProposalReviewDecision = "published" | "changes_requested" | "rejected";
 
 export interface Workspace {
   id: string;
@@ -35,6 +40,18 @@ export interface WorkspaceMembership {
   user_id: string | null;
   email: string | null;
   role: WorkspaceRole;
+  created_at: string;
+}
+
+export interface WorkspaceInvite {
+  id: string;
+  workspace_id: string;
+  workspace_name?: string;
+  email: string;
+  role: Exclude<WorkspaceRole, "owner">;
+  status: WorkspaceInviteStatus;
+  expires_at: string;
+  invited_by_user_id: string;
   created_at: string;
 }
 
@@ -68,6 +85,9 @@ export interface Artifact {
   path: string;
   description: string | null;
   owner: string | null;
+  visibility?: ArtifactVisibility;
+  created_by_user_id?: string | null;
+  source_template_key?: string | null;
   status: ArtifactStatus;
   current_version_id: string | null;
   approved_version_id: string | null;
@@ -77,7 +97,12 @@ export interface Artifact {
   can_propose_update?: boolean;
   can_publish?: boolean;
   can_manage_shares?: boolean;
+  can_edit_private?: boolean;
   source_workspace_name?: string | null;
+  created_by_viewer?: boolean;
+  download_count?: number;
+  managed_install_count?: number;
+  outdated_install_count?: number;
   source_share_id?: string | null;
 }
 
@@ -119,11 +144,45 @@ export interface Approval {
   created_at: string;
 }
 
+export interface ProposalReview {
+  id: string;
+  proposal_id: string;
+  reviewer_user_id: string | null;
+  reviewer_name: string;
+  decision: ProposalReviewDecision;
+  note: string | null;
+  created_at: string;
+}
+
+export interface Proposal {
+  id: string;
+  artifact_id: string;
+  candidate_version_id: string;
+  base_version_id: string | null;
+  workspace_id: string;
+  submitted_by_user_id: string | null;
+  submitter_email: string | null;
+  source_share_id: string | null;
+  supersedes_proposal_id: string | null;
+  kind: ProposalKind;
+  status: ProposalStatus;
+  resolved_by_user_id: string | null;
+  resolved_at: string | null;
+  resolution_note: string | null;
+  created_at: string;
+  updated_at: string;
+  candidate_version?: ArtifactVersion | null;
+  base_version?: ArtifactVersion | null;
+  reviews?: ProposalReview[];
+}
+
 export interface ArtifactDetail extends Artifact {
   current_version: ArtifactVersion | null;
   approved_version: ArtifactVersion | null;
   risks: RiskFlag[];
   approvals: Approval[];
+  current_proposal?: Proposal | null;
+  proposals?: Proposal[];
   shares?: ArtifactShare[];
 }
 

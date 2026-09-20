@@ -45,7 +45,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "local_mcp",
         severity: "medium",
-        message: "Local MCP dependency may not work for every teammate.",
+        message: "Local connector may not work for every teammate.",
         evidence: server
       });
     }
@@ -54,7 +54,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
       risks.push({
         kind: "unapproved_mcp",
         severity: "medium",
-        message: `New MCP dependency should be understood before publishing: ${server}.`,
+        message: `New connector should be understood before publishing: ${server}.`,
         evidence: server
       });
     }

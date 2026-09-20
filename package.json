@@ -1,10 +1,17 @@
 {
   "name": "skill-dockyard",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
+  "private": false,
   "description": "Shared skill library for teams preserving AI skill improvements.",
   "bin": {
     "skill-dockyard": "./bin/run.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "next dev",
@@ -13,6 +20,7 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:pages": "npm run build && tsx scripts/smoke-pages.ts",
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node20 --out-dir dist --clean",
     "cli": "npm run cli:build --silent && node bin/run.js",

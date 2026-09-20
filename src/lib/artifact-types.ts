@@ -5,7 +5,7 @@ const artifactTypeLabels: Record<ArtifactType, string> = {
   claude_skill: "Shared skill",
   copilot_agent: "Copilot agent",
   cursor_rule: "Cursor rule",
-  mcp_config: "MCP configuration",
+  mcp_config: "Connector configuration",
   prompt_library: "Prompt library",
   skill_folder: "Shared skill folder"
 };

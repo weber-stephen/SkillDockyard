@@ -4,7 +4,7 @@ import { getArtifactShares } from "@/lib/shares";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getProductMode } from "@/lib/product-mode";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
-import type { Artifact, ArtifactDetail, GovernanceExportRow } from "@/lib/types";
+import type { Artifact, ArtifactDetail, GovernanceExportRow, Proposal } from "@/lib/types";
 
 export async function listArtifacts(): Promise<Artifact[]> {
   if ((await getProductMode()) === "demo") return sampleArtifacts;
@@ -34,6 +34,12 @@ export async function listArtifacts(): Promise<Artifact[]> {
 
   if (error) throw error;
   const sharesByArtifact = groupSharesByArtifact(sharedRows ?? []);
+  const sourceWorkspaceIds = [...new Set((data ?? []).map((artifact) => artifact.workspace_id as string))];
+  const { data: sourceWorkspaces, error: sourceWorkspaceError } = sourceWorkspaceIds.length
+    ? await supabase.from("workspaces").select("id, name").in("id", sourceWorkspaceIds)
+    : { data: [], error: null };
+  if (sourceWorkspaceError) throw sourceWorkspaceError;
+  const sourceNames = new Map((sourceWorkspaces ?? []).map((workspace) => [workspace.id as string, workspace.name as string]));
   return (data as Artifact[]).flatMap((artifact) => {
     const permission = computeArtifactPermission({
       artifact,
@@ -49,7 +55,9 @@ export async function listArtifacts(): Promise<Artifact[]> {
       can_propose_update: permission.canProposeUpdate,
       can_publish: permission.canPublish,
       can_manage_shares: permission.canManageShares,
-      source_workspace_name: permission.sourceWorkspaceName,
+      can_edit_private: permission.canEditPrivate,
+      source_workspace_name: permission.sourceWorkspaceName ?? sourceNames.get(artifact.workspace_id) ?? null,
+      created_by_viewer: artifact.created_by_user_id === user.id,
       source_share_id: permission.share?.id ?? null
     }];
   });
@@ -77,13 +85,15 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
     userId: user.id
   });
   if (!permission) return null;
+  const { data: sourceWorkspace } = await supabase.from("workspaces").select("name").eq("id", artifact.workspace_id).maybeSingle();
 
-  const [versionsResult, risksResult, approvalsResult] = await Promise.all([
+  const [versionsResult, risksResult, approvalsResult, proposalsResult] = await Promise.all([
     supabase.from("artifact_versions").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
     supabase.from("risk_flags").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
-    supabase.from("approvals").select("*").eq("artifact_id", id).order("created_at", { ascending: false })
+    supabase.from("approvals").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
+    supabase.from("proposals").select("*").eq("artifact_id", id).order("created_at", { ascending: false })
   ]);
-  for (const result of [versionsResult, risksResult, approvalsResult]) {
+  for (const result of [versionsResult, risksResult, approvalsResult, proposalsResult]) {
     if (result.error && !isMissingSupabaseSchemaError(result.error)) throw result.error;
   }
   const versions = versionsResult.data;
@@ -92,6 +102,15 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
 
   const current = versions?.find((version) => version.id === artifact.current_version_id) ?? versions?.[0] ?? null;
   const approved = versions?.find((version) => version.id === artifact.approved_version_id) ?? null;
+  const proposalRows = (proposalsResult.data ?? []) as Proposal[];
+  const proposalVersionIds = [...new Set(proposalRows.flatMap((proposal) => [proposal.candidate_version_id, proposal.base_version_id].filter((id): id is string => Boolean(id))))];
+  const proposalVersions = new Map((versions ?? []).filter((version) => proposalVersionIds.includes(version.id)).map((version) => [version.id, version]));
+  const proposals = proposalRows.map((proposal) => ({
+    ...proposal,
+    candidate_version: proposalVersions.get(proposal.candidate_version_id) ?? null,
+    base_version: proposal.base_version_id ? proposalVersions.get(proposal.base_version_id) ?? null : null
+  }));
+  const currentProposal = proposals.find((proposal) => proposal.status === "pending_review") ?? null;
 
   return {
     ...(artifact as Artifact),
@@ -99,12 +118,16 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
     can_propose_update: permission.canProposeUpdate,
     can_publish: permission.canPublish,
     can_manage_shares: permission.canManageShares,
-    source_workspace_name: permission.sourceWorkspaceName,
+    can_edit_private: permission.canEditPrivate,
+    source_workspace_name: permission.sourceWorkspaceName ?? sourceWorkspace?.name ?? null,
+    created_by_viewer: (artifact as Artifact).created_by_user_id === user.id,
     source_share_id: permission.share?.id ?? null,
     current_version: current,
     approved_version: approved,
     risks: risks ?? [],
     approvals: approvals ?? [],
+    current_proposal: currentProposal,
+    proposals,
     shares: permission.canManageShares ? shares : shares.filter((share) => share.status === "active")
   } as ArtifactDetail;
 }

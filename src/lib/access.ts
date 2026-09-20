@@ -15,6 +15,7 @@ export interface ArtifactPermission {
   canProposeUpdate: boolean;
   canPublish: boolean;
   canManageShares: boolean;
+  canEditPrivate: boolean;
   sourceWorkspaceName: string | null;
   share: ArtifactShare | null;
 }
@@ -64,6 +65,22 @@ export function computeArtifactPermission(input: {
 }) {
   const membership = input.memberships.find((item) => item.workspace_id === input.artifact.workspace_id) ?? null;
   const sourceWorkspace = input.workspaces.find((workspace) => workspace.id === input.artifact.workspace_id) ?? null;
+  const isPrivate = input.artifact.visibility === "private";
+  const isPrivateCreator = isPrivate && input.artifact.created_by_user_id === input.userId;
+
+  if (isPrivate && !isPrivateCreator) return null;
+
+  if (isPrivateCreator) {
+    return {
+      accessScope: "owned_workspace",
+      canProposeUpdate: false,
+      canPublish: false,
+      canManageShares: false,
+      canEditPrivate: true,
+      sourceWorkspaceName: sourceWorkspace?.name ?? null,
+      share: null
+    } satisfies ArtifactPermission;
+  }
 
   if (membership) {
     return {
@@ -71,6 +88,7 @@ export function computeArtifactPermission(input: {
       canProposeUpdate: canProposeRole(membership.role),
       canPublish: canPublishRole(membership.role),
       canManageShares: canPublishRole(membership.role),
+      canEditPrivate: false,
       sourceWorkspaceName: sourceWorkspace?.name ?? null,
       share: null
     } satisfies ArtifactPermission;
@@ -88,6 +106,7 @@ export function computeArtifactPermission(input: {
     canProposeUpdate: activeShare.permission === "propose",
     canPublish: false,
     canManageShares: false,
+    canEditPrivate: false,
     sourceWorkspaceName: sourceWorkspace?.name ?? null,
     share: activeShare
   } satisfies ArtifactPermission;

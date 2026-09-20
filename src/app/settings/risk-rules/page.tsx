@@ -10,7 +10,7 @@ export default async function RiskRulesPage() {
         <p className="mt-2 text-muted-foreground">Compatibility checks help authors understand new tools and dependencies before publishing.</p>
       </header>
       <section className="grid gap-4 md:grid-cols-2">
-        <RulePanel title="Approved MCP Servers" items={settings.approvedMcpServers} />
+        <RulePanel title="Allowed connectors" items={settings.approvedMcpServers} />
         <RulePanel title="High-Impact Tools" items={settings.highImpactTools} />
       </section>
     </div>

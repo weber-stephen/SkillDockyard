@@ -1,6 +1,6 @@
 # Skill Dockyard
 
-Skill Dockyard is a shared skill library for teams: scan `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, Copilot agents, prompt folders, Cursor rules, and MCP configs, then preserve the improvements worth publishing back to the team.
+Skill Dockyard is a shared skill library for teams: scan `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, Copilot agents, prompt folders, Cursor rules, and connector configurations, then preserve the improvements worth publishing back to the team.
 
 ## MVP Stack
 
@@ -25,18 +25,22 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). The public landing page explains the product; use [/demo](http://localhost:3000/demo) to explore fixture data without an account. The private app lives at [/app](http://localhost:3000/app).
 
+### Page and code checks
+
+Run the fast unit suite with `npm test`. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down.
+
 ### 3. Submit a skill without Git
 
-Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit), then choose:
+Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to propose an update:
 
-- **Update** to paste an improved version of an existing shared skill.
-- **New skill** to paste instructions that should become part of the shared library.
+- **Add a new skill** to paste instructions that should become part of the shared library.
+- **Propose an update** to start from an existing skill and suggest an improved version.
 
 Skill Dockyard checks the pasted content for trust notes and prepares it for comparison. In the demo, submissions are local browser drafts. In the authenticated app, submissions save to the account's private workspace; publishing still happens from the Compare Versions page.
 
 ### 4. Clone the example repo
 
-Skill Dockyard works best when you start with a real Git repo. The example repo contains safe sample agent docs, Claude skills, Copilot agents, prompts, Cursor rules, and MCP config.
+Skill Dockyard works best when you start with a real Git repo. The example repo contains safe sample agent docs, Claude skills, Copilot agents, prompts, Cursor rules, and connector configuration.
 
 ```bash
 git clone https://github.com/weber-stephen/skill-dockyard-example-repo.git ../skill-dockyard-example-repo
@@ -80,7 +84,7 @@ The web app also exposes downloads at `/exports`.
 
 ### 8. Scan your own repo
 
-Update `skill-dockyard.yml` with your repo path, approved MCP servers, and high-impact tools, then run:
+Update `skill-dockyard.yml` with your repo path, allowed connectors, and high-impact tools, then run:
 
 ```bash
 npm run cli -- scan
@@ -92,18 +96,25 @@ To send scan results into a running local app API:
 npm run cli -- scan --endpoint http://localhost:3000/api/scan --token "$SKILL_DOCKYARD_INGEST_TOKEN"
 ```
 
-### Scan skills installed in Codex or Claude Code
+### Import and update skills from Codex or Claude Code
 
-First, open Terminal in the Skill Dockyard folder. In Finder, locate the `SkillDockyard` folder, right-click it, and choose **New Terminal at Folder**. If that option is unavailable, open Terminal, type `cd ` (including the space), drag the folder into Terminal, then press Return.
-
-Only then run the scan command. It will not work from your home folder or another repository. For example:
+Open **Getting started → Import existing skills** and create a one-time pairing code. Then run the displayed commands from any Terminal window:
 
 ```bash
-cd /path/to/SkillDockyard
-npm run cli -- scan --installed --endpoint http://localhost:3000/api/scan --token "YOUR_SCAN_PASS"
+npx skill-dockyard connect --endpoint https://your-skill-dockyard --code YOUR_PAIRING_CODE
+npx skill-dockyard import
 ```
 
-Create a scan pass from **Getting started → Find my AI skills**. It is specific to your account and can be revoked after the scan.
+The pairing code works once and expires after ten minutes. The resulting connection can be revoked from **Workspace settings → Connected computers**. It can import, download, and report your own installations, but cannot publish skills or manage access.
+
+To check or install approved updates:
+
+```bash
+npx skill-dockyard check
+npx skill-dockyard update --all
+```
+
+The updater refuses to overwrite local edits. Install the optional agent helper with `npx skill-dockyard install-helper --target codex` or `--target claude-code` so you can ask your agent to check updates on demand.
 
 ## Example repo
 
@@ -132,9 +143,12 @@ supabase/migrations/0003_workspace_settings_repair.sql
 supabase/migrations/20260901023409_onboarding_and_scan_tokens.sql
 supabase/migrations/20260902120000_artifact_sharing.sql
 supabase/migrations/20260903041344_permission_model.sql
+supabase/migrations/20260904233130_proposal_lifecycle.sql
+supabase/migrations/20260907090000_private_skill_visibility.sql
+supabase/migrations/20260909100000_workspace_membership_admin.sql
 ```
 
-The app falls back to fixture data when Supabase environment variables are not set, so the product surface is explorable before backend setup.
+The `/demo` route uses fixture data so the product surface is explorable before backend setup. The authenticated `/app` route requires the Supabase environment variables and shows a configuration screen when the live workspace is not connected.
 
 ### Environment variables
 
@@ -156,15 +170,15 @@ SKILL_DOCKYARD_INGEST_WORKSPACE_ID=
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard -> your project -> Project Settings -> API -> Project API keys -> `service_role` / `secret` key | Keep this server-only. Required for live Supabase mode because prototype API routes write through service-role-only RLS policies. |
 | `NEXT_PUBLIC_SITE_URL` | Your deployed app URL | Add `/auth/confirm` to Supabase Auth Redirect URLs and set the Confirm signup template to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`. |
 | `SKILL_DOCKYARD_INGEST_TOKEN` | Generate a long random value | Required by the CLI scan endpoint. Keep server-only. |
-| `SKILL_DOCKYARD_INGEST_WORKSPACE_ID` | UUID of a workspace intended for CLI ingest | Required for a scanner integration; browser users receive their own workspace automatically. |
+| `SKILL_DOCKYARD_INGEST_WORKSPACE_ID` | UUID of a workspace intended for CLI ingest | Required for a scanner connector; browser users receive their own workspace automatically. |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   subgraph Local["Customer Local Environment"]
-    Repos["Git Repos<br/>AGENTS.md, CLAUDE.md, SKILL.md,<br/>Copilot agents, prompts, MCP configs"]
-    Config["skill-dockyard.yml<br/>paths, approved MCPs,<br/>high-impact tools"]
+    Repos["Git Repos<br/>AGENTS.md, CLAUDE.md, SKILL.md,<br/>Copilot agents, prompts, connector configs"]
+    Config["skill-dockyard.yml<br/>paths, allowed connectors,<br/>high-impact tools"]
     CLI["oclif CLI<br/>init, scan, export, config validate"]
     Scanner["Scanner Engine<br/>skill detection, metadata extraction,<br/>hashing, owner lookup, trust checks"]
   end
