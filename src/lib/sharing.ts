@@ -16,7 +16,7 @@ const sharingViews: Record<SharingStatus, Omit<SharingStatusView, "status">> = {
     description: "This copy matches the shared version."
   },
   improvement_available: {
-    label: "Improvement available",
+    label: "Update awaiting review",
     shortLabel: "Improvement",
     description: "This copy has changes that can be preserved for the team."
   },
@@ -76,7 +76,7 @@ export function mapArtifactStatusToSharingLabel(status: ArtifactStatus) {
   const labels: Record<ArtifactStatus, string> = {
     approved: "Published",
     deprecated: "Archived",
-    needs_reapproval: "Improvement available",
+    needs_reapproval: "Update awaiting review",
     unreviewed: "New skill"
   };
   return labels[status];

@@ -28,7 +28,7 @@ export default async function SubmitPage() {
                 <Library className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline"><Link href="/submit/update">Propose an update<ArrowRight className="h-4 w-4" /></Link></Button>
+            <Button asChild variant="outline"><Link href="/submit/update">Submit an update<ArrowRight className="h-4 w-4" /></Link></Button>
           </div>
         </div>
         <section className="rounded-md border border-border bg-panel p-5">
@@ -38,7 +38,7 @@ export default async function SubmitPage() {
           </div>
           <div className="space-y-4 text-sm leading-6 text-muted-foreground">
             <p>Choose whether to save a private draft or submit a workspace skill for review.</p>
-            <p>Workspace skills stay unpublished until an owner or reviewer explicitly approves them.</p>
+            <p>Workspace skills stay unpublished until an owner or reviewer explicitly publishes them.</p>
             {isDemo ? <p>In the demo, drafts stay in this browser and are never sent to reviewers or teammates.</p> : null}
           </div>
         </section>
