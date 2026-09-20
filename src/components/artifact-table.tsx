@@ -45,7 +45,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
     <section className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black">Your Skill Library</h2>
+          <h2 className="text-xl font-black">Skills in this workspace</h2>
           <p className="text-sm text-muted-foreground">Skills you created, workspace skills, and skills shared with you.</p>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -57,7 +57,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
           </Button>
           <Button asChild variant="outline">
             <Link href="/submit/update">
-              Propose an update
+              Submit an update
               <GitCompareArrows className="h-4 w-4" />
             </Link>
           </Button>

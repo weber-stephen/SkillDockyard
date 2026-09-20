@@ -15,8 +15,8 @@ export default async function UpdateSkillPage({ initialArtifactId }: { initialAr
         <div className="space-y-4">
           <Badge variant={isDemo ? "muted" : "success"}>{isDemo ? "Demo mode: try an update" : "Proposed update"}</Badge>
           <div className="space-y-3">
-            <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-normal sm:text-5xl">Propose an update to a skill.</h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">Choose a skill you can improve, start from its current content, and explain what should change. The published version stays active until approval.</p>
+            <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-normal sm:text-5xl">Submit an update to a skill.</h1>
+            <p className="max-w-2xl text-base leading-7 text-muted-foreground">Choose a skill you can improve, start from its current content, and explain what should change. The published version stays active until a reviewer publishes the update.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="outline"><Link href="/artifacts">Browse Skills<Library className="h-4 w-4" /></Link></Button>
