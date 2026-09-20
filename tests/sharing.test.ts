@@ -48,7 +48,7 @@ describe("sharing labels", () => {
 
   it("keeps database enum labels translated for the UI", () => {
     expect(mapArtifactStatusToSharingLabel("approved")).toBe("Published");
-    expect(mapArtifactStatusToSharingLabel("needs_reapproval")).toBe("Improvement available");
+    expect(mapArtifactStatusToSharingLabel("needs_reapproval")).toBe("Update awaiting review");
     expect(mapArtifactStatusToSharingLabel("unreviewed")).toBe("New skill");
     expect(mapArtifactStatusToSharingLabel("deprecated")).toBe("Archived");
   });
