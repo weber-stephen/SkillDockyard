@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.93 0.025 86);
-  --foreground: oklch(0.16 0.02 75);
-  --panel: oklch(0.965 0.016 88);
-  --primary: oklch(0.31 0.07 153);
-  --primary-foreground: oklch(0.97 0.018 88);
-  --secondary: oklch(0.82 0.085 80);
-  --secondary-foreground: oklch(0.18 0.02 75);
-  --muted: oklch(0.87 0.025 82);
-  --muted-foreground: oklch(0.39 0.025 73);
+  --background: oklch(0.93 0.028 72);
+  --foreground: oklch(0.17 0.018 48);
+  --panel: oklch(0.97 0.018 72);
+  --primary: oklch(0.65 0.20 39);
+  --primary-foreground: oklch(0.17 0.018 48);
+  --secondary: oklch(0.78 0.15 56);
+  --secondary-foreground: oklch(0.17 0.018 48);
+  --muted: oklch(0.86 0.04 65);
+  --muted-foreground: oklch(0.38 0.035 48);
   --destructive: oklch(0.49 0.16 27);
   --destructive-foreground: oklch(0.97 0.018 88);
   --border: oklch(0.29 0.022 72);
   --input: oklch(0.38 0.022 72);
-  --ring: oklch(0.65 0.14 78);
+  --ring: oklch(0.66 0.20 39);
 }
 
 @theme inline {
@@ -56,19 +56,19 @@ code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
 .font-black { font-weight: 800 !important; }
 
 .app-sidebar {
-  background: oklch(0.18 0.026 79) !important;
-  color: oklch(0.93 0.025 86);
+  background: oklch(0.16 0.018 48) !important;
+  color: oklch(0.93 0.028 72);
   border-right: 2px solid var(--foreground) !important;
   backdrop-filter: none !important;
 }
 
-.app-sidebar .brand-mark { padding-bottom: 1.25rem; border-bottom: 1px solid oklch(0.42 0.03 78); }
-.app-sidebar .brand-symbol { background: var(--secondary) !important; color: var(--foreground) !important; }
-.app-sidebar .sidebar-primary-action { background: var(--secondary) !important; color: var(--foreground) !important; border: 1px solid var(--secondary); }
-.app-sidebar .nav-section h2 { color: oklch(0.72 0.09 78) !important; }
-.app-sidebar nav a { color: oklch(0.78 0.018 86); border: 1px solid transparent; }
-.app-sidebar nav a:hover { color: oklch(0.97 0.018 88); background: oklch(0.25 0.028 79) !important; }
-.app-sidebar nav a[aria-current="page"] { color: oklch(0.98 0.018 88); background: transparent !important; border-color: oklch(0.64 0.11 79); }
+.app-sidebar .brand-mark { padding-bottom: 1.25rem; border-bottom: 1px solid oklch(0.38 0.04 48); }
+.app-sidebar .brand-symbol { background: var(--primary) !important; color: var(--primary-foreground) !important; }
+.app-sidebar .sidebar-primary-action { background: var(--primary) !important; color: var(--primary-foreground) !important; border: 1px solid var(--primary); }
+.app-sidebar .nav-section h2 { color: var(--secondary) !important; }
+.app-sidebar nav a { color: oklch(0.82 0.025 72); border: 1px solid transparent; }
+.app-sidebar nav a:hover { color: oklch(0.97 0.018 72); background: oklch(0.24 0.025 48) !important; }
+.app-sidebar nav a[aria-current="page"] { color: var(--secondary); background: transparent !important; border-color: var(--primary); }
 
 .app-main > div:first-child {
   background: var(--secondary);
@@ -86,6 +86,12 @@ main header h1 {
   letter-spacing: -0.055em !important;
   text-transform: uppercase;
   text-wrap: balance;
+  text-shadow: 0.08em 0 var(--secondary);
+}
+
+.dashboard-hero > div:first-child {
+  border-left: 0.55rem solid var(--primary);
+  padding-left: clamp(1rem, 2vw, 2rem);
 }
 
 .dashboard-hero { align-items: end; }
@@ -95,7 +101,7 @@ main header h1 {
 .metric-card:nth-child(2) { background: var(--secondary) !important; }
 .metric-card > div:last-child { font-family: "Arial Narrow", "Avenir Next Condensed", sans-serif; font-size: 3.5rem; line-height: 1; }
 
-.review-spotlight { border: 2px solid var(--foreground) !important; box-shadow: 8px 8px 0 var(--foreground); }
+.review-spotlight { border: 2px solid var(--foreground) !important; background: var(--secondary) !important; box-shadow: 8px 8px 0 var(--foreground); }
 .version-summary { background: transparent !important; border-style: dashed !important; }
 .lifecycle-step { border-top-width: 5px !important; }
 

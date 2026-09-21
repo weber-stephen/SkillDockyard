@@ -2,7 +2,7 @@
 
 ## Field Manual
 
-Field Manual treats Skill Dockyard as an operational handbook: direct, durable, and built for people making consequential review decisions. A charcoal navigation rail, amber command strip, numbered mobile records, square geometry, and print-like rules create a visual language closer to a well-used technical manual than a conventional SaaS dashboard.
+Field Manual treats Skill Dockyard as an operational handbook: direct, durable, and built for people making consequential review decisions. A carbon navigation rail, safety-orange command strip, numbered mobile records, square geometry, and print-like rules create a visual language closer to a well-used technical manual than a conventional SaaS dashboard.
 
 ## Brand Attributes
 
@@ -10,7 +10,7 @@ Operational, robust, candid, technical, high-accountability, and utilitarian.
 
 ## Major Changes
 
-- Recast the application shell as a dark equipment rail with an amber command header.
+- Recast the application shell as a carbon equipment rail with a safety-orange command header.
 - Introduced condensed, uppercase display typography and stronger scale contrast.
 - Rebuilt metric presentation as one connected instrument panel instead of separate floating cards.
 - Increased border weight and removed radius and decorative elevation.
@@ -20,12 +20,12 @@ Operational, robust, candid, technical, high-accountability, and utilitarian.
 ## Design System
 
 - Typography: Helvetica Neue for UI and a condensed display stack for headings and large figures.
-- Color: warm field-paper canvas, charcoal structure, evergreen primary actions, amber attention and demo context.
+- Color: sand field-paper canvas, carbon structure, safety-orange actions, and a deeper orange attention band.
 - Spacing: compact controls with larger sectional gaps; data is intentionally dense.
 - Surfaces: flat paper panels, two-pixel structural rules, dashed comparison boxes, offset hard shadow only for the active review spotlight.
 - Radius: square throughout.
 - Motion: fast 120ms state shifts and physical two-pixel press feedback.
-- Focus: three-pixel amber outline.
+- Focus: three-pixel safety-orange outline.
 
 ## UX Changes
 
