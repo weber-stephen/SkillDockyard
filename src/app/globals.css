@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.91 0.018 83);
-  --foreground: oklch(0.22 0.028 62);
-  --panel: oklch(0.975 0.012 83);
-  --primary: oklch(0.34 0.075 153);
-  --primary-foreground: oklch(0.98 0.009 83);
-  --secondary: oklch(0.86 0.035 91);
-  --secondary-foreground: oklch(0.27 0.032 67);
-  --muted: oklch(0.92 0.016 84);
-  --muted-foreground: oklch(0.46 0.027 67);
+  --background: oklch(0.89 0.035 18);
+  --foreground: oklch(0.22 0.055 21);
+  --panel: oklch(0.97 0.018 75);
+  --primary: oklch(0.37 0.14 21);
+  --primary-foreground: oklch(0.98 0.012 75);
+  --secondary: oklch(0.86 0.06 16);
+  --secondary-foreground: oklch(0.27 0.075 21);
+  --muted: oklch(0.92 0.025 22);
+  --muted-foreground: oklch(0.46 0.055 21);
   --destructive: oklch(0.46 0.13 27);
   --destructive-foreground: oklch(0.98 0.009 83);
-  --border: oklch(0.74 0.028 78);
-  --input: oklch(0.68 0.03 74);
-  --ring: oklch(0.49 0.09 153);
+  --border: oklch(0.70 0.045 21);
+  --input: oklch(0.64 0.055 21);
+  --ring: oklch(0.48 0.15 21);
 }
 
 @theme inline {
@@ -57,17 +57,20 @@ code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
 .app-sidebar {
   width: 15rem !important;
   padding-inline: 1.5rem !important;
-  background: var(--panel) !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground);
   border-right: 1px solid var(--border) !important;
   backdrop-filter: none !important;
 }
 .app-main { padding-left: 15rem !important; }
 .app-sidebar .brand-mark { padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-.app-sidebar .brand-symbol { border-radius: 50% !important; }
-.app-sidebar .sidebar-primary-action { border-radius: 999px !important; }
+.app-sidebar .brand-symbol { border-radius: 50% !important; background: var(--primary-foreground) !important; color: var(--primary) !important; }
+.app-sidebar .sidebar-primary-action { border-radius: 999px !important; background: var(--primary-foreground) !important; color: var(--primary) !important; }
 .app-sidebar .nav-section h2 { padding-left: 0; font-family: "Iowan Old Style", Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; }
 .app-sidebar nav a { padding-left: 0; border-bottom: 1px solid transparent; border-radius: 0 !important; }
-.app-sidebar nav a[aria-current="page"] { background: transparent !important; border-bottom-color: var(--primary); color: var(--primary); }
+.app-sidebar nav a[aria-current="page"] { background: var(--secondary) !important; border-bottom-color: var(--primary-foreground); color: var(--primary); padding-left: 0.65rem; }
+.app-sidebar nav a:not([aria-current="page"]),
+.app-sidebar .nav-section h2 { color: color-mix(in oklch, var(--primary-foreground), transparent 12%) !important; }
 
 .app-main > div:first-child { background: var(--panel); }
 .app-content {
@@ -89,6 +92,7 @@ main header h1 {
   line-height: 0.93 !important;
   letter-spacing: -0.045em !important;
   text-wrap: balance;
+  color: var(--primary);
 }
 
 .dashboard-hero { grid-template-columns: 1fr !important; }
@@ -97,10 +101,12 @@ main header h1 {
 .dashboard-hero .dashboard-actions { align-self: end; }
 .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 0 !important; border-top: 1px solid var(--foreground); border-bottom: 1px solid var(--foreground); }
 .metric-card { border: 0 !important; border-right: 1px solid var(--border) !important; background: transparent !important; }
+.metric-card:first-child { background: var(--primary) !important; color: var(--primary-foreground); padding-inline: 1.25rem; }
+.metric-card:first-child .text-muted-foreground { color: color-mix(in oklch, var(--primary-foreground), transparent 18%) !important; }
 .metric-card:last-child { border-right: 0 !important; }
 .metric-card > div:last-child { font-family: "Iowan Old Style", Georgia, serif; font-weight: 400 !important; }
 
-.review-spotlight { border-width: 1px 0 !important; background: transparent !important; padding-inline: 0 !important; }
+.review-spotlight { border-width: 1px 0 !important; background: var(--secondary) !important; padding-inline: 1.25rem !important; }
 .version-summary { border: 0 !important; border-left: 1px solid var(--border) !important; background: transparent !important; }
 .lifecycle-steps { gap: 0 !important; border-top: 1px solid var(--border); }
 .lifecycle-step { border: 0 !important; border-right: 1px solid var(--border) !important; background: transparent !important; padding-left: 0 !important; }

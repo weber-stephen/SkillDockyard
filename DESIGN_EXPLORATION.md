@@ -2,7 +2,7 @@
 
 ## Paper Trail
 
-Paper Trail makes review and version history feel like careful editorial work. A warm paper canvas, book typography, ledger tables, and a slim document index shift the product away from dashboard clichés and toward an authoritative record of what was submitted, reviewed, and published.
+Paper Trail makes review and version history feel like careful editorial work. An oxblood document index, parchment canvas, book typography, blush review bands, and ledger tables shift the product away from dashboard clichés and toward an authoritative record of what was submitted, reviewed, and published.
 
 ## Brand Attributes
 
@@ -10,7 +10,7 @@ Editorial, trustworthy, considered, calm, literate, and enduring.
 
 ## Major Changes
 
-- Reframed the desktop shell as a slim document index beside a centered paper workspace.
+- Reframed the desktop shell as an oxblood document index beside a centered parchment workspace.
 - Introduced a serif-led heading system with restrained sans-serif controls.
 - Flattened metric cards into a continuous ledger and reduced unnecessary containers.
 - Restyled review comparisons as marginal notes separated by rules.
@@ -21,12 +21,12 @@ Editorial, trustworthy, considered, calm, literate, and enduring.
 ## Design System
 
 - Typography: Iowan Old Style or Palatino for headings, labels, and editorial emphasis; Avenir Next for controls and body text.
-- Color: ivory paper, warm taupe surround, brown-black ink, evergreen actions, muted straw supporting surfaces.
+- Color: parchment paper, dusty-blush surround, oxblood navigation and actions, wine-dark ink, and rose supporting surfaces.
 - Spacing: generous reading measures and broad vertical intervals with compact data rows.
 - Surfaces: one primary paper sheet, flat inner sections, fine rules, almost no card elevation.
 - Radius: zero to 2px except the primary navigation action.
 - Motion: restrained 180ms transitions and one-pixel press feedback.
-- Focus: dark green two-pixel outline with four-pixel offset.
+- Focus: oxblood two-pixel outline with four-pixel offset.
 
 ## UX Changes
 
