@@ -12,7 +12,7 @@ Precise, deliberate, trustworthy, composed, enterprise-ready, and quietly techni
 
 - Reworked desktop navigation into a sticky horizontal command rail.
 - Replaced the literal anchor symbol with a version-convergence mark.
-- Introduced a cool-neutral paper palette with restrained operational green.
+- Introduced a cobalt blueprint palette with icy surfaces and a tangerine review accent.
 - Tightened card radius, weight hierarchy, table striping, and interactive feedback.
 - Added a mobile table-to-record transformation for readable narrow-screen data.
 - Updated key interface terminology to match the product language rules.
@@ -20,7 +20,7 @@ Precise, deliberate, trustworthy, composed, enterprise-ready, and quietly techni
 ## Design System
 
 - Typography: compact neo-grotesk hierarchy using Avenir Next Condensed where available and Avenir Next for body copy; tabular figures for data.
-- Color: cool off-white canvas, near-black green text, evergreen actions, pale sage selection, amber reserved for review notes.
+- Color: ice-blue canvas, cobalt navigation and actions, graphite-blue text, pale periwinkle selection, and tangerine reserved for review attention.
 - Spacing: broad page gutters with compact component interiors and clear sectional breaks.
 - Surfaces: nearly flat panels, hairline borders, subtle alternating table rows, no decorative shadows.
 - Radius: 2px to 4px, reinforcing precision.
