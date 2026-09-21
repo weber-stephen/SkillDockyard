@@ -1,5 +1,9 @@
 # Agent instructions
 
+## Deployment and previews
+
+This repository is connected to Vercel. When work is intended for visual review, publish the relevant feature branch to the configured Git remote so Vercel can create a branch preview deployment. Preserve production deployment settings unless the user explicitly asks to change them, and report the resulting Vercel preview link when available.
+
 ## Brand strategy
 
 Read [docs/brand-strategy.md](docs/brand-strategy.md) before changing public positioning, marketing copy, brand identity, homepage narrative, or the product name. It defines the target customer, positioning, messaging hierarchy, brand personality, visual direction, competitive territory, and naming guardrails.
