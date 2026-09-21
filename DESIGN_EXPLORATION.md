@@ -2,7 +2,7 @@
 
 ## Signal Room
 
-Signal Room imagines Skill Dockyard as a calm monitoring environment for skill lifecycle health. Deep pine and graphite surfaces reduce glare, bright leaf-green marks current and actionable states, and amber isolates review attention. The dashboard favors a wide signal strip and persistent context over decorative card stacks.
+Signal Room imagines Skill Dockyard as a calm monitoring environment for skill lifecycle health. Deep aubergine surfaces reduce glare, coral marks current and actionable states, and brass isolates review attention. The dashboard favors a wide signal strip and persistent context over decorative card stacks.
 
 ## Brand Attributes
 
@@ -11,7 +11,7 @@ Technical, vigilant, composed, modern, high-signal, and quietly confident.
 ## Major Changes
 
 - Expanded the navigation rail for stronger workspace context and made the top bar sticky.
-- Introduced a purpose-built dark palette without neon blue, purple gradients, or decorative glow.
+- Introduced a purpose-built aubergine palette without neon blue, gradients, or decorative glow.
 - Converted metrics into a connected four-column signal strip on large screens.
 - Emphasized actionable review content with a single amber channel and inset marker.
 - Restyled tables, code surfaces, forms, and focus states for low-light operation.
@@ -21,12 +21,12 @@ Technical, vigilant, composed, modern, high-signal, and quietly confident.
 ## Design System
 
 - Typography: Avenir Next with a condensed display face and tabular figures.
-- Color: graphite-pine canvas, slightly lifted green-black panels, leaf-green action and status, amber review attention, coral destructive actions.
+- Color: blackened aubergine canvas, lifted plum panels, coral actions and status, brass review attention, and red reserved for destructive actions.
 - Spacing: wide monitoring canvas, compact data regions, and stable vertical rhythm.
 - Surfaces: low-elevation layered darks separated by hue and hairline borders rather than shadows.
 - Radius: restrained 3px to 6px.
 - Motion: 160ms exponential-style deceleration and subtle pressed scaling.
-- Focus: bright leaf-green outline with generous offset.
+- Focus: bright coral outline with generous offset.
 
 ## UX Changes
 

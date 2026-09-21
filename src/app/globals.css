@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.16 0.025 159);
-  --foreground: oklch(0.91 0.018 130);
-  --panel: oklch(0.20 0.03 158);
-  --primary: oklch(0.72 0.12 151);
-  --primary-foreground: oklch(0.13 0.025 159);
-  --secondary: oklch(0.28 0.045 153);
-  --secondary-foreground: oklch(0.93 0.018 130);
-  --muted: oklch(0.235 0.025 156);
-  --muted-foreground: oklch(0.69 0.026 143);
+  --background: oklch(0.15 0.045 326);
+  --foreground: oklch(0.93 0.018 61);
+  --panel: oklch(0.20 0.055 326);
+  --primary: oklch(0.72 0.17 28);
+  --primary-foreground: oklch(0.15 0.045 326);
+  --secondary: oklch(0.29 0.075 326);
+  --secondary-foreground: oklch(0.94 0.018 61);
+  --muted: oklch(0.235 0.052 326);
+  --muted-foreground: oklch(0.72 0.035 16);
   --destructive: oklch(0.66 0.15 30);
   --destructive-foreground: oklch(0.97 0.012 80);
-  --border: oklch(0.34 0.035 153);
-  --input: oklch(0.40 0.04 151);
-  --ring: oklch(0.76 0.13 149);
-  --signal: oklch(0.77 0.13 78);
+  --border: oklch(0.36 0.07 326);
+  --input: oklch(0.43 0.08 326);
+  --ring: oklch(0.77 0.17 28);
+  --signal: oklch(0.78 0.12 77);
 }
 
 @theme inline {
@@ -43,8 +43,7 @@ body {
   margin: 0;
   color: var(--foreground);
   background:
-    radial-gradient(circle at 88% 8%, color-mix(in oklch, var(--primary), transparent 89%), transparent 24rem),
-    linear-gradient(color-mix(in oklch, var(--border), transparent 86%) 1px, transparent 1px) 0 0 / 100% 3rem,
+    linear-gradient(90deg, transparent 0 97%, color-mix(in oklch, var(--primary), transparent 84%) 97% 100%) 0 0 / 7rem 100%,
     var(--background);
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
@@ -65,7 +64,7 @@ code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
 }
 .app-main { padding-left: 18rem !important; }
 .app-sidebar .brand-mark { margin-bottom: 2.5rem !important; }
-.app-sidebar .brand-symbol { color: var(--primary-foreground) !important; box-shadow: 0 0 0 1px var(--primary), 0 0 2rem color-mix(in oklch, var(--primary), transparent 76%); }
+.app-sidebar .brand-symbol { color: var(--primary-foreground) !important; box-shadow: 0 0 0 1px var(--primary); }
 .app-sidebar .sidebar-primary-action { color: var(--primary-foreground) !important; }
 .app-sidebar .nav-section h2 { color: color-mix(in oklch, var(--primary), var(--muted-foreground) 58%); }
 .app-sidebar nav a { border-left: 2px solid transparent; border-radius: 0 0.25rem 0.25rem 0 !important; }
@@ -88,11 +87,16 @@ main header h1 {
   line-height: 0.86 !important;
   letter-spacing: -0.05em !important;
   text-wrap: balance;
+  color: var(--primary);
 }
 
 .dashboard-hero { grid-template-columns: minmax(0, 0.85fr) minmax(28rem, 1.15fr) !important; align-items: end; }
 .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 1px !important; padding: 1px; background: var(--border); }
 .metric-card { min-height: 11rem; border: 0 !important; background: color-mix(in oklch, var(--panel), black 3%) !important; }
+.metric-card:nth-child(2) { background: var(--primary) !important; color: var(--primary-foreground); }
+.metric-card:nth-child(2) .text-muted-foreground,
+.metric-card:nth-child(2) svg,
+.metric-card:nth-child(2) > div:last-child { color: var(--primary-foreground) !important; }
 .metric-card > div:last-child { color: var(--primary); font-size: clamp(2.75rem, 4vw, 4.5rem); font-variant-numeric: tabular-nums; }
 .metric-card svg { color: var(--primary); }
 
@@ -103,6 +107,7 @@ main header h1 {
 }
 .version-summary { background: color-mix(in oklch, var(--background), transparent 18%) !important; }
 .lifecycle-step { background: transparent !important; border-color: color-mix(in oklch, var(--border), transparent 25%) !important; }
+.lifecycle-step:last-child { background: color-mix(in oklch, var(--signal), transparent 84%) !important; }
 
 button, a, input, textarea, select { transition: transform 160ms cubic-bezier(.22,1,.36,1), background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
 button:active, a:active { transform: scale(0.985); }
@@ -115,7 +120,7 @@ table { font-variant-numeric: tabular-nums; }
 thead { background: color-mix(in oklch, var(--primary), transparent 88%); }
 tbody tr { background: color-mix(in oklch, var(--panel), transparent 8%); }
 tbody tr:hover { background: color-mix(in oklch, var(--primary), transparent 88%) !important; }
-pre { background: oklch(0.12 0.02 158) !important; }
+pre { background: oklch(0.11 0.035 326) !important; }
 
 @media (max-width: 1279px) and (min-width: 1024px) {
   .app-sidebar { width: 15rem !important; }
