@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.95 0.025 91);
-  --foreground: oklch(0.24 0.035 75);
-  --panel: oklch(0.985 0.012 91);
-  --primary: oklch(0.42 0.10 151);
-  --primary-foreground: oklch(0.985 0.012 91);
-  --secondary: oklch(0.88 0.055 72);
-  --secondary-foreground: oklch(0.29 0.045 64);
-  --muted: oklch(0.91 0.025 89);
-  --muted-foreground: oklch(0.46 0.032 73);
+  --background: oklch(0.94 0.055 94);
+  --foreground: oklch(0.22 0.07 272);
+  --panel: oklch(0.985 0.015 94);
+  --primary: oklch(0.46 0.22 274);
+  --primary-foreground: oklch(0.985 0.012 94);
+  --secondary: oklch(0.88 0.11 94);
+  --secondary-foreground: oklch(0.24 0.08 272);
+  --muted: oklch(0.90 0.045 282);
+  --muted-foreground: oklch(0.45 0.07 272);
   --destructive: oklch(0.55 0.16 28);
   --destructive-foreground: oklch(0.98 0.01 90);
-  --border: oklch(0.79 0.032 82);
-  --input: oklch(0.72 0.04 79);
-  --ring: oklch(0.54 0.12 151);
-  --clay: oklch(0.72 0.11 48);
-  --sage: oklch(0.86 0.06 139);
+  --border: oklch(0.75 0.065 278);
+  --input: oklch(0.68 0.08 275);
+  --ring: oklch(0.54 0.22 274);
+  --coral: oklch(0.72 0.14 37);
+  --periwinkle: oklch(0.82 0.10 282);
 }
 
 @theme inline {
@@ -43,9 +43,7 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0;
   color: var(--foreground);
-  background:
-    radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--secondary), transparent 45%), transparent 22rem),
-    var(--background);
+  background: var(--background);
   font-feature-settings: "ss01" 1, "tnum" 1;
 }
 
@@ -61,7 +59,7 @@ code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
   width: 19rem !important;
   padding: 1.25rem !important;
   border-right: 0 !important;
-  background: color-mix(in oklch, var(--sage), var(--panel) 48%) !important;
+  background: var(--periwinkle) !important;
   backdrop-filter: none !important;
 }
 .app-main { padding-left: 19rem !important; }
@@ -85,6 +83,7 @@ main header h1 {
   line-height: 0.9 !important;
   letter-spacing: -0.055em !important;
   text-wrap: balance;
+  color: var(--primary);
 }
 
 .dashboard-hero { align-items: end; }
@@ -100,9 +99,9 @@ main header h1 {
 .review-spotlight > div:first-child { padding: 0.35rem; }
 .version-summary { border: 0 !important; background: color-mix(in oklch, var(--panel), transparent 18%) !important; }
 .lifecycle-steps { grid-template-columns: 1.25fr 1fr 1fr !important; }
-.lifecycle-step { border: 0 !important; background: color-mix(in oklch, var(--sage), var(--panel) 55%) !important; }
+.lifecycle-step { border: 0 !important; background: color-mix(in oklch, var(--periwinkle), var(--panel) 35%) !important; }
 .lifecycle-step:nth-child(2) { background: var(--secondary) !important; }
-.lifecycle-step:nth-child(3) { background: color-mix(in oklch, var(--clay), var(--panel) 72%) !important; }
+.lifecycle-step:nth-child(3) { background: color-mix(in oklch, var(--coral), var(--panel) 62%) !important; }
 
 button, a, input, textarea, select { transition: transform 180ms cubic-bezier(.22,1,.36,1), background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
 button:active, a:active { transform: scale(0.985); }
@@ -110,7 +109,7 @@ button:active, a:active { transform: scale(0.985); }
 input, textarea, select { min-height: 2.75rem; background: var(--panel) !important; box-shadow: inset 0 1px 2px color-mix(in oklch, var(--foreground), transparent 92%); }
 
 table { font-variant-numeric: tabular-nums; }
-thead { background: color-mix(in oklch, var(--sage), var(--panel) 38%); }
+thead { background: color-mix(in oklch, var(--periwinkle), var(--panel) 38%); }
 tbody tr { background: var(--panel); }
 tbody tr:hover { background: color-mix(in oklch, var(--secondary), transparent 35%) !important; }
 tbody tr td:first-child { border-left: 3px solid transparent; }
