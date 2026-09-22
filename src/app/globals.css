@@ -70,3 +70,180 @@ code,
 pre {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
+
+/* Exploration 01: Precision Yard */
+:root {
+  --background: oklch(0.97 0.012 258);
+  --foreground: oklch(0.20 0.045 264);
+  --panel: oklch(0.995 0.004 258);
+  --primary: oklch(0.48 0.20 264);
+  --primary-foreground: oklch(0.985 0.006 258);
+  --secondary: oklch(0.90 0.04 256);
+  --secondary-foreground: oklch(0.27 0.09 264);
+  --muted: oklch(0.935 0.018 258);
+  --muted-foreground: oklch(0.44 0.05 264);
+  --border: oklch(0.80 0.04 258);
+  --input: oklch(0.73 0.06 258);
+  --ring: oklch(0.55 0.21 264);
+  --attention: oklch(0.72 0.17 48);
+  --radius-control: 0.25rem;
+}
+
+body {
+  background:
+    linear-gradient(90deg, color-mix(in oklch, var(--primary), transparent 94%) 1px, transparent 1px) 0 0 / 3rem 3rem,
+    linear-gradient(0deg, color-mix(in oklch, var(--primary), transparent 96%) 1px, transparent 1px) 0 0 / 3rem 3rem,
+    var(--background);
+  font-feature-settings: "ss01" 1, "tnum" 1;
+}
+
+.rounded-md { border-radius: var(--radius-control) !important; }
+.rounded-sm { border-radius: 0.125rem !important; }
+.font-black { font-weight: 700 !important; }
+
+.app-topbar,
+.app-main > div:first-child {
+  background: color-mix(in oklch, var(--background), transparent 6%);
+}
+
+.app-content {
+  max-width: 92rem;
+  padding-top: clamp(1.5rem, 3vw, 3rem);
+  padding-bottom: 4rem;
+}
+
+.brand-symbol {
+  border-radius: 0.15rem !important;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, white, transparent 82%);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+button:active,
+a:active { transform: translateY(1px); }
+
+:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 3px;
+}
+
+main header h1 {
+  max-width: 18ch;
+  font-family: "Avenir Next Condensed", "Avenir Next", sans-serif;
+  letter-spacing: -0.045em !important;
+  text-wrap: balance;
+  color: var(--primary);
+}
+
+.review-spotlight {
+  border-color: color-mix(in oklch, var(--attention), transparent 45%) !important;
+  box-shadow: inset 0.25rem 0 0 var(--attention);
+}
+
+.metric-card:first-child {
+  background: var(--primary) !important;
+  color: var(--primary-foreground);
+}
+
+.metric-card:first-child .text-muted-foreground {
+  color: color-mix(in oklch, var(--primary-foreground), transparent 22%) !important;
+}
+
+main header {
+  position: relative;
+}
+
+main header::before {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 5rem;
+  height: 2px;
+  background: var(--primary);
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+thead {
+  background: var(--muted);
+}
+
+tbody tr:nth-child(even) {
+  background: color-mix(in oklch, var(--muted), transparent 58%);
+}
+
+tbody tr:hover {
+  background: color-mix(in oklch, var(--secondary), transparent 26%) !important;
+}
+
+input,
+textarea,
+select {
+  background: var(--panel) !important;
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--border), transparent 62%);
+}
+
+@media (min-width: 1024px) {
+  .app-shell { min-height: 100dvh; }
+
+  .app-sidebar {
+    position: sticky !important;
+    inset: auto !important;
+    top: 0;
+    z-index: 40;
+    display: grid !important;
+    width: 100% !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+    overflow: visible !important;
+    padding: 0.75rem clamp(1.5rem, 4vw, 4rem) !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border);
+    background: var(--primary) !important;
+    color: var(--primary-foreground);
+    backdrop-filter: blur(18px);
+  }
+
+  .app-sidebar .brand-mark { margin: 0 !important; }
+  .app-sidebar .brand-symbol { background: var(--primary-foreground) !important; color: var(--primary) !important; }
+  .app-sidebar nav a[aria-current="page"] { background: var(--primary-foreground) !important; color: var(--primary); }
+  .app-sidebar nav a:not([aria-current="page"]),
+  .app-sidebar nav h2 { color: color-mix(in oklch, var(--primary-foreground), transparent 18%) !important; }
+  .app-sidebar .brand-symbol { width: 2.25rem; height: 2.25rem; }
+  .app-sidebar .sidebar-content { display: flex; flex-direction: row-reverse; align-items: center; gap: 1rem; }
+  .app-sidebar .sidebar-primary-action { flex: 0 0 auto; }
+  .app-sidebar .primary-navigation,
+  .app-sidebar .nav-items { display: flex; align-items: center; gap: 0.125rem; }
+  .app-sidebar .primary-navigation { justify-content: flex-end; margin: 0; }
+  .app-sidebar .nav-section { margin: 0; }
+  .app-sidebar .nav-section h2 { display: none; }
+  .app-sidebar .nav-items > a { min-height: 2.5rem; padding-inline: 0.7rem; }
+  .app-sidebar .nav-items > a svg { display: none; }
+  .app-main { padding-left: 0 !important; }
+  .app-main > div:first-child { min-height: 3rem; padding-block: 0.35rem; }
+}
+
+@media (max-width: 720px) {
+  .app-content { padding-inline: 1rem; }
+  main header h1 { font-size: clamp(2.25rem, 12vw, 3.5rem) !important; line-height: 0.98 !important; }
+  table thead { display: none; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  tbody tr { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); }
+  tbody td { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.75rem; padding: 0.45rem 0 !important; }
+  tbody td::before { color: var(--muted-foreground); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  tbody td:nth-child(1)::before { content: "Skill"; }
+  tbody td:nth-child(2)::before { content: "Access"; }
+  tbody td:nth-child(3)::before { content: "Status"; }
+  tbody td:nth-child(4)::before { content: "Change"; }
+  tbody td:nth-child(5)::before { content: "Updated"; }
+}
