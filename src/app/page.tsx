@@ -4,16 +4,40 @@ import { Button } from "@/components/ui/button";
 
 const workflowSteps = [
   {
-    title: "Save what works",
-    body: "Capture a useful AI instruction or an improvement someone discovered."
+    stage: "Bring it in",
+    title: "Add or import an AI skill",
+    body: "Start with a useful set of instructions your team already relies on, or create a new skill from scratch.",
+    details: [
+      "Import skills from supported AI tools.",
+      "Keep early work as a private draft while you refine it."
+    ]
   },
   {
-    title: "Review the change",
-    body: "Compare the proposed version with the one your team already uses."
+    stage: "Improve it",
+    title: "Submit it for review",
+    body: "When the skill is ready to share, submit the new skill or your update with a short explanation of what changed.",
+    details: [
+      "Reviewers get the context they need to make a decision.",
+      "The published version stays available while an update is reviewed."
+    ]
   },
   {
-    title: "Share the approved version",
-    body: "Once approved, teammates can find and reuse the trusted version."
+    stage: "Review it",
+    title: "Compare, then publish",
+    body: "A reviewer checks the submitted version against the published version before deciding what the team should use.",
+    details: [
+      "See the exact changes and any compatibility and safety notes.",
+      "Publish, request changes, or reject the submission."
+    ]
+  },
+  {
+    stage: "Put it to work",
+    title: "Install it and stay current",
+    body: "Teammates can find and install the published skill in a supported AI tool, then check for newer versions later.",
+    details: [
+      "Install the same trusted version across the team.",
+      "See updates and local changes before replacing an installed copy."
+    ]
   }
 ] as const;
 
@@ -26,18 +50,18 @@ const audiences = [
   {
     label: "For reviewers",
     title: "See exactly what changed before it becomes official.",
-    body: "Compare the proposed workflow with the approved version and decide what the team should use next."
+    body: "Compare the submitted version with the published version and decide what the team should use next."
   },
   {
     label: "For organizations",
     title: "Give people one dependable place to start.",
-    body: "Keep access, ownership, proposals, and publishing decisions clear as more people contribute."
+    body: "Keep access, ownership, submissions, and publishing decisions clear as more people contribute."
   }
 ] as const;
 
 const trustPoints = [
-  "Personal drafts stay private until their creator submits them for review.",
-  "Proposed updates never publish automatically.",
+  "Private drafts stay private until their creator submits them for review.",
+  "Submitted updates never publish automatically.",
   "Sharing access never transfers ownership."
 ] as const;
 
@@ -63,7 +87,7 @@ export default function MarketingPage() {
               Keep your team’s best AI instructions current and easy to reuse.
             </h1>
             <p className="mt-7 max-w-[62ch] text-pretty text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">
-              When someone improves an AI workflow, Skill Dockyard gives your organization one private place to review the change, approve it, and share the trusted version.
+              When someone improves an AI workflow, Skill Dockyard gives your organization one private place to review the change, publish it, and share the trusted version.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild className="min-h-11 w-full sm:w-auto">
@@ -147,17 +171,17 @@ function RevisionSheet() {
 
       <div className="grid md:grid-cols-2">
         <div className="border-b border-border p-5 sm:p-6 md:border-b-0 md:border-r">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Approved version</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Published version</p>
           <p className="mt-4 text-base font-semibold leading-7">Creates an audience, message, and channel plan.</p>
         </div>
         <div className="p-5 sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Proposed improvement</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Submitted update</p>
           <p className="mt-4 text-base font-semibold leading-7">Adds customer language, message variations, and a sales handoff.</p>
         </div>
       </div>
 
       <p className="border-t border-border bg-secondary/45 p-5 text-sm leading-6 text-secondary-foreground sm:px-6">
-        The approved version stays in use until a reviewer accepts the change.
+        The published version stays in use until a reviewer publishes the update.
       </p>
     </article>
   );
@@ -171,22 +195,46 @@ function WorkflowSection() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">How it works</p>
             <h2 className="mt-4 max-w-[12ch] text-balance font-display text-4xl font-bold leading-[1] tracking-[-0.025em] sm:text-5xl">
-              A clear path from useful idea to trusted workflow.
+              From useful idea to trusted, installed skill.
             </h2>
+            <p className="mt-6 max-w-[48ch] text-pretty text-lg leading-8 text-muted-foreground">
+              Skill Dockyard keeps each stage clear, so people can contribute improvements without changing what teammates use before it has been reviewed.
+            </p>
           </div>
 
           <ol className="border-t border-border">
             {workflowSteps.map((step, index) => (
-              <li key={step.title} className="grid gap-4 border-b border-border py-6 sm:grid-cols-[4rem_0.72fr_1fr] sm:items-baseline sm:gap-6 sm:py-7">
-                <span className="font-display text-2xl font-bold tabular-nums text-primary" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-lg font-bold">{step.title}</h3>
-                <p className="max-w-[48ch] text-pretty leading-7 text-muted-foreground">{step.body}</p>
+              <li key={step.title} className="grid gap-5 border-b border-border py-7 sm:grid-cols-[4rem_1fr] sm:gap-6 sm:py-8">
+                <div>
+                  <span className="font-display text-2xl font-bold tabular-nums text-primary" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="grid gap-5 md:grid-cols-[0.78fr_1.22fr] md:gap-8">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">{step.stage}</p>
+                    <h3 className="mt-2 text-xl font-bold leading-7">{step.title}</h3>
+                  </div>
+                  <div>
+                    <p className="max-w-[52ch] text-pretty leading-7 text-muted-foreground">{step.body}</p>
+                    <ul className="mt-4 grid gap-2 text-sm font-semibold leading-6 text-foreground/85">
+                      {step.details.map((detail) => (
+                        <li key={detail} className="grid grid-cols-[0.7rem_1fr] gap-2">
+                          <span className="mt-[0.62rem] h-1.5 w-1.5 bg-primary" aria-hidden="true" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </li>
             ))}
           </ol>
         </div>
+
+        <p className="mt-8 border-l-2 border-primary pl-5 text-sm font-semibold leading-6 text-foreground lg:ml-[calc(36%+4rem)]">
+          Private drafts, submissions, and published skills remain distinct, so everyone knows what is still being worked on, what is awaiting review, and what is ready to use.
+        </p>
       </div>
     </section>
   );
@@ -227,7 +275,7 @@ function TrustSection() {
             Better workflows move forward. Ownership stays put.
           </h2>
           <p className="mt-6 max-w-[52ch] text-pretty text-lg leading-8 text-muted-foreground">
-            Skill Dockyard separates suggestions from approved work, so collaboration never quietly changes what the team relies on.
+            Skill Dockyard separates submissions from published skills, so collaboration never quietly changes what the team relies on.
           </p>
         </div>
 
