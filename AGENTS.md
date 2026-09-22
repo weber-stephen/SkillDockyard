@@ -6,7 +6,11 @@ This repository is connected to Vercel. When work is intended for visual review,
 
 ## Brand strategy
 
-Read [docs/brand-strategy.md](docs/brand-strategy.md) before changing public positioning, marketing copy, brand identity, homepage narrative, or the product name. It defines the target customer, positioning, messaging hierarchy, brand personality, visual direction, competitive territory, and naming guardrails.
+Read [docs/brand-strategy.md](docs/brand-strategy.md) before changing public positioning, marketing copy, brand identity, homepage narrative, or the product name. It defines the target customer, positioning, messaging hierarchy, brand personality, competitive territory, and naming guardrails.
+
+Read [docs/brand-system.md](docs/brand-system.md) before changing colors, typography, visual identity, navigation composition, design tokens, component styling, product imagery, or other brand expression. **Operational Cobalt** is the approved visual direction. Use its shared tokens and documented hierarchy rather than introducing nearby one-off colors or reviving an exploration as an interchangeable theme. Do not introduce green as a primary brand or action color unless the user explicitly changes the approved direction.
+
+If the two documents appear to conflict, use `docs/brand-strategy.md` for audience, positioning, messaging, and brand personality, and use `docs/brand-system.md` for visual implementation. Update both documents when an intentional decision changes their shared assumptions.
 
 The product language and terminology below remains authoritative for interface copy. If the brand strategy and the terminology rules appear to conflict, follow the terminology rules.
 

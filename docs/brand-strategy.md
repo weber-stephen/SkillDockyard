@@ -364,17 +364,17 @@ Typography should feel precise and operational rather than playful, nautical, or
 
 ### Color
 
-Retain a grounded green as the primary action and brand color. Green communicates readiness, progress, and permission without defaulting to the blue and purple conventions common in AI software.
+Use the Operational Cobalt system defined in [brand-system.md](brand-system.md). Cobalt is the primary action and structural brand color, chosen to communicate precision, trust, and operational maturity to engineering, platform, security, and AI enablement teams. Distinctiveness should come from disciplined composition, compact typography, cool neutral surfaces, and the restrained tangerine review accent rather than novelty effects.
 
 Support it with:
 
-- Warm or neutral off-white backgrounds
-- Charcoal text
-- Restrained gray surfaces and borders
-- Amber for items needing attention
+- Cool off-white and ice-blue backgrounds
+- Graphite-blue text
+- Restrained blue-gray surfaces and borders
+- Tangerine for items needing review or attention
 - Red only for destructive actions or confirmed errors
 
-Do not use gradients as a substitute for hierarchy. Filled primary-green surfaces must use white text, consistent with `BRAND_GUIDELINES.md`.
+Do not use gradients as a substitute for hierarchy. Filled cobalt surfaces must use the documented light foreground token. Do not introduce green as a primary brand or action color.
 
 ### Imagery
 
@@ -434,7 +434,7 @@ Deliberately break category conventions where they create sameness:
 - The operational and trustworthy personality
 - The review-to-publish workflow as the central story
 - Plain-language terminology from `AGENTS.md`
-- Restrained green, neutral surfaces, and product-led evidence
+- Operational Cobalt, neutral surfaces, restrained attention color, and product-led evidence
 
 ### Improve
 
@@ -470,4 +470,3 @@ Retain the Skill Dockyard name while all of the following remain true:
 - Customer research shows that the dockyard metaphor feels operational rather than confusing.
 
 Revisit the name if the product expands primarily into runtime agent management, if customers consistently mistake it for employee training software, or if legal and search conflicts make the complete name difficult to own.
-
