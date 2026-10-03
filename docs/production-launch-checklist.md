@@ -158,7 +158,8 @@ npm pack --dry-run
 
 - [x] **CLI-001 — P0 — Codex:** Build the CLI for Node 22 and verify every command starts successfully.
   - Evidence: Node 22-targeted build passed; every packaged command and nested `config validate` help screen started from an isolated install.
-- [ ] **CLI-002 — P0 — Joint:** Confirm the npm package name `skill-dockyard` is available or choose the final package name before changing public commands.
+- [x] **CLI-002 — P0 — Joint:** Confirm the npm package name `skill-dockyard` is available or choose the final package name before changing public commands.
+  - Evidence: `npm view skill-dockyard version` returned not found on October 3, 2026; the package name is reserved in the manifest for the first release.
 - [x] **CLI-003 — P0 — Codex:** Verify the dry-run tarball contains only intended files and no local paths, secrets, fixtures, or application-only source.
   - Evidence: Dry-run contained 14 intended README, bin, dist, and manifest files only.
 - [x] **CLI-004 — P0 — Codex:** Test the packed tarball in a clean temporary directory on a supported Node version.
