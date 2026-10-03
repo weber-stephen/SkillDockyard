@@ -29,6 +29,10 @@ Open [http://localhost:3000](http://localhost:3000). The public landing page exp
 
 Run the fast unit suite with `npm test`. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down.
 
+### Production launch
+
+Use [the production launch checklist](docs/production-launch-checklist.md) to track go-live readiness for Codex and human owners. Follow [the production launch implementation plan](docs/production-launch-plan.md) for the ordered engineering, Supabase, Vercel, DNS, npm, monitoring, acceptance, and rollback work. The canonical production domain is `https://skilldockyard.com`.
+
 ### 3. Submit a skill without Git
 
 Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to propose an update:

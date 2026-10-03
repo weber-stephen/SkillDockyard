@@ -1,0 +1,211 @@
+# Skill Dockyard production launch checklist
+
+This is the shared go-live checklist for Codex and Stephen. The canonical production domain is **[skilldockyard.com](https://skilldockyard.com)**.
+
+Use this document together with [production-launch-plan.md](production-launch-plan.md). The plan explains how to implement each checklist item; this file records whether the launch bar has actually been met.
+
+## How to use this checklist
+
+- Leave an item unchecked until its verification step has passed in the relevant environment.
+- Add a short dated evidence note beneath completed items when the result is not obvious from the repository. Link to the pull request, deployment, dashboard result, or run log when possible.
+- Never paste secrets, session cookies, invite tokens, service-role keys, SMTP credentials, or npm tokens into this file.
+- **Codex** means repository implementation and automated verification.
+- **Stephen** means account ownership, billing, provider settings, legal approval, or a business decision.
+- **Joint** means Codex can perform the technical work after Stephen supplies access, selects a provider, or explicitly authorizes a production mutation.
+- Any unchecked **P0** item is a launch blocker. Do not invite production users while a P0 item remains open.
+
+## Production facts and decisions
+
+- [x] **LAUNCH-001 — P0 — Stephen:** Purchase the canonical domain `skilldockyard.com`.
+  - Evidence: Stephen confirmed ownership on October 3, 2026.
+- [ ] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
+  - Record the decision and initial user list outside the repository if it contains personal information.
+- [ ] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
+  - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
+  - Preview deployments remain non-canonical and are not indexed.
+- [ ] **LAUNCH-004 — P1 — Stephen:** Complete professional trademark clearance for **Skill Dockyard** before broad public promotion.
+- [ ] **LAUNCH-005 — P0 — Joint:** Record the launch decision, approver, production commit SHA, database migration version, web version, CLI version, and launch time in the launch record at the bottom of this document.
+
+## 1. Source control and release gates
+
+- [ ] **REL-001 — P0 — Codex:** Create a dedicated launch-readiness branch without overwriting unrelated or uncommitted work.
+- [ ] **REL-002 — P0 — Codex:** Upgrade the supported runtime to Node.js 22 or later everywhere.
+  - Update `package.json` engines, CLI build target, GitHub Actions, local documentation, and Vercel runtime settings.
+- [ ] **REL-003 — P0 — Codex:** Upgrade production dependencies to patched, mutually compatible releases and commit the lockfile.
+  - `npm audit --omit=dev` reports no unresolved critical or high vulnerabilities, or an explicitly documented exception is approved by Stephen.
+- [ ] **REL-004 — P0 — Codex:** Replace the obsolete `next lint` script with a working ESLint command and configuration.
+- [ ] **REL-005 — P0 — Codex:** Fix stale page-smoke assertions and make the production page suite pass.
+- [ ] **REL-006 — P0 — Codex:** Run CI for pull requests and pushes to `main`.
+  - Required checks: clean install, typecheck, lint, unit tests, production build/page smoke, and production dependency audit.
+- [ ] **REL-007 — P0 — Codex:** Protect `main` so required CI checks must pass before merge.
+  - If Codex cannot change the GitHub setting, it provides Stephen the exact setting to enable.
+- [ ] **REL-008 — P0 — Codex:** Verify a clean checkout with Node 22 using only committed files and documented environment variables.
+- [ ] **REL-009 — P1 — Codex:** Remove stale generated files and repository noise from the launch branch without deleting user work.
+- [ ] **REL-010 — P0 — Joint:** Merge only after the Vercel branch preview passes visual and functional review.
+
+### Required release commands
+
+Run these from a clean checkout. Each command must exit successfully unless the plan explicitly replaces it with an equivalent command.
+
+```bash
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm run test:pages
+npm audit --omit=dev
+npm run cli:build
+npm pack --dry-run
+```
+
+## 2. Database, auth, permissions, and audit integrity
+
+- [ ] **DATA-001 — P0 — Codex:** Review and commit the pending `user_accounts` migrations and their tests as one coherent change.
+- [ ] **DATA-002 — P0 — Codex:** Update the README migration list so it exactly matches the committed migration directory.
+- [ ] **DATA-003 — P0 — Codex:** Make initial personal-workspace provisioning atomic.
+  - Workspace creation, accountable owner assignment, owner membership creation, and any required audit event succeed or fail together.
+  - Concurrent first requests cannot create inconsistent or duplicate ownership.
+- [ ] **DATA-004 — P0 — Codex:** Add regression tests for missing owner membership, mismatched ownership, duplicate provisioning, concurrent provisioning, and rollback on failure.
+- [ ] **DATA-005 — P0 — Codex:** Verify every public-schema table has RLS enabled or is deliberately inaccessible through the Data API.
+- [ ] **DATA-006 — P0 — Codex:** Verify every privileged database function has an intentional security mode, fixed `search_path`, explicit execute grants, and no unintended `PUBLIC`, `anon`, or `authenticated` access.
+- [ ] **DATA-007 — P0 — Codex:** Verify server authorization for every object-level operation.
+  - List, read, download, submit, publish, request changes, reject, withdraw, share, accept, decline, revoke, invite, rename, and export.
+- [ ] **DATA-008 — P0 — Codex:** Make security-sensitive mutations and required audit records atomic.
+  - A successful response must never be returned when the required audit write failed.
+- [ ] **DATA-009 — P0 — Joint:** Apply every committed migration to the production Supabase project in filename order.
+- [ ] **DATA-010 — P0 — Joint:** Confirm the local migration list and production migration history match.
+- [ ] **DATA-011 — P0 — Joint:** Run Supabase Security, Performance, Index, and service-health advisors; resolve every error and review every warning.
+- [ ] **DATA-012 — P0 — Joint:** Run safe production queries that verify owner consistency, private-draft isolation, invitation constraints, and RLS status without exposing customer data.
+- [ ] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
+- [ ] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
+- [ ] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
+
+## 3. Application security and abuse controls
+
+- [ ] **SEC-001 — P0 — Codex:** Add and verify production security headers.
+  - Content Security Policy, `X-Content-Type-Options`, referrer policy, frame protection, permissions policy, and HSTS behavior are deliberate.
+- [ ] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
+  - Protect pairing-code exchange, scan/import, submissions, invitations, sharing, exports, and other expensive or abuse-sensitive endpoints.
+- [ ] **SEC-003 — P0 — Codex:** Apply bounded request parsing and schema validation to every state-changing or expensive API route.
+- [ ] **SEC-004 — P0 — Codex:** Verify state-changing browser requests cannot be triggered cross-origin with authenticated cookies.
+- [ ] **SEC-005 — P0 — Codex:** Confirm the Supabase service-role key is referenced only by server code and never appears in client bundles, logs, errors, or committed files.
+- [ ] **SEC-006 — P0 — Codex:** Confirm secrets and tokens are stored hashed where applicable and are redacted from logs and UI responses.
+- [ ] **SEC-007 — P0 — Codex:** Add authorization regression tests for cross-workspace IDs, private drafts, view-only shares, revoked shares, invitation email mismatch, and reviewer/owner boundaries.
+- [ ] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
+- [ ] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
+
+## 4. Account lifecycle and transactional email
+
+- [ ] **AUTH-001 — P0 — Codex:** Implement **Forgot password** and **Reset password** flows using Supabase Auth.
+- [ ] **AUTH-002 — P0 — Codex:** Use generic recovery responses that do not disclose whether an email address has an account.
+- [ ] **AUTH-003 — P0 — Codex:** Validate safe same-origin redirects for confirmation, invitation continuation, and password reset.
+- [ ] **AUTH-004 — P0 — Joint:** Configure a production SMTP provider and authenticated sender domain.
+- [ ] **AUTH-005 — P0 — Joint:** Configure and test confirmation, recovery, email-change, and other security-sensitive email templates.
+- [ ] **AUTH-006 — P0 — Joint:** Verify deliverability to at least two major email providers and confirm links use `https://skilldockyard.com`.
+- [ ] **AUTH-007 — P1 — Joint:** Define the support-assisted owner recovery process for an unavailable or deleted workspace owner.
+- [ ] **AUTH-008 — P1 — Codex:** Provide a safe sign-out path and clear expired-session behavior.
+
+## 5. Core product acceptance
+
+- [ ] **APP-001 — P0 — Joint:** A new verified user receives exactly one personal workspace and exactly one owner membership.
+- [ ] **APP-002 — P0 — Joint:** A private draft is visible and downloadable only by its creator.
+- [ ] **APP-003 — P0 — Joint:** An editor can add skills and submit updates but cannot publish.
+- [ ] **APP-004 — P0 — Joint:** A reviewer can review and publish submissions but cannot perform owner-only actions.
+- [ ] **APP-005 — P0 — Joint:** A viewer can view available workspace skills but cannot submit updates or publish.
+- [ ] **APP-006 — P0 — Joint:** A **Can view** recipient cannot submit an update.
+- [ ] **APP-007 — P0 — Joint:** A **Can submit updates** recipient can submit an update, but it remains unpublished until review.
+- [ ] **APP-008 — P0 — Joint:** Sharing never transfers ownership or creates workspace membership.
+- [ ] **APP-009 — P0 — Joint:** Revoking a share removes future access while preserving the skill and audit history.
+- [ ] **APP-010 — P0 — Joint:** Requesting changes, rejecting, withdrawing, and replacing a submission preserve the published version correctly.
+- [ ] **APP-011 — P0 — Joint:** Downloads always use the published version for workspace/shared skills and the creator's current version for a private draft.
+- [ ] **APP-012 — P0 — Joint:** Connected-computer updates refuse to overwrite local changes.
+- [ ] **APP-013 — P0 — Codex:** Empty, loading, success, and error states explain the next action without leaking implementation details.
+- [ ] **APP-014 — P1 — Codex:** Replace remaining prohibited interface terminology with the terms defined in `AGENTS.md`.
+- [ ] **APP-015 — P1 — Codex:** Complete an accessibility and responsive pass.
+  - Keyboard navigation, focus order, labels, contrast, error announcements, mobile tables, and touch targets meet the documented bar.
+
+## 6. CLI packaging and distribution
+
+- [ ] **CLI-001 — P0 — Codex:** Build the CLI for Node 22 and verify every command starts successfully.
+- [ ] **CLI-002 — P0 — Joint:** Confirm the npm package name `skill-dockyard` is available or choose the final package name before changing public commands.
+- [ ] **CLI-003 — P0 — Codex:** Verify the dry-run tarball contains only intended files and no local paths, secrets, fixtures, or application-only source.
+- [ ] **CLI-004 — P0 — Codex:** Test the packed tarball in a clean temporary directory on a supported Node version.
+- [ ] **CLI-005 — P0 — Joint:** Configure npm trusted publishing or the scoped `NPM_TOKEN` secret used by the release workflow.
+- [ ] **CLI-006 — P0 — Joint:** Publish the first production CLI release with provenance.
+- [ ] **CLI-007 — P0 — Joint:** Verify `npx skill-dockyard --help` works without a repository checkout.
+- [ ] **CLI-008 — P0 — Joint:** Against production, verify connect, import, check, update, token revocation, and local-change protection.
+- [ ] **CLI-009 — P0 — Codex:** Ensure the web onboarding commands use the final canonical domain and npm package name.
+- [ ] **CLI-010 — P1 — Codex:** Document release, rollback/deprecation, token revocation, and CLI compatibility procedures.
+
+## 7. Vercel, DNS, and production configuration
+
+- [ ] **PLAT-001 — P0 — Stephen:** Add `skilldockyard.com` to the production Vercel project.
+- [ ] **PLAT-002 — P0 — Stephen:** Configure the registrar DNS records exactly as Vercel specifies and wait for verification.
+- [ ] **PLAT-003 — P0 — Stephen:** Add `www.skilldockyard.com` and configure a permanent redirect to `https://skilldockyard.com`.
+- [ ] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `NEXT_PUBLIC_SITE_URL=https://skilldockyard.com`
+  - Any selected rate-limit, SMTP, monitoring, or server-only ingest credentials
+- [ ] **PLAT-005 — P0 — Stephen:** Make the production deployment publicly reachable; keep preview protection separate from production access.
+- [ ] **PLAT-006 — P0 — Joint:** Deploy the approved commit and confirm the production alias points to that exact commit.
+- [ ] **PLAT-007 — P0 — Joint:** Verify TLS, canonical redirects, no mixed content, and expected cache behavior.
+- [ ] **PLAT-008 — P0 — Joint:** Verify `/`, `/demo`, `/signup`, `/login`, `/app`, auth callbacks, downloads, and API routes on the canonical domain.
+- [ ] **PLAT-009 — P1 — Codex:** Add canonical metadata, sitemap/robots behavior, and social metadata appropriate to the selected rollout mode.
+- [ ] **PLAT-010 — P1 — Joint:** Remove or redirect obsolete deployment aliases after the canonical domain is stable.
+
+## 8. Monitoring, backups, support, and legal readiness
+
+- [ ] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
+- [ ] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, demo, login, and a safe application health signal.
+- [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
+- [ ] **OPS-004 — P0 — Stephen:** Confirm the Supabase backup schedule is appropriate for production.
+- [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise or provider-supported restore verification.
+- [ ] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
+- [ ] **OPS-007 — P0 — Stephen:** Select and publish a monitored support email address.
+- [ ] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
+- [ ] **OPS-009 — P0 — Stephen:** Obtain legal review and approve the privacy policy, terms, retention language, and subprocessors.
+- [ ] **OPS-010 — P1 — Joint:** Define account/data deletion, data export, retention, and incident-notification procedures.
+- [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
+
+## 9. Production acceptance and go/no-go
+
+- [ ] **QA-001 — P0 — Joint:** Run the full automated release suite against the release candidate.
+- [ ] **QA-002 — P0 — Joint:** Run the role and sharing matrix with separate verified production test accounts.
+- [ ] **QA-003 — P0 — Joint:** Complete one full new-user journey from signup through published skill and CLI update.
+- [ ] **QA-004 — P0 — Joint:** Complete one revocation journey and confirm future access is removed.
+- [ ] **QA-005 — P0 — Joint:** Confirm logs, metrics, audit events, and alerts appear without exposing sensitive data.
+- [ ] **QA-006 — P0 — Joint:** Test the rollback procedure before inviting users.
+- [ ] **QA-007 — P0 — Stephen:** Review all P0 items and record an explicit **GO** or **NO-GO** decision.
+- [ ] **QA-008 — P0 — Stephen:** Invite only the approved initial cohort after a **GO** decision.
+
+## 10. First 72 hours
+
+- [ ] **POST-001 — P0 — Joint:** Monitor errors, availability, auth email delivery, signup completion, imports, publishing, downloads, and update checks continuously during the initial launch window.
+- [ ] **POST-002 — P0 — Joint:** Review access-denied, rate-limit, database, and email-delivery failures for false positives or attacks.
+- [ ] **POST-003 — P1 — Stephen:** Contact pilot users and record onboarding friction, trust concerns, and blocked tasks.
+- [ ] **POST-004 — P1 — Codex:** Triage launch findings into P0/P1/P2/P3 and fix launch regressions before expanding the cohort.
+- [ ] **POST-005 — P1 — Joint:** Hold a 24-hour and 72-hour go/no-go review before increasing access.
+
+## Launch record
+
+Complete this section only when the release candidate is ready.
+
+| Field | Value |
+| --- | --- |
+| Rollout mode | `TBD` |
+| Decision | `GO / NO-GO` |
+| Decision owner | `TBD` |
+| Decision time | `TBD` |
+| Production commit SHA | `TBD` |
+| Vercel deployment URL | `TBD` |
+| Canonical URL | `https://skilldockyard.com` |
+| Database migration version | `TBD` |
+| Web release/version | `TBD` |
+| CLI package/version | `TBD` |
+| Monitoring dashboard | `TBD` |
+| Incident contact | `TBD` |
+| Rollback target | `TBD` |
+

@@ -52,4 +52,23 @@ describe("Supabase migration coverage", () => {
     expect(migrationSql).toContain("rename_workspace");
     expect(migrationSql).toContain("workspace_invites_pending_email_unique");
   });
+
+  it("creates a server-managed free account for every auth user", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20260922042204_add_user_accounts.sql"), "utf8");
+    const accessSql = fs.readFileSync(path.resolve("supabase/migrations/20260922042509_restrict_user_account_access.sql"), "utf8");
+    const serviceRoleSql = fs.readFileSync(path.resolve("supabase/migrations/20260922042825_grant_service_role_user_account_type.sql"), "utf8");
+
+    expect(sql).toContain("create type public.user_account_type as enum ('free', 'paid')");
+    expect(sql).toContain("user_id uuid primary key references auth.users(id) on delete cascade");
+    expect(sql).toContain("account_type public.user_account_type not null default 'free'");
+    expect(sql).toContain("alter table public.user_accounts enable row level security");
+    expect(sql).toContain("to service_role");
+    expect(sql).toContain("create schema skill_dockyard_private");
+    expect(sql).toContain("create function skill_dockyard_private.handle_new_user_account()");
+    expect(sql).toContain("create trigger create_user_account_after_auth_user_insert");
+    expect(sql).toContain("insert into public.user_accounts (user_id)\nselect id\nfrom auth.users");
+    expect(accessSql).toContain("revoke all privileges on table public.user_accounts from public, anon, authenticated");
+    expect(accessSql).toContain("revoke all privileges on type public.user_account_type from public, anon, authenticated");
+    expect(serviceRoleSql).toContain("grant usage on type public.user_account_type to service_role");
+  });
 });
