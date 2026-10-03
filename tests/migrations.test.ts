@@ -103,4 +103,11 @@ describe("Supabase migration coverage", () => {
     expect(sql).toContain("insert into public.audit_events");
     expect(sql).toContain("from public, anon, authenticated");
   });
+
+  it("removes redundant service-role policies while leaving RLS enabled", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003154937_remove_redundant_service_role_policies.sql"), "utf8");
+    expect(sql).toContain("service_role has BYPASSRLS");
+    expect(sql.match(/drop policy if exists/g)?.length).toBeGreaterThanOrEqual(24);
+    expect(sql).not.toContain("disable row level security");
+  });
 });

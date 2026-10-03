@@ -159,6 +159,7 @@ supabase/migrations/20260922042825_grant_service_role_user_account_type.sql
 supabase/migrations/20261003151241_ensure_personal_workspace.sql
 supabase/migrations/20261003152854_atomic_share_lifecycle.sql
 supabase/migrations/20261003153210_harden_function_execution.sql
+supabase/migrations/20261003154937_remove_redundant_service_role_policies.sql
 ```
 
 The `/demo` route uses fixture data so the product surface is explorable before backend setup. The authenticated `/app` route requires the Supabase environment variables and shows a configuration screen when the live workspace is not connected.
