@@ -59,9 +59,9 @@ Regression test: `tests/security-hardening.test.ts` covers redirect and policy i
 ID: SEC-005  
 Severity: High  
 Title: Production database and provider configuration is not yet verified  
-Status: Needs verification  
+Status: Needs verification — database portion verified
 Location: Supabase, Vercel, Upstash, Cloudflare Turnstile, Sentry, Resend dashboards  
-Evidence: Repository controls and environment contracts exist, but production migration history, RLS state, function grants, CAPTCHA secret, SMTP delivery, shared limiter, Sentry delivery, and backups cannot be proven from the local checkout.  
+Evidence: Production migrations now match through `20261003154937`; aggregate integrity checks returned zero owner, private-draft, invitation, RLS, or function-grant violations. CAPTCHA secret, SMTP delivery, shared limiter, Sentry delivery, service health, and backups still require provider verification.
 Impact: Missing configuration could block authentication or abuse controls, or leave production permissions different from reviewed migrations.  
 Attack precondition: Deployment with incomplete or stale provider configuration.  
 Recommendation: Complete DATA-009 through DATA-015, SEC-009, AUTH-004 through AUTH-006, PLAT-004, and OPS provider checks before inviting users.  

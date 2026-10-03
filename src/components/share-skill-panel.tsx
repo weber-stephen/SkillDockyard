@@ -48,7 +48,7 @@ export function ShareSkillPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-black">Share Skill</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Recipients can propose updates by default. Publishing stays with the source workspace owner or reviewer.</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Recipients can submit updates by default. Publishing stays with the workspace owner or a reviewer.</p>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 rounded-md border border-border p-1 text-sm font-semibold">
@@ -64,10 +64,10 @@ export function ShareSkillPanel({
             value={sharePermission}
             onChange={(event) => setSharePermission(event.target.value === "view" ? "view" : "propose")}
           >
-            <option value="propose">Can propose updates</option>
-            <option value="view">Can view only</option>
+            <option value="propose">Can submit updates</option>
+            <option value="view">Can view</option>
           </select>
-          <span className="block text-xs leading-5 text-muted-foreground">Proposed changes still need approval from a source workspace owner or reviewer.</span>
+          <span className="block text-xs leading-5 text-muted-foreground">Submitted updates still need review before the workspace owner or a reviewer publishes them.</span>
         </label>
         {targetType === "user" ? (
           <label className="block space-y-2">
@@ -104,7 +104,7 @@ export function ShareSkillPanel({
             ) : null}
           </>
         )}
-        <Button disabled={pending} onClick={() => void submit()}>Share Skill</Button>
+        <Button disabled={pending} onClick={() => void submit()}>Share skill</Button>
         {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       </div>
 
@@ -117,7 +117,7 @@ export function ShareSkillPanel({
                 <div className="font-semibold">
                   {share.target_type === "workspace" ? share.target_workspace_name || "Workspace share" : share.target_email || "Individual share"}
                 </div>
-                <p className="mt-1 text-muted-foreground">Status: {share.status === "active" ? "Active" : share.status === "pending" ? "Waiting for acceptance" : share.status === "revoked" ? "Revoked" : "Declined"}. Permission: {share.permission === "view" ? "View only" : "Can propose updates"}.</p>
+                <p className="mt-1 text-muted-foreground">Status: {share.status === "active" ? "Active" : share.status === "pending" ? "Waiting for acceptance" : share.status === "revoked" ? "Revoked" : "Declined"}. Permission: {share.permission === "view" ? "Can view" : "Can submit updates"}.</p>
                 {share.status === "active" ? (
                   <button
                     type="button"

@@ -56,7 +56,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
         <Info label="Maintained by" value={artifact.owner ?? "Not listed"} />
         <Info label="Managed by" value={artifact.source_workspace_name ?? "Your workspace"} />
         <Info label="Updated" value={formatDate(artifact.updated_at)} />
-        <Info label="Trust Notes" value={artifact.risk_count.toString()} />
+        <Info label="Review notes" value={artifact.risk_count.toString()} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
@@ -69,18 +69,18 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           <pre className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
         <aside className="min-w-0 space-y-4">
-          {(adoption.aggregate || adoption.personal.length) ? <section className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Downloads and updates</h2>{adoption.aggregate ? <div className="mt-3 grid grid-cols-3 gap-3 text-center"><Metric label="Downloads" value={adoption.aggregate.downloads} /><Metric label="CLI installs" value={adoption.aggregate.managedInstalls} /><Metric label="Need update" value={adoption.aggregate.outdatedInstalls} /></div> : null}{adoption.personal.length ? <div className="mt-4 space-y-2">{adoption.personal.map((item, index) => <p key={`${item.target}-${index}`} className="text-sm text-muted-foreground"><strong className="text-foreground">Your {item.target === "codex" ? "Codex" : "Claude Code"} install:</strong> {item.updateAvailable ? "Update available" : "Up to date"}</p>)}</div> : <p className="mt-3 text-sm text-muted-foreground">CLI-managed installs will show their update status here.</p>}</section> : null}
+          {(adoption.aggregate || adoption.personal.length) ? <section className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Downloads and updates</h2>{adoption.aggregate ? <div className="mt-3 grid grid-cols-3 gap-3 text-center"><Metric label="Downloads" value={adoption.aggregate.downloads} /><Metric label="Connected installs" value={adoption.aggregate.managedInstalls} /><Metric label="Need update" value={adoption.aggregate.outdatedInstalls} /></div> : null}{adoption.personal.length ? <div className="mt-4 space-y-2">{adoption.personal.map((item, index) => <p key={`${item.target}-${index}`} className="text-sm text-muted-foreground"><strong className="text-foreground">Your {item.target === "codex" ? "Codex" : "Claude Code"} install:</strong> {item.updateAvailable ? "Update available" : "Up to date"}</p>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Installs from connected computers will show their update status here.</p>}</section> : null}
           <SkillDownloadPanel artifactId={artifact.id} approvedHash={(artifact.visibility === "private" ? artifact.current_version?.content_hash : artifact.approved_version?.content_hash) ?? null} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} />
           {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
           {artifact.can_manage_shares ? <ShareSkillPanel artifact={artifact} workspaces={sharableWorkspaces} /> : null}
-          {artifact.can_propose_update ? <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground"><p>You can submit an update to this skill. The published version stays active until a source workspace owner or reviewer approves the submission.</p><Button asChild variant="outline" size="sm" className="mt-4"><Link href={`/artifacts/${artifact.id}/update`}>Submit an update<ArrowRight className="h-3.5 w-3.5" /></Link></Button></div> : null}
+          {artifact.can_propose_update ? <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground"><p>You can submit an update to this skill. The published version stays active until the workspace owner or a reviewer publishes the submission.</p><Button asChild variant="outline" size="sm" className="mt-4"><Link href={`/artifacts/${artifact.id}/update`}>Submit an update<ArrowRight className="h-3.5 w-3.5" /></Link></Button></div> : null}
           {!artifact.can_manage_shares && !artifact.can_propose_update && artifact.access_scope?.startsWith("shared_") ? (
             <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground">
               You have view-only access to this shared skill. You can download and compare it, but you cannot propose updates or publish changes.
             </div>
           ) : null}
           <div className="rounded-md border border-border bg-panel p-5">
-            {artifact.current_proposal ? <div className="mb-4 rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-6"><div className="font-bold">Pending submission</div><p className="mt-1 text-muted-foreground">This change is not published yet. Teammates will continue receiving the published version until an owner or reviewer approves it.</p></div> : null}
+            {artifact.current_proposal ? <div className="mb-4 rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-6"><div className="font-bold">Pending submission</div><p className="mt-1 text-muted-foreground">This change is not published yet. Teammates will continue receiving the published version until an owner or reviewer publishes it.</p></div> : null}
             <h2 className="font-black">Published Version</h2>
             {artifact.approved_version ? (
               <div className="mt-3 space-y-3">
@@ -109,7 +109,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No trust notes detected.</p>
+                <p className="text-sm text-muted-foreground">No review notes found.</p>
               )}
             </div>
           </div>

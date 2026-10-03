@@ -61,7 +61,7 @@ export function SetupHub({ initialState, hasArtifacts, artifactCount = hasArtifa
 }
 
 function ScannerSetup() {
-  const [pairingCode, setPairingCode] = useState<string | null>(null); const [message, setMessage] = useState<string | null>(null); const [loading, setLoading] = useState(false); const [copied, setCopied] = useState(false); const [origin, setOrigin] = useState("https://your-skill-dockyard");
+  const [pairingCode, setPairingCode] = useState<string | null>(null); const [message, setMessage] = useState<string | null>(null); const [loading, setLoading] = useState(false); const [copied, setCopied] = useState(false); const [origin, setOrigin] = useState("https://skilldockyard.com");
   useEffect(() => setOrigin(window.location.origin), []);
   const command = `npx skill-dockyard connect --endpoint ${origin} --code ${pairingCode}\nnpx skill-dockyard import`;
   async function createToken() { setLoading(true); setMessage(null); try { const res = await fetch("/api/cli/pairing-codes", { method: "POST" }); const data = await res.json(); if (!res.ok) throw new Error(data.error); setPairingCode(data.code); } catch (error) { setMessage(error instanceof Error ? error.message : "Could not create a pairing code."); } finally { setLoading(false); } }

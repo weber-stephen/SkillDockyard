@@ -52,7 +52,7 @@ export default async function SubmitPage() {
           />
           <GuidanceCard
             title="What to explain"
-            body="Write one or two sentences about why this skill or update helps the team. Reviewers use this before looking at hashes or trust notes."
+            body="Write one or two sentences about why this skill or update helps the team. Reviewers use this before comparing versions or review notes."
           />
         </aside>
         <SubmissionForm mode="new" artifacts={artifacts} artifactDetails={details} options={options} isDemo={isDemo} />

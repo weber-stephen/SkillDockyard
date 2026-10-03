@@ -8,7 +8,7 @@ const installationSchema = z.object({ artifactId: z.uuid(), versionId: z.uuid(),
 
 export async function PUT(request: Request) {
   const identity = await resolveCliToken(request);
-  if (!identity) return NextResponse.json({ error: "Connect the Skill Dockyard CLI again." }, { status: 401 });
+  if (!identity) return NextResponse.json({ error: "Connect this computer to Skill Dockyard again." }, { status: 401 });
   const body = await readJsonSchema(request, installationSchema, 4096);
   const artifact = await getArtifactForCli(body.artifactId, identity);
   const allowedVersion = artifact?.visibility === "private" ? artifact.current_version : artifact?.approved_version;

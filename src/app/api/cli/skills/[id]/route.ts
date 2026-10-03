@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const identity = await resolveCliToken(request);
-  if (!identity) return NextResponse.json({ error: "Connect the Skill Dockyard CLI again." }, { status: 401 });
+  if (!identity) return NextResponse.json({ error: "Connect this computer to Skill Dockyard again." }, { status: 401 });
   const artifact = await getArtifactForCli((await params).id, identity);
   if (!artifact) return NextResponse.json({ error: "Skill not found." }, { status: 404 });
   const status = getPortableSkillStatus(artifact);

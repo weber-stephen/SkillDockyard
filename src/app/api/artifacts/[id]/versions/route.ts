@@ -6,7 +6,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const artifact = await getArtifactDetail(id);
-    if (!artifact) return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
+    if (!artifact) return NextResponse.json({ error: "Skill not found" }, { status: 404 });
     return NextResponse.json({
       current: artifact.current_version,
       approved: artifact.approved_version,

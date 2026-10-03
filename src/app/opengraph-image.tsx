@@ -55,7 +55,7 @@ export default function OpenGraphImage() {
           <span style={{ color: "#184b36" }}>→</span>
           <span>Review the change</span>
           <span style={{ color: "#184b36" }}>→</span>
-          <span>Share the approved version</span>
+          <span>Share the published version</span>
         </div>
       </div>
     ),

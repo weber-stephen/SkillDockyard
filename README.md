@@ -35,6 +35,8 @@ Run the fast unit suite with `npm test`. Run the full page smoke suite with `npm
 
 Use [the production launch checklist](docs/production-launch-checklist.md) to track go-live readiness for Codex and human owners. Follow [the production launch implementation plan](docs/production-launch-plan.md) for the ordered engineering, Supabase, Vercel, DNS, npm, monitoring, acceptance, and rollback work. The canonical production domain is `https://skilldockyard.com`.
 
+Package maintainers should follow the [Skill Dockyard command release guide](docs/cli-release-guide.md) for publishing, compatibility, revocation, and deprecation procedures.
+
 ### 3. Submit a skill without Git
 
 Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to submit an update:
@@ -107,7 +109,7 @@ npm run cli -- scan --endpoint http://localhost:3000/api/scan --token "$SKILL_DO
 Open **Getting started → Import existing skills** and create a one-time pairing code. Then run the displayed commands from any Terminal window:
 
 ```bash
-npx skill-dockyard connect --endpoint https://your-skill-dockyard --code YOUR_PAIRING_CODE
+npx skill-dockyard connect --endpoint https://skilldockyard.com --code YOUR_PAIRING_CODE
 npx skill-dockyard import
 ```
 

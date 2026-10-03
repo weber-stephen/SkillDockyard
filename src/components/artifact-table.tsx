@@ -33,7 +33,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
     const needle = query.trim().toLowerCase();
     if (!needle) return allArtifacts;
     return allArtifacts.filter((artifact) =>
-      [artifact.name, artifact.path, artifact.owner, artifact.status, artifact.type, getSharingStatusView(artifact).label, artifact.created_by_viewer ? "created by you" : "", isLocalDraftArtifact(artifact) ? "Local draft" : ""]
+      [artifact.name, artifact.path, artifact.owner, artifact.status, artifact.type, getSharingStatusView(artifact).label, artifact.created_by_viewer ? "created by you" : "", isLocalDraftArtifact(artifact) ? "Private draft" : ""]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
@@ -107,7 +107,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                   </div></TableCell>
                   <TableCell>
                     <div className="space-y-2">
-                      {localDraft ? <Badge variant="muted">Local draft</Badge> : <StatusBadge artifact={artifact} />}
+                      {localDraft ? <Badge variant="muted">Private draft</Badge> : <StatusBadge artifact={artifact} />}
                       {!localDraft && artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : null}
                       {!localDraft && artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : null}
                       {!localDraft && artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with workspace</Badge> : null}
@@ -121,10 +121,10 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                   </TableCell>
                   <TableCell className="max-w-sm text-sm text-muted-foreground">
                     {localDraft
-                      ? "Saved in this browser. Connect Supabase before teammates can use it."
+                      ? "Saved in this browser. Sign in before sharing it with teammates."
                       : artifact.visibility === "private"
                         ? "Private to you. Submit it for workspace review when it is ready."
-                        : `${sharing.description}${artifact.can_publish ? " You can publish this skill." : artifact.can_propose_update ? " You can propose updates." : ""}`}
+                        : `${sharing.description}${artifact.can_publish ? " You can publish this skill." : artifact.can_propose_update ? " You can submit updates." : ""}`}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(artifact.updated_at)}</TableCell>
                 </TableRow>

@@ -197,12 +197,12 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
             >
               {updateableArtifacts.map((artifact) => (
                 <option key={artifact.id} value={artifact.id}>
-                  {artifact.name} - {artifact.repo_name}{artifact.access_scope?.startsWith("shared_") ? " (shared)" : ""}{artifact.can_propose_update ? "" : " (view only)"}
+                  {artifact.name} - {artifact.repo_name}{artifact.access_scope?.startsWith("shared_") ? " (shared)" : ""}{artifact.can_propose_update ? "" : " (can view)"}
                 </option>
               ))}
             </select>
             <span className="block text-xs leading-5 text-muted-foreground">
-              Start from the latest skill content, make your changes, and explain what improved. Editors and shared recipients with submission access can suggest changes; source workspace owners and reviewers still control publishing.
+              Start from the latest skill content, make your changes, and explain what improved. Editors and shared recipients with update access can submit changes; workspace owners and reviewers still control publishing.
             </span>
           </label>
         ) : null}
@@ -438,7 +438,7 @@ function LocalDraftsPanel({ drafts, onClear }: { drafts: LocalDraftArtifact[]; o
     <div className="mt-6 rounded-md border border-border bg-background p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 className="font-black">Local Drafts</h3>
+          <h3 className="font-black">Private drafts</h3>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">Demo drafts are saved in this browser only and are not shared with teammates.</p>
         </div>
         {drafts.length ? (
@@ -459,7 +459,7 @@ function LocalDraftsPanel({ drafts, onClear }: { drafts: LocalDraftArtifact[]; o
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">No local drafts yet.</p>
+          <p className="text-sm text-muted-foreground">No private drafts yet.</p>
         )}
       </div>
     </div>

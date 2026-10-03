@@ -83,6 +83,16 @@ describe("Supabase migration coverage", () => {
     expect(sql).toContain("grant execute on function public.ensure_personal_workspace(uuid, text, text) to service_role");
   });
 
+  it("guards duplicate and rollback paths during personal workspace provisioning", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003151241_ensure_personal_workspace.sql"), "utf8");
+    expect(sql).toContain("pg_advisory_xact_lock");
+    expect(sql).toContain("owner_membership_count <> 1");
+    expect(sql).toContain("insert into public.workspaces (name, owner_user_id)");
+    expect(sql).toContain("insert into public.workspace_members (workspace_id, user_id, email, role)");
+    expect(sql).toContain("insert into public.audit_events");
+    expect(sql).toContain("return workspace_row.id;");
+  });
+
   it("keeps share lifecycle mutations and their audit events in one transaction", () => {
     const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003152854_atomic_share_lifecycle.sql"), "utf8");
     for (const fn of ["create_artifact_share", "respond_to_artifact_share", "revoke_artifact_share"]) {

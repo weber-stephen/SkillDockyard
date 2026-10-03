@@ -44,13 +44,13 @@ export function SettingsForm({ configFile, approvedMcpServers, highImpactTools, 
   return (
     <div className="space-y-4 rounded-md border border-border bg-panel p-5">
       <div>
-        <h2 className="font-black">Workspace Settings</h2>
+        <h2 className="font-black">Workspace settings</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {mode === "demo" ? "Demo mode is read-only until the live workspace is connected." : "Saved for skill imports and publishing."}
         </p>
       </div>
       <label className="grid gap-2 text-sm font-semibold">
-        Config file
+        Import configuration file
         <Input value={currentConfigFile} onChange={(event) => setCurrentConfigFile(event.target.value)} />
       </label>
       <label className="grid gap-2 text-sm font-semibold">
@@ -58,13 +58,13 @@ export function SettingsForm({ configFile, approvedMcpServers, highImpactTools, 
         <Textarea value={mcpServers} onChange={(event) => setMcpServers(event.target.value)} />
       </label>
       <label className="grid gap-2 text-sm font-semibold">
-        High-impact tools
+        Tools requiring review
         <Textarea value={tools} onChange={(event) => setTools(event.target.value)} />
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <Button disabled={pending || mode === "demo"} onClick={save}>
           <Save className="h-4 w-4" />
-          Save Settings
+          Save settings
         </Button>
         {message ? <p className="text-sm font-semibold text-muted-foreground">{message}</p> : null}
       </div>

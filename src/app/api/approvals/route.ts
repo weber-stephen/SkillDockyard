@@ -11,17 +11,17 @@ export async function POST(request: Request) {
   if (new URL(request.url).searchParams.get("demo") === "1") return NextResponse.json({ ok: true, demo: true });
   const body = await readJsonSchema(request, approvalSchema, 8 * 1024);
   if (!hasSupabaseConfig()) {
-    return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
+    return NextResponse.json({ error: "The service is temporarily unavailable." }, { status: 503 });
   }
 
   const supabase = createServerSupabase();
   const { artifactId, versionId, decision, note } = body;
   const detail = await getArtifactDetail(artifactId);
-  if (!detail) return NextResponse.json({ error: "Artifact not found." }, { status: 404 });
+  if (!detail) return NextResponse.json({ error: "Skill not found." }, { status: 404 });
   if (!detail.can_publish) {
-    return NextResponse.json({ error: "Only source workspace owners or reviewers can publish this skill." }, { status: 403 });
+    return NextResponse.json({ error: "Only the workspace owner or a reviewer can publish this skill." }, { status: 403 });
   }
-  if (detail.current_version_id !== versionId) return NextResponse.json({ error: "That version is no longer the current proposal. Refresh before deciding." }, { status: 409 });
+  if (detail.current_version_id !== versionId) return NextResponse.json({ error: "That version is no longer the current submission. Refresh before deciding." }, { status: 409 });
   const { user } = await getViewerContext();
   const reviewerName = user.email ?? "Workspace reviewer";
 

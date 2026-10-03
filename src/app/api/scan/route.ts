@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const cliIdentity = await resolveCliToken(request);
   const tokenWorkspaceId = cliIdentity?.workspaceId ?? await resolveWorkspaceForScanToken(token ?? "");
   const workspaceId = tokenWorkspaceId;
-  if (!workspaceId) return NextResponse.json({ error: "A valid ingest token is required." }, { status: 401 });
+  if (!workspaceId) return NextResponse.json({ error: "Connect this computer again before importing skills." }, { status: 401 });
 
   let workspaceRate;
   let tokenRate;
@@ -53,6 +53,6 @@ export async function POST(request: Request) {
     await recordOnboardingMilestone(workspaceId, "scan");
     return NextResponse.json({ accepted: artifacts.length, workspaceId: result.workspaceId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Scan ingest failed." }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "The skill import failed." }, { status: 400 });
   }
 }

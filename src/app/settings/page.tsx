@@ -17,7 +17,7 @@ export default async function SettingsPage() {
       {admin ? <WorkspaceAdminPanel workspace={admin.workspace} members={admin.members} invites={admin.invites} isOwner={admin.isOwner} consistent={admin.consistent} /> : null}
       <ConnectedCliPanel />
       <section className="grid gap-4 md:grid-cols-2" aria-label="Workspace settings areas">
-        <SettingsCard href="/settings/repos" icon={FileSearch} title="Repository and scanner" body="Choose the repository inputs and scanner configuration used to find skills and local improvements." />
+        <SettingsCard href="/settings/repos" icon={FileSearch} title="Import settings" body="Choose where Skill Dockyard looks for installed skills and local improvements." />
         <SettingsCard href="/settings/risk-rules" icon={ShieldCheck} title="Trust rules" body="Review allowed connectors and high-impact tools used during compatibility checks." />
       </section>
     </div>

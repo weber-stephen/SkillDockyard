@@ -27,15 +27,15 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
           <Badge variant="outline">{artifact.path}</Badge>
         </div>
         <h1 className="text-3xl font-black">Review {artifact.name}</h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">Compare the pending proposal with the published version, check the trust notes, and decide whether teammates should receive it.</p>
-        {proposal ? <div className="mt-4 flex flex-wrap gap-2"><Badge variant="risk">{proposal.kind === "update" ? "Pending update" : "New skill proposal"}</Badge><Badge variant="outline">Submitted {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(proposal.created_at))}</Badge>{proposal.submitter_email ? <Badge variant="outline">{proposal.submitter_email}</Badge> : null}</div> : <div className="mt-4 rounded-md border border-border bg-panel p-3 text-sm text-muted-foreground">No first-class pending proposal is attached to this version. This may be legacy or demo data.</div>}
+        <p className="mt-2 max-w-3xl text-muted-foreground">Compare the submitted version with the published version, check the review notes, and decide whether teammates should receive it.</p>
+        {proposal ? <div className="mt-4 flex flex-wrap gap-2"><Badge variant="risk">{proposal.kind === "update" ? "Pending update" : "New skill submission"}</Badge><Badge variant="outline">Submitted {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(proposal.created_at))}</Badge>{proposal.submitter_email ? <Badge variant="outline">{proposal.submitter_email}</Badge> : null}</div> : <div className="mt-4 rounded-md border border-border bg-panel p-3 text-sm text-muted-foreground">No pending submission is attached to this version. This may be older or demo data.</div>}
       </header>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
         <div className="min-w-0 space-y-4">
           <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             <Interpretation title="What changed?" body={reviewVersion.summary ?? "The proposed copy differs from the published shared version."} />
-            <Interpretation title="Why preserve it?" body="Publishing keeps this team improvement from being lost in local copies or repo-specific edits." />
+            <Interpretation title="Why preserve it?" body="Publishing keeps this workspace improvement from being lost in local copies or tool-specific edits." />
             <Interpretation title="Publish recommendation" body={getPublishRecommendation(artifact)} />
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
@@ -50,7 +50,7 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
               Comparing the proposed copy hash against the published shared version hash.
             </p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Hash label={proposal ? "Pending proposal" : "Current copy"} value={reviewVersion.content_hash} />
+              <Hash label={proposal ? "Submitted version" : "Current copy"} value={reviewVersion.content_hash} />
               <Hash label="Published version" value={baselineVersion?.content_hash ?? "None"} />
             </div>
           </div>
@@ -77,7 +77,7 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
                   {risk.evidence ? <code className="mt-2 block text-xs">{risk.evidence}</code> : null}
                 </div>
               ))}
-              {!artifact.risks.length ? <p className="text-sm text-muted-foreground">No trust notes detected.</p> : null}
+              {!artifact.risks.length ? <p className="text-sm text-muted-foreground">No review notes found.</p> : null}
             </div>
           </div>
           {proposal ? <ReviewActions artifactId={artifact.id} versionId={reviewVersion.id} proposalId={proposal.id} proposalStatus={proposal.status} canPublish={Boolean(artifact.can_publish)} /> : demo && artifact.can_publish ? <ReviewActions artifactId={artifact.id} versionId={reviewVersion.id} canPublish={true} /> : null}

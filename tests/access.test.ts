@@ -92,4 +92,14 @@ describe("artifact permissions", () => {
     });
     expect(computeArtifactPermission({ artifact: privateArtifact, memberships: [membership("owner")], workspaces, shares: [], userId: "user" })).toBeNull();
   });
+
+  it("does not grant access from a membership in another workspace", () => {
+    const otherWorkspaceMembership = { ...membership("owner"), workspace_id: "other-workspace" };
+    expect(computeArtifactPermission({ artifact, memberships: [otherWorkspaceMembership], workspaces, shares: [], userId: "user" })).toBeNull();
+  });
+
+  it("keeps view-only shares from gaining update or publishing rights", () => {
+    const permission = computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [share("view")], userId: "recipient" });
+    expect(permission).toMatchObject({ canProposeUpdate: false, canPublish: false, canManageShares: false });
+  });
 });

@@ -7,7 +7,7 @@ const checkSchema = z.object({ installed: z.array(z.object({ artifactId: z.uuid(
 
 export async function POST(request: Request) {
   const identity = await resolveCliToken(request);
-  if (!identity) return NextResponse.json({ error: "Connect the Skill Dockyard CLI again." }, { status: 401 });
+  if (!identity) return NextResponse.json({ error: "Connect this computer to Skill Dockyard again." }, { status: 401 });
   const body = await readJsonSchema(request, checkSchema, 256 * 1024);
   const updates = [];
   for (const item of body.installed) {

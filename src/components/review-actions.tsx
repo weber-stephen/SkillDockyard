@@ -27,7 +27,7 @@ export function ReviewActions({
 
   async function submit(decision: "published" | "changes_requested" | "rejected") {
     if ((decision === "changes_requested" || decision === "rejected") && !note.trim()) {
-      setMessage("Add a note before requesting changes or rejecting this proposal.");
+      setMessage("Add a note before requesting changes or rejecting this submission.");
       return;
     }
     setPending(true);
@@ -60,7 +60,7 @@ export function ReviewActions({
       return;
     }
 
-    setMessage(decision === "changes_requested" ? "Changes requested. The published version remains active." : "Proposal rejected. The published version remains active.");
+    setMessage(decision === "changes_requested" ? "Changes requested. The published version remains active." : "Submission rejected. The published version remains active.");
   }
 
   return (
@@ -68,13 +68,13 @@ export function ReviewActions({
       <div>
         <h2 className="font-black">Review and publish</h2>
         <p className="text-sm text-muted-foreground">
-          This is the owner or reviewer step. Compare the change and trust notes, then publish only if teammates should receive this version.
+          This is the owner or reviewer step. Compare the change and review notes, then publish only if teammates should receive this version.
         </p>
       </div>
       <Textarea placeholder={proposalId ? "Add a review note. Required for changes requested or rejection." : "Why is this safe and useful to share?"} value={note} onChange={(event) => setNote(event.target.value)} />
       {!canPublish ? (
         <p className="text-sm text-muted-foreground">
-          You can review this proposed change, but only source workspace owners or reviewers can publish or archive it.
+          You can review this submitted change, but only the workspace owner or a reviewer can publish or archive it.
         </p>
       ) : null}
       <div className="flex flex-wrap gap-2">

@@ -47,7 +47,8 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 - [ ] **REL-007 — P0 — Codex:** Protect `main` so required CI checks must pass before merge.
   - If Codex cannot change the GitHub setting, it provides Stephen the exact setting to enable.
 - [ ] **REL-008 — P0 — Codex:** Verify a clean checkout with Node 22 using only committed files and documented environment variables.
-- [ ] **REL-009 — P1 — Codex:** Remove stale generated files and repository noise from the launch branch without deleting user work.
+- [x] **REL-009 — P1 — Codex:** Remove stale generated files and repository noise from the launch branch without deleting user work.
+  - Evidence: Removed tracked `.DS_Store` files; `.gitignore` already excludes generated output, dependencies, coverage, logs, and environment files.
 - [ ] **REL-010 — P0 — Joint:** Merge only after the Vercel branch preview passes visual and functional review.
 
 ### Required release commands
@@ -76,7 +77,8 @@ npm pack --dry-run
   - Evidence: `ensure_personal_workspace` uses a per-user transaction advisory lock, creates workspace/membership/audit state together, and fails closed on inconsistent existing ownership.
   - Workspace creation, accountable owner assignment, owner membership creation, and any required audit event succeed or fail together.
   - Concurrent first requests cannot create inconsistent or duplicate ownership.
-- [ ] **DATA-004 — P0 — Codex:** Add regression tests for missing owner membership, mismatched ownership, duplicate provisioning, concurrent provisioning, and rollback on failure.
+- [x] **DATA-004 — P0 — Codex:** Add regression tests for missing owner membership, mismatched ownership, duplicate provisioning, concurrent provisioning, and rollback on failure.
+  - Evidence: Migration tests assert advisory serialization, inconsistent-owner fail-closed behavior, duplicate-safe lookup, and all-or-nothing write ordering; access tests cover cross-workspace membership isolation and view-only boundaries.
 - [x] **DATA-005 — P0 — Codex:** Verify every public-schema table has RLS enabled or is deliberately inaccessible through the Data API.
   - Evidence: Migration inventory review found an RLS enable statement for every public table; the live production state remains covered by DATA-011 and DATA-012.
 - [x] **DATA-006 — P0 — Codex:** Verify every privileged database function has an intentional security mode, fixed `search_path`, explicit execute grants, and no unintended `PUBLIC`, `anon`, or `authenticated` access.
@@ -85,10 +87,13 @@ npm pack --dry-run
   - List, read, download, submit, publish, request changes, reject, withdraw, share, accept, decline, revoke, invite, rename, and export.
 - [ ] **DATA-008 — P0 — Codex:** Make security-sensitive mutations and required audit records atomic.
   - A successful response must never be returned when the required audit write failed.
-- [ ] **DATA-009 — P0 — Joint:** Apply every committed migration to the production Supabase project in filename order.
-- [ ] **DATA-010 — P0 — Joint:** Confirm the local migration list and production migration history match.
+- [x] **DATA-009 — P0 — Joint:** Apply every committed migration to the production Supabase project in filename order.
+  - Evidence: Applied migrations `20261003151241` through `20261003154937` to the linked production project on October 3, 2026 after successful dry runs.
+- [x] **DATA-010 — P0 — Joint:** Confirm the local migration list and production migration history match.
+  - Evidence: `supabase migration list --linked` showed every local and remote version aligned through `20261003154937` on October 3, 2026.
 - [ ] **DATA-011 — P0 — Joint:** Run Supabase Security, Performance, Index, and service-health advisors; resolve every error and review every warning.
-- [ ] **DATA-012 — P0 — Joint:** Run safe production queries that verify owner consistency, private-draft isolation, invitation constraints, and RLS status without exposing customer data.
+- [x] **DATA-012 — P0 — Joint:** Run safe production queries that verify owner consistency, private-draft isolation, invitation constraints, and RLS status without exposing customer data.
+  - Evidence: Aggregate-only production checks returned zero inconsistent owners, shared private drafts, invalid invitations, public tables without RLS, and browser-executable sensitive functions on October 3, 2026.
 - [ ] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
 - [ ] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
 - [ ] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
@@ -108,7 +113,8 @@ npm pack --dry-run
   - Evidence: Tracked-secret and public-environment-name scans passed on October 3, 2026; only `.env.example` is tracked.
 - [x] **SEC-006 — P0 — Codex:** Confirm secrets and tokens are stored hashed where applicable and are redacted from logs and UI responses.
   - Evidence: Invitation, import, pairing, and connected-computer tokens use SHA-256 database hashes; monitoring scrubs request headers, cookies, bodies, and user details.
-- [ ] **SEC-007 — P0 — Codex:** Add authorization regression tests for cross-workspace IDs, private drafts, view-only shares, revoked shares, invitation email mismatch, and reviewer/owner boundaries.
+- [x] **SEC-007 — P0 — Codex:** Add authorization regression tests for cross-workspace IDs, private drafts, view-only shares, revoked shares, invitation email mismatch, and reviewer/owner boundaries.
+  - Evidence: `tests/access.test.ts` and `tests/share-invite-acceptance.test.ts` cover cross-workspace membership, private drafts, view-only and revoked shares, verified-email requirements, and reviewer/owner capability boundaries.
 - [x] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
   - Evidence: Production audit is a CI gate; exceptions require explicit Stephen approval under REL-003 and the security audit records residual risk.
 - [ ] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
@@ -143,7 +149,8 @@ npm pack --dry-run
 - [ ] **APP-011 — P0 — Joint:** Downloads always use the published version for workspace/shared skills and the creator's current version for a private draft.
 - [ ] **APP-012 — P0 — Joint:** Connected-computer updates refuse to overwrite local changes.
 - [ ] **APP-013 — P0 — Codex:** Empty, loading, success, and error states explain the next action without leaking implementation details.
-- [ ] **APP-014 — P1 — Codex:** Replace remaining prohibited interface terminology with the terms defined in `AGENTS.md`.
+- [x] **APP-014 — P1 — Codex:** Replace remaining prohibited interface terminology with the terms defined in `AGENTS.md`.
+  - Evidence: User-facing terminology scan found no remaining primary UI strings using “trust notes,” “source workspace,” “view only,” “can propose,” “local draft,” or approval language; internal data identifiers remain unchanged.
 - [ ] **APP-015 — P1 — Codex:** Complete an accessibility and responsive pass.
   - Keyboard navigation, focus order, labels, contrast, error announcements, mobile tables, and touch targets meet the documented bar.
 
@@ -160,8 +167,10 @@ npm pack --dry-run
 - [ ] **CLI-006 — P0 — Joint:** Publish the first production CLI release with provenance.
 - [ ] **CLI-007 — P0 — Joint:** Verify `npx skill-dockyard --help` works without a repository checkout.
 - [ ] **CLI-008 — P0 — Joint:** Against production, verify connect, import, check, update, token revocation, and local-change protection.
-- [ ] **CLI-009 — P0 — Codex:** Ensure the web onboarding commands use the final canonical domain and npm package name.
-- [ ] **CLI-010 — P1 — Codex:** Document release, rollback/deprecation, token revocation, and CLI compatibility procedures.
+- [x] **CLI-009 — P0 — Codex:** Ensure the web onboarding commands use the final canonical domain and npm package name.
+  - Evidence: Setup commands use `https://skilldockyard.com`; README onboarding uses `npx skill-dockyard`; the package manifest and command binary use `skill-dockyard`.
+- [x] **CLI-010 — P1 — Codex:** Document release, rollback/deprecation, token revocation, and CLI compatibility procedures.
+  - Evidence: Added [cli-release-guide.md](cli-release-guide.md) with release gates, provenance, compatibility, revocation, deprecation, and recovery procedures.
 
 ## 7. Vercel, DNS, and production configuration
 
@@ -233,7 +242,7 @@ Complete this section only when the release candidate is ready.
 | Production commit SHA | `TBD` |
 | Vercel deployment URL | `TBD` |
 | Canonical URL | `https://skilldockyard.com` |
-| Database migration version | `TBD` |
+| Database migration version | `20261003154937` |
 | Web release/version | `TBD` |
 | CLI package/version | `TBD` |
 | Monitoring dashboard | `TBD` |

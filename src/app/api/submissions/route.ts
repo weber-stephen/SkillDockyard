@@ -184,7 +184,7 @@ async function createProposalNotifications(supabase: ReturnType<typeof import("@
     user_id: userId,
     proposal_id: input.proposalId,
     type: "proposal_submitted",
-    title: "A skill proposal needs review",
+    title: "A skill submission needs review",
     body: `${input.artifactName} was submitted for review.`
   })));
 }

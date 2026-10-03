@@ -38,7 +38,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       user_id: userId,
       proposal_id: result.proposalId,
       type: "proposal_submitted",
-      title: "A skill proposal needs review",
+      title: "A skill submission needs review",
       body: `${artifact.name} was submitted for review.`
     })));
   }
@@ -48,7 +48,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     mode: "supabase",
     saved: true,
     visibility: "workspace",
-    message: "Submitted for review. A workspace owner or reviewer must approve it before teammates can use it.",
+    message: "Submitted for review. A workspace owner or reviewer must publish it before teammates can use it.",
     artifactId: result.artifactId,
     versionId: result.versionId,
     proposalId: result.proposalId,

@@ -61,7 +61,7 @@ export function SkillDownloadPanel({ artifactId, approvedHash, skillName, eligib
     <section id="get-this-skill" className="rounded-md border border-border bg-panel p-4">
       <div className="flex items-start gap-3">
         <MonitorDown className="mt-0.5 h-5 w-5" />
-        <div><h2 className="font-black">Get this skill</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">Download the owner-approved version for your AI tool. Your personal edits stay yours.</p></div>
+        <div><h2 className="font-black">Get this skill</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">Download the published version for your AI tool. Your personal edits stay yours.</p></div>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <Choice label="Use it in" value={target} onChange={(value) => setTarget(value as DownloadTarget)} options={[{ value: "codex", label: "Codex" }, { value: "claude-code", label: "Claude Code" }]} />
