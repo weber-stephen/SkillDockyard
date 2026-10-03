@@ -45,6 +45,13 @@ export async function readJsonBody<T>(request: Request, maxBytes = MAX_REQUEST_B
   }
 }
 
+export async function readJsonSchema<T>(request: Request, schema: ZodType<T>, maxBytes = 64 * 1024): Promise<T> {
+  const body = await readJsonBody<unknown>(request, maxBytes);
+  const result = schema.safeParse(body);
+  if (!result.success) throw new RequestBodyError("Request fields are invalid.", 400);
+  return result.data;
+}
+
 function concatenate(chunks: Uint8Array[], totalBytes: number) {
   const result = new Uint8Array(totalBytes);
   let offset = 0;
@@ -54,3 +61,4 @@ function concatenate(chunks: Uint8Array[], totalBytes: number) {
   }
   return result;
 }
+import type { ZodType } from "zod";

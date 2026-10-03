@@ -5,7 +5,7 @@ import type { ScanArtifactInput } from "@/lib/types";
 import { resolveWorkspaceForScanToken } from "@/lib/scan-tokens";
 import { recordOnboardingMilestone } from "@/lib/onboarding";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
-import { consumeRateLimit, fingerprintRateLimitKey } from "@/lib/rate-limit";
+import { consumeRateLimit, fingerprintRateLimitKey, RateLimitConfigurationError } from "@/lib/rate-limit";
 import { validateIngestBatch } from "@/lib/ingest-limits";
 import { resolveCliToken } from "@/lib/cli-auth";
 
@@ -32,8 +32,17 @@ export async function POST(request: Request) {
   const workspaceId = tokenWorkspaceId;
   if (!workspaceId) return NextResponse.json({ error: "A valid ingest token is required." }, { status: 401 });
 
-  const workspaceRate = consumeRateLimit(`scan-workspace:${workspaceId}`, 20, 60_000);
-  const tokenRate = consumeRateLimit(`scan-token:${fingerprintRateLimitKey(token ?? "")}`, 10, 60_000);
+  let workspaceRate;
+  let tokenRate;
+  try {
+    [workspaceRate, tokenRate] = await Promise.all([
+      consumeRateLimit(`scan-workspace:${workspaceId}`, 20, 60_000),
+      consumeRateLimit(`scan-token:${fingerprintRateLimitKey(token ?? "")}`, 10, 60_000)
+    ]);
+  } catch (error) {
+    if (error instanceof RateLimitConfigurationError) return NextResponse.json({ error: "This service is temporarily unavailable." }, { status: 503 });
+    throw error;
+  }
   if (!workspaceRate.allowed || !tokenRate.allowed) {
     const retryAfter = Math.max(workspaceRate.retryAfterSeconds, tokenRate.retryAfterSeconds);
     return NextResponse.json({ error: "Too many scan requests. Try again later." }, { status: 429, headers: { "Retry-After": String(retryAfter) } });

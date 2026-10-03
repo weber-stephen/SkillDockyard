@@ -1,0 +1,5 @@
+import { PublicDocument } from "@/components/public-document";
+
+export default function SupportPage() {
+  return <PublicDocument title="Support" intro="Tell us what you were trying to do, what happened, and the page where you saw the problem."><section><h2>Contact support</h2><p>Email <a className="font-bold text-primary underline" href="mailto:support@skilldockyard.com">support@skilldockyard.com</a>. Do not include passwords, access tokens, pairing codes, or private skill contents in your message.</p></section><section><h2>Account access</h2><p>Use the password reset link on the login page first. For workspace ownership recovery, contact support from the email address associated with your account. We will verify the request before changing access.</p></section><section><h2>Security concerns</h2><p>For a suspected security issue, use the subject “Security report” and include a safe description of the issue. Do not access another user’s data or test against production accounts you do not own.</p></section></PublicDocument>;
+}

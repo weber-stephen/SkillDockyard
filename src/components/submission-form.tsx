@@ -115,7 +115,7 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
     }
 
     if (payload.mode === "demo") {
-      const draft = writeLocalDraft(window.localStorage, {
+      writeLocalDraft(window.localStorage, {
         mode,
         existingArtifact: selectedArtifact,
         name,

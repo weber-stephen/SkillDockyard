@@ -1,4 +1,4 @@
-import matter from "gray-matter";
+import { parseFrontmatter } from "@/lib/frontmatter";
 
 export const skillTemplate = `---
 name: My Skill
@@ -31,7 +31,7 @@ export interface WritingCheck { label: string; complete: boolean; required: bool
 export function getSkillWritingChecks(content: string): WritingCheck[] {
   let data: Record<string, unknown> = {};
   let body = content;
-  try { const parsed = matter(content); data = parsed.data; body = parsed.content; } catch { /* Show incomplete checks for malformed frontmatter. */ }
+  try { const parsed = parseFrontmatter(content); data = parsed.data; body = parsed.content; } catch { /* Show incomplete checks for malformed frontmatter. */ }
   const headings = body.toLowerCase();
   return [
     { label: "Clear skill name", complete: typeof data.name === "string" && Boolean(data.name.trim()), required: true },

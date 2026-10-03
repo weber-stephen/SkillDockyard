@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createWorkspaceScanToken, listWorkspaceScanTokens, revokeWorkspaceScanToken } from "@/lib/scan-tokens";
 import { getSupabaseErrorStatus } from "@/lib/supabase/errors";
+import { z } from "zod";
+import { readJsonSchema } from "@/lib/request-body";
+const tokenIdSchema = z.object({ id: z.uuid() }).strict();
 
 export async function GET() {
   try { return NextResponse.json({ tokens: await listWorkspaceScanTokens() }); }
@@ -14,8 +17,7 @@ export async function POST() {
 
 export async function DELETE(request: Request) {
   try {
-    const body = await request.json() as { id?: unknown };
-    if (typeof body.id !== "string" || !body.id) return NextResponse.json({ error: "A token id is required." }, { status: 400 });
+    const body = await readJsonSchema(request, tokenIdSchema, 1024);
     await revokeWorkspaceScanToken(body.id);
     return NextResponse.json({ ok: true });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to revoke the scan token." }, { status: getSupabaseErrorStatus(error) }); }

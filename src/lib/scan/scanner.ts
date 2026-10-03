@@ -2,8 +2,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import fg from "fast-glob";
-import matter from "gray-matter";
+import { glob } from "tinyglobby";
+import { parseFrontmatter } from "@/lib/frontmatter";
 import { defaultExcludes, defaultIncludes, type RepoConfig, type SkillDockyardConfig } from "@/lib/scan/config";
 import { getBranch, getCommitSha, getLastModifier, getRepoName } from "@/lib/scan/git";
 import { detectRisks } from "@/lib/scan/risk";
@@ -42,12 +42,11 @@ export async function scanRepo(repo: RepoConfig, config: SkillDockyardConfig): P
   const root = path.resolve(repo.path);
   const include = repo.include?.length ? repo.include : defaultIncludes;
   const exclude = [...defaultExcludes, ...(repo.exclude ?? [])];
-  const entries = await fg(include, {
+  const entries = await glob(include, {
     cwd: root,
     onlyFiles: true,
     dot: true,
-    ignore: exclude,
-    unique: true
+    ignore: exclude
   });
   const repoName = repo.name ?? getRepoName(root);
   const branch = getBranch(root);
@@ -58,7 +57,7 @@ export async function scanRepo(repo: RepoConfig, config: SkillDockyardConfig): P
 function buildArtifact(root: string, repoName: string, branch: string | null, filePath: string, config: SkillDockyardConfig): ScanArtifactInput {
   const absolute = path.join(root, filePath);
   const content = fs.readFileSync(absolute, "utf8");
-  const parsed = matter(content);
+  const parsed = parseFrontmatter(content);
   const type = inferArtifactType(filePath);
   const name = extractName(filePath, parsed.data.name, content);
   const description = extractDescription(parsed.data.description, parsed.content);

@@ -71,4 +71,36 @@ describe("Supabase migration coverage", () => {
     expect(accessSql).toContain("revoke all privileges on type public.user_account_type from public, anon, authenticated");
     expect(serviceRoleSql).toContain("grant usage on type public.user_account_type to service_role");
   });
+
+  it("provisions a personal workspace atomically and fails closed on inconsistent ownership", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003151241_ensure_personal_workspace.sql"), "utf8");
+    expect(sql).toContain("pg_advisory_xact_lock");
+    expect(sql).toContain("owner_membership_count <> 1");
+    expect(sql).toContain("raise exception 'Personal workspace ownership is inconsistent'");
+    expect(sql).toContain("insert into public.workspace_members");
+    expect(sql).toContain("insert into public.audit_events");
+    expect(sql).toContain("revoke all on function public.ensure_personal_workspace(uuid, text, text) from public, anon, authenticated");
+    expect(sql).toContain("grant execute on function public.ensure_personal_workspace(uuid, text, text) to service_role");
+  });
+
+  it("keeps share lifecycle mutations and their audit events in one transaction", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003152854_atomic_share_lifecycle.sql"), "utf8");
+    for (const fn of ["create_artifact_share", "respond_to_artifact_share", "revoke_artifact_share"]) {
+      expect(sql).toContain(`function public.${fn}`);
+      expect(sql).toContain(`revoke all on function public.${fn}`);
+    }
+    expect(sql.match(/insert into public\.audit_events/g)?.length).toBe(3);
+    expect(sql).toContain("email_confirmed_at is not null");
+    expect(sql).toContain("role in ('owner', 'reviewer')");
+  });
+
+  it("makes legacy workflow function security and execute grants explicit", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003153210_harden_function_execution.sql"), "utf8");
+    expect(sql).toContain("alter function public.promote_private_artifact(uuid, uuid, text) security invoker");
+    expect(sql).toContain("alter function public.decide_proposal(uuid, uuid, text, text, text) security invoker");
+    expect(sql).toContain("function public.decide_legacy_artifact");
+    expect(sql).toContain("insert into public.approvals");
+    expect(sql).toContain("insert into public.audit_events");
+    expect(sql).toContain("from public, anon, authenticated");
+  });
 });

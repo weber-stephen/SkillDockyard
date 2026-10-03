@@ -1,66 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({
-  getViewerContext: vi.fn(),
-  createServerSupabase: vi.fn()
-}));
-
+const mocks = vi.hoisted(() => ({ getViewerContext: vi.fn(), createServerSupabase: vi.fn() }));
 vi.mock("@/lib/access", () => ({ getViewerContext: mocks.getViewerContext, computeArtifactPermission: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: mocks.createServerSupabase }));
 
 import { acceptShareInvite } from "@/lib/shares";
 
-function query(result: unknown) {
-  const chain = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue(result)
-  };
-  return chain;
-}
-
 describe("workspace share invite acceptance", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => { vi.clearAllMocks(); });
 
-  it("uses the invited workspace even when membership order changes", async () => {
-    const updateChain = query({ data: { id: "share-1", status: "active", target_workspace_id: "workspace-b" }, error: null });
-    const artifactShares = { update: vi.fn().mockReturnValue(updateChain) };
-    const shareLookup = query({
-      data: { id: "share-1", status: "pending", target_type: "workspace", target_email: "owner@example.com", target_workspace_id: "workspace-b", source_workspace_id: "source", artifact_id: "artifact" },
-      error: null
-    });
-    const from = vi.fn().mockReturnValueOnce(shareLookup).mockReturnValueOnce(artifactShares).mockReturnValueOnce({ insert: vi.fn().mockResolvedValue({ error: null }) });
-    mocks.createServerSupabase.mockReturnValue({ from });
-    mocks.getViewerContext.mockResolvedValue({
-      user: { id: "owner", email: "owner@example.com" },
-      memberships: [
-        { workspace_id: "workspace-a", role: "owner" },
-        { workspace_id: "workspace-b", role: "owner" }
-      ],
-      workspaces: []
-    });
-
+  it("uses the atomic database function with the verified user identity", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: { id: "share-1", status: "active", target_workspace_id: "workspace-b" }, error: null });
+    mocks.createServerSupabase.mockReturnValue({ rpc });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "owner", email: "owner@example.com", email_confirmed_at: "2026-10-03T00:00:00Z" }, memberships: [], workspaces: [] });
     const accepted = await acceptShareInvite("share-1");
-
     expect(accepted.target_workspace_id).toBe("workspace-b");
-    expect(artifactShares.update).toHaveBeenCalledWith(expect.objectContaining({ target_workspace_id: "workspace-b" }));
-    expect(updateChain.eq).toHaveBeenCalledWith("status", "pending");
+    expect(rpc).toHaveBeenCalledWith("respond_to_artifact_share", { p_share_id: "share-1", p_actor_user_id: "owner", p_actor_email: "owner@example.com", p_accept: true });
   });
 
-  it("fails closed for an ambiguous legacy invite without a target workspace", async () => {
-    const shareLookup = query({
-      data: { id: "share-1", status: "pending", target_type: "workspace", target_email: "owner@example.com", target_workspace_id: null, source_workspace_id: "source", artifact_id: "artifact" },
-      error: null
-    });
-    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(shareLookup) });
-    mocks.getViewerContext.mockResolvedValue({
-      user: { id: "owner", email: "owner@example.com" },
-      memberships: [{ workspace_id: "workspace-a", role: "owner" }, { workspace_id: "workspace-b", role: "owner" }],
-      workspaces: []
-    });
+  it("fails closed when the database rejects workspace ownership", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: new Error("You must be the workspace owner to accept this share") });
+    mocks.createServerSupabase.mockReturnValue({ rpc });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "owner", email: "owner@example.com", email_confirmed_at: "2026-10-03T00:00:00Z" }, memberships: [], workspaces: [] });
+    await expect(acceptShareInvite("share-1")).rejects.toThrow("workspace owner");
+  });
 
-    await expect(acceptShareInvite("share-1")).rejects.toThrow("owner of the invited workspace");
+  it("requires a verified email before calling the mutation", async () => {
+    const rpc = vi.fn();
+    mocks.createServerSupabase.mockReturnValue({ rpc });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "owner", email: "owner@example.com", email_confirmed_at: null }, memberships: [], workspaces: [] });
+    await expect(acceptShareInvite("share-1")).rejects.toThrow("Confirm your email");
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

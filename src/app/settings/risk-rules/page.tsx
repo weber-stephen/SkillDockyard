@@ -6,12 +6,12 @@ export default async function RiskRulesPage() {
   return (
     <div className="space-y-6">
       <header className="border-b border-border pb-6">
-        <h1 className="text-3xl font-black">Trust Rules</h1>
+        <h1 className="text-3xl font-black">Compatibility and safety</h1>
         <p className="mt-2 text-muted-foreground">Compatibility checks help authors understand new tools and dependencies before publishing.</p>
       </header>
       <section className="grid gap-4 md:grid-cols-2">
         <RulePanel title="Allowed connectors" items={settings.approvedMcpServers} />
-        <RulePanel title="High-Impact Tools" items={settings.highImpactTools} />
+        <RulePanel title="Tools requiring review" items={settings.highImpactTools} />
       </section>
     </div>
   );

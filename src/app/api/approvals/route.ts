@@ -2,22 +2,20 @@ import { NextResponse } from "next/server";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getArtifactDetail } from "@/lib/data";
 import { getViewerContext } from "@/lib/access";
+import { z } from "zod";
+import { readJsonSchema } from "@/lib/request-body";
+
+const approvalSchema = z.object({ artifactId: z.uuid(), versionId: z.uuid(), decision: z.enum(["approved", "deprecated"]), note: z.string().trim().max(4000).optional() }).strict();
 
 export async function POST(request: Request) {
   if (new URL(request.url).searchParams.get("demo") === "1") return NextResponse.json({ ok: true, demo: true });
-  const body = await request.json();
+  const body = await readJsonSchema(request, approvalSchema, 8 * 1024);
   if (!hasSupabaseConfig()) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
 
   const supabase = createServerSupabase();
   const { artifactId, versionId, decision, note } = body;
-  if (!artifactId || !versionId) {
-    return NextResponse.json({ error: "artifactId and versionId are required." }, { status: 400 });
-  }
-  if (decision !== "approved" && decision !== "deprecated") {
-    return NextResponse.json({ error: "decision must be approved or deprecated." }, { status: 400 });
-  }
   const detail = await getArtifactDetail(artifactId);
   if (!detail) return NextResponse.json({ error: "Artifact not found." }, { status: 404 });
   if (!detail.can_publish) {
@@ -27,54 +25,14 @@ export async function POST(request: Request) {
   const { user } = await getViewerContext();
   const reviewerName = user.email ?? "Workspace reviewer";
 
-  const { data: artifact, error: artifactLookupError } = await supabase
-    .from("artifacts")
-    .select("id, workspace_id")
-    .eq("id", artifactId)
-    .single();
-  if (artifactLookupError) return NextResponse.json({ error: artifactLookupError.message }, { status: 404 });
-
-  const { data: version, error: versionLookupError } = await supabase
-    .from("artifact_versions")
-    .select("id")
-    .eq("id", versionId)
-    .eq("artifact_id", artifactId)
-    .maybeSingle();
-  if (versionLookupError) return NextResponse.json({ error: versionLookupError.message }, { status: 400 });
-  if (!version) return NextResponse.json({ error: "That version does not belong to this skill." }, { status: 404 });
-
-  const { error: approvalError } = await supabase.from("approvals").insert({
-    artifact_id: artifactId,
-    artifact_version_id: versionId,
-    reviewer_name: reviewerName,
-    decision,
-    note: typeof note === "string" && note.trim() ? note.trim() : null
+  const { data, error } = await supabase.rpc("decide_legacy_artifact", {
+    p_artifact_id: artifactId,
+    p_version_id: versionId,
+    p_actor_user_id: user.id,
+    p_actor_email: reviewerName,
+    p_decision: decision,
+    p_note: note ?? null
   });
-
-  if (approvalError) return NextResponse.json({ error: approvalError.message }, { status: 400 });
-
-  const nextStatus = decision === "approved" ? "approved" : "deprecated";
-  const updatePayload = {
-    status: nextStatus,
-    current_version_id: versionId,
-    ...(decision === "approved" ? { approved_version_id: versionId } : {})
-  };
-  const { error: artifactError } = await supabase
-    .from("artifacts")
-    .update(updatePayload)
-    .eq("id", artifactId);
-
-  if (artifactError) return NextResponse.json({ error: artifactError.message }, { status: 400 });
-  const { error: versionError } = await supabase.from("artifact_versions").update({ status: nextStatus }).eq("id", versionId).eq("artifact_id", artifactId);
-  if (versionError) return NextResponse.json({ error: versionError.message }, { status: 400 });
-
-  await supabase.from("audit_events").insert({
-    workspace_id: artifact.workspace_id,
-    artifact_id: artifactId,
-    actor_name: reviewerName,
-    event_type: decision,
-    metadata: { versionId, note: typeof note === "string" ? note : null }
-  });
-
-  return NextResponse.json({ ok: true });
+  if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+  return NextResponse.json({ ok: true, result: data });
 }

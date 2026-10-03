@@ -44,21 +44,15 @@ export const getCurrentUser = cache(async () => {
 export const ensurePersonalWorkspace = cache(async (user: User) => {
   if (!hasSupabaseConfig()) throw new Error("Supabase data is not configured.");
   const supabase = createServerSupabase();
-  const { data: existing, error: existingError } = await supabase.from("workspaces").select("id").eq("owner_user_id", user.id).maybeSingle();
-  if (existingError) throw existingError;
-  if (existing?.id) return existing.id as string;
-
   const name = `${(user.email ?? "My").split("@")[0]} workspace`;
-  const { data: created, error: createError } = await supabase.from("workspaces").insert({ name, owner_user_id: user.id }).select("id").single();
-  if (createError) {
-    const { data: raced, error: racedError } = await supabase.from("workspaces").select("id").eq("owner_user_id", user.id).single();
-    if (racedError || !raced) throw createError;
-    return raced.id as string;
-  }
-  const workspaceId = created.id as string;
-  const { error: memberError } = await supabase.from("workspace_members").upsert({ workspace_id: workspaceId, user_id: user.id, email: user.email, role: "owner" }, { onConflict: "workspace_id,user_id" });
-  if (memberError) throw memberError;
-  return workspaceId;
+  const { data, error } = await supabase.rpc("ensure_personal_workspace", {
+    p_user_id: user.id,
+    p_user_email: user.email ?? "",
+    p_workspace_name: name
+  });
+  if (error) throw error;
+  if (typeof data !== "string") throw new Error("Personal workspace provisioning returned an invalid result.");
+  return data;
 });
 
 export const requireWorkspaceId = cache(async () => {

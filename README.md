@@ -11,6 +11,8 @@ Skill Dockyard is a shared skill library for teams: scan `AGENTS.md`, `CLAUDE.md
 
 ## Getting Started
 
+Use Node.js 22.12 or later. The repository includes `.node-version` for compatible version managers.
+
 ### 1. Install dependencies
 
 ```bash
@@ -35,10 +37,10 @@ Use [the production launch checklist](docs/production-launch-checklist.md) to tr
 
 ### 3. Submit a skill without Git
 
-Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to propose an update:
+Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to submit an update:
 
 - **Add a new skill** to paste instructions that should become part of the shared library.
-- **Propose an update** to start from an existing skill and suggest an improved version.
+- **Submit an update** to start from an existing skill and suggest an improved version.
 
 Skill Dockyard checks the pasted content for trust notes and prepares it for comparison. In the demo, submissions are local browser drafts. In the authenticated app, submissions save to the account's private workspace; publishing still happens from the Compare Versions page.
 
@@ -150,6 +152,13 @@ supabase/migrations/20260903041344_permission_model.sql
 supabase/migrations/20260904233130_proposal_lifecycle.sql
 supabase/migrations/20260907090000_private_skill_visibility.sql
 supabase/migrations/20260909100000_workspace_membership_admin.sql
+supabase/migrations/20260920030947_feedback_adoption_updates.sql
+supabase/migrations/20260922042204_add_user_accounts.sql
+supabase/migrations/20260922042509_restrict_user_account_access.sql
+supabase/migrations/20260922042825_grant_service_role_user_account_type.sql
+supabase/migrations/20261003151241_ensure_personal_workspace.sql
+supabase/migrations/20261003152854_atomic_share_lifecycle.sql
+supabase/migrations/20261003153210_harden_function_execution.sql
 ```
 
 The `/demo` route uses fixture data so the product surface is explorable before backend setup. The authenticated `/app` route requires the Supabase environment variables and shows a configuration screen when the live workspace is not connected.
@@ -163,6 +172,13 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+NEXT_PUBLIC_SENTRY_DSN=
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
 SKILL_DOCKYARD_INGEST_TOKEN=
 SKILL_DOCKYARD_INGEST_WORKSPACE_ID=
 ```
@@ -173,6 +189,10 @@ SKILL_DOCKYARD_INGEST_WORKSPACE_ID=
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase Dashboard -> Connect | Browser-safe key used only for email/password authentication. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard -> your project -> Project Settings -> API -> Project API keys -> `service_role` / `secret` key | Keep this server-only. Required for live Supabase mode because prototype API routes write through service-role-only RLS policies. |
 | `NEXT_PUBLIC_SITE_URL` | Your deployed app URL | Add `/auth/confirm` to Supabase Auth Redirect URLs and set the Confirm signup template to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`. |
+| `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis database | Server-only shared rate limiting. Production requests fail closed if these are missing. |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile widget | Public site key. Configure the corresponding secret in Supabase Auth CAPTCHA settings, not in the web app. |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry project settings | Public error-ingest endpoint. Event scrubbing removes request bodies, headers, cookies, and user details other than an internal user id. |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | Sentry project settings | Server-only build credentials used to upload source maps. |
 | `SKILL_DOCKYARD_INGEST_TOKEN` | Generate a long random value | Required by the CLI scan endpoint. Keep server-only. |
 | `SKILL_DOCKYARD_INGEST_WORKSPACE_ID` | UUID of a workspace intended for CLI ingest | Required for a scanner connector; browser users receive their own workspace automatically. |
 

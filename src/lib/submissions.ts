@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import matter from "gray-matter";
+import { parseFrontmatter } from "@/lib/frontmatter";
 import { detectRisks } from "@/lib/scan/risk";
 import type { Artifact, ArtifactDetail, ArtifactType, ScanArtifactInput } from "@/lib/types";
 import { INGEST_LIMITS, isSnapshotWithinLimit } from "@/lib/ingest-limits";
@@ -52,7 +52,7 @@ export function buildManualSubmission(
     throw new Error("Paste the full skill instructions before submitting.");
   }
 
-  const parsed = matter(skillText);
+  const parsed = parseFrontmatter(skillText);
   const fallbackName = mode === "update" && existing ? existing.name : "";
   const name = stringValue(input.name) || stringValue(parsed.data.name) || fallbackName;
   if (!name) throw new Error("Give this skill a clear name.");

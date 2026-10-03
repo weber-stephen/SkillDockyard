@@ -10,27 +10,27 @@ const pageRoutes = [
   ["/", "Keep your team’s best AI instructions current and easy to reuse."],
   ["/login", ""],
   ["/signup", ""],
-  ["/demo", "Share your skill improvements without losing what changed."],
+  ["/demo", "Keep every shared skill reviewed, current, and ready to use."],
   ["/demo/getting-started", "Your first skill is in your library."],
   ["/demo/artifacts", "Skills"],
   ["/demo/artifacts/art_release_captain", "Campaign Brief Builder"],
   ["/demo/artifacts/art_release_captain/review", "Version Integrity"],
-  ["/demo/artifacts/art_release_captain/update", "You cannot propose an update here."],
+  ["/demo/artifacts/art_release_captain/update", "You cannot submit an update here."],
   ["/demo/artifacts/art_security_agent", "Sales Discovery Prep"],
   ["/demo/artifacts/art_security_agent/review", "Version Integrity"],
-  ["/demo/artifacts/art_security_agent/update", "You cannot propose an update here."],
+  ["/demo/artifacts/art_security_agent/update", "You cannot submit an update here."],
   ["/demo/artifacts/art_agents_md", "Customer Voice Digest"],
   ["/demo/artifacts/art_agents_md/review", "Version Integrity"],
-  ["/demo/artifacts/art_agents_md/update", "You cannot propose an update here."],
+  ["/demo/artifacts/art_agents_md/update", "You cannot submit an update here."],
   ["/demo/submit", "Add a new skill to the library."],
-  ["/demo/submit/update", "Propose an update to a skill."],
+  ["/demo/submit/update", "Submit an update to a skill."],
   ["/demo/submissions", "My submissions"],
   ["/demo/review-queue", "Submissions to review"],
   ["/demo/notifications", "No notifications yet"],
   ["/demo/invites", "Invitations"],
   ["/demo/exports", "Exports"],
-  ["/demo/settings/repos", "Repository and scanner settings"],
-  ["/demo/settings/risk-rules", "Trust Rules"]
+  ["/demo/settings/repos", "Import settings"],
+  ["/demo/settings/risk-rules", "Compatibility and safety"]
 ] as const;
 
 const errorMarkers = [
@@ -133,7 +133,7 @@ async function assertDemoRedirect() {
   if (result.finalPath !== "/demo/artifacts/art_release_captain/update") {
     throw new Error(`Demo submit redirect ended at ${result.finalPath}, expected /demo/artifacts/art_release_captain/update.`);
   }
-  assertPage(result, "You cannot propose an update here.");
+  assertPage(result, "You cannot submit an update here.");
 }
 
 async function assertDemoExports() {

@@ -1,4 +1,4 @@
-import matter from "gray-matter";
+import { parseFrontmatter, stringifyFrontmatter } from "@/lib/frontmatter";
 import type { ArtifactDetail } from "@/lib/types";
 
 export type DownloadTarget = "codex" | "claude-code";
@@ -29,7 +29,7 @@ export function getPortableSkillStatus(artifact: PortableSkillArtifact): Portabl
     return { eligible: false, reason: artifact.visibility === "private" ? "This private draft has no saved version yet." : "This skill has not been published yet." };
   }
 
-  const parsed = matter(version.content_snapshot);
+  const parsed = parseFrontmatter(version.content_snapshot);
   const keys = Object.keys(parsed.data);
   const name = typeof parsed.data.name === "string" && parsed.data.name.trim() ? parsed.data.name : artifact.name;
   const description = typeof parsed.data.description === "string" && parsed.data.description.trim()
@@ -54,7 +54,7 @@ export function getPortableSkillContent(artifact: PortableSkillArtifact) {
   const version = getDownloadVersion(artifact);
   if (!version) return null;
 
-  const parsed = matter(version.content_snapshot);
+  const parsed = parseFrontmatter(version.content_snapshot);
   const name = typeof parsed.data.name === "string" && parsed.data.name.trim() ? parsed.data.name : artifact.name;
   const description = typeof parsed.data.description === "string" && parsed.data.description.trim()
     ? parsed.data.description
@@ -65,7 +65,7 @@ export function getPortableSkillContent(artifact: PortableSkillArtifact) {
     return version.content_snapshot;
   }
 
-  return matter.stringify(parsed.content, { ...parsed.data, name, description });
+  return stringifyFrontmatter(parsed.content, { ...parsed.data, name, description });
 }
 
 export function getInstallDirectory(target: DownloadTarget, os: DownloadOs) {

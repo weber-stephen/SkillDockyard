@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ProductLink as Link } from "@/components/product-link";
 import { Anchor, ArrowDown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -97,10 +97,10 @@ export default function MarketingPage() {
                 </a>
               </Button>
               <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
-                <a href="/demo">
+                <Link href="/demo">
                   Explore the demo
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </a>
+                </Link>
               </Button>
             </div>
           </div>
@@ -139,9 +139,9 @@ function SiteHeader() {
           <a className="inline-flex min-h-11 items-center justify-center px-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:text-sm" href="#how-it-works">
             How it works
           </a>
-          <a className="inline-flex min-h-11 items-center justify-center px-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm" href="/demo">
+          <Link className="inline-flex min-h-11 items-center justify-center px-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm" href="/demo">
             Demo
-          </a>
+          </Link>
           <Link className="inline-flex min-h-11 items-center justify-center px-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:text-sm" href="/login">
             Log in
           </Link>
@@ -309,10 +309,10 @@ function ClosingCallToAction() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
           <Button asChild className="min-h-11 w-full sm:w-auto">
-            <a href="/demo">
+            <Link href="/demo">
               Explore the demo
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </a>
+            </Link>
           </Button>
           <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
             <Link href="/signup">Create account</Link>
@@ -332,9 +332,12 @@ function SiteFooter() {
           <p className="mt-1 text-sm leading-6 text-muted-foreground">A shared home for the AI workflows your team wants to trust and reuse.</p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
-          <a className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/demo">Demo</a>
+          <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/demo">Demo</Link>
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/login">Log in</Link>
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/signup">Create account</Link>
+          <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/privacy">Privacy</Link>
+          <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/terms">Terms</Link>
+          <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/support">Support</Link>
         </nav>
       </div>
     </footer>

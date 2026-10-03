@@ -102,7 +102,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                     )}
                   </TableCell>
                   <TableCell><div className="space-y-2">
-                    {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : artifact.visibility === "private" ? <Badge variant="secondary">Owned by you</Badge> : artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with workspace</Badge> : <Badge variant="outline">Workspace skill</Badge>}
+                    {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with your workspace</Badge> : <Badge variant="outline">Workspace skill</Badge>}
                     {!localDraft && artifact.source_workspace_name ? <span className="block text-xs text-muted-foreground">Managed by {artifact.source_workspace_name}</span> : null}
                   </div></TableCell>
                   <TableCell>
@@ -114,7 +114,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       {artifact.risk_count > 0 ? (
                         <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                           <AlertTriangle className="h-3.5 w-3.5 text-amber-700" />
-                          {artifact.risk_count} trust note{artifact.risk_count === 1 ? "" : "s"}
+                          {artifact.risk_count} review note{artifact.risk_count === 1 ? "" : "s"}
                         </span>
                       ) : null}
                     </div>

@@ -1,19 +1,25 @@
 import { NextResponse } from "next/server";
 import { createShare } from "@/lib/shares";
 import { getSupabaseErrorStatus } from "@/lib/supabase/errors";
+import { z } from "zod";
+import { readJsonSchema } from "@/lib/request-body";
+import { requireUser } from "@/lib/supabase/auth";
+import { actionRateLimit } from "@/lib/api-rate-limit";
+
+const shareSchema = z.object({ artifactId: z.uuid(), targetType: z.enum(["user", "workspace"]), targetEmail: z.email().max(320).optional(), targetWorkspaceId: z.uuid().optional(), targetWorkspaceName: z.string().trim().max(120).optional(), permission: z.enum(["view", "propose"]) }).strict();
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  if (body.permission !== "view" && body.permission !== "propose") {
-    return NextResponse.json({ error: "Choose whether the recipient can propose updates or view only." }, { status: 400 });
-  }
   try {
+    const user = await requireUser();
+    const limited = await actionRateLimit("share", user.id, 15);
+    if (limited) return limited;
+    const body = await readJsonSchema(request, shareSchema, 4096);
     const share = await createShare({
-      artifactId: String(body.artifactId ?? ""),
-      targetType: body.targetType === "workspace" ? "workspace" : "user",
-      targetEmail: typeof body.targetEmail === "string" ? body.targetEmail : undefined,
-      targetWorkspaceId: typeof body.targetWorkspaceId === "string" && body.targetWorkspaceId ? body.targetWorkspaceId : undefined,
-      targetWorkspaceName: typeof body.targetWorkspaceName === "string" ? body.targetWorkspaceName : undefined,
+      artifactId: body.artifactId,
+      targetType: body.targetType,
+      targetEmail: body.targetEmail,
+      targetWorkspaceId: body.targetWorkspaceId,
+      targetWorkspaceName: body.targetWorkspaceName,
       permission: body.permission
     });
     return NextResponse.json({ ok: true, share });

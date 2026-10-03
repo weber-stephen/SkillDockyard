@@ -1,7 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getViewerContext, computeArtifactPermission } from "@/lib/access";
 import { isMissingSupabaseSchemaError, schemaUnavailableMessage, SchemaUnavailableError } from "@/lib/supabase/errors";
-import type { ArtifactShare, SharePermission, ShareTargetType, Workspace } from "@/lib/types";
+import type { ArtifactShare, SharePermission, ShareTargetType } from "@/lib/types";
 
 export async function getArtifactShares(artifactId: string) {
   const supabase = createServerSupabase();
@@ -128,73 +128,38 @@ export async function createShare(input: {
   if (input.targetType === "user" && !payload.target_email) throw new Error("Recipient email is required.");
   if (input.targetType === "workspace" && !payload.target_workspace_id && !payload.target_email) throw new Error("Choose a workspace or enter the workspace owner email.");
 
-  const { data, error } = await supabase.from("artifact_shares").insert(payload).select("*").single();
+  const { data, error } = await supabase.rpc("create_artifact_share", {
+    p_artifact_id: input.artifactId,
+    p_actor_user_id: user.id,
+    p_actor_email: user.email ?? "",
+    p_target_type: input.targetType,
+    p_target_email: payload.target_email,
+    p_target_workspace_id: payload.target_workspace_id,
+    p_target_workspace_name: payload.target_workspace_name,
+    p_permission: input.permission,
+    p_activate: payload.status === "active"
+  });
   if (error && isMissingSupabaseSchemaError(error)) throw new SchemaUnavailableError(schemaUnavailableMessage("Sharing"));
   if (error) throw error;
-  await recordShareAudit(artifact.workspace_id, input.artifactId, user.email ?? "Unknown", "skill_shared", {
-    shareId: data.id,
-    targetType: input.targetType,
-    targetEmail: "target_email" in payload ? payload.target_email : null,
-    targetWorkspaceId: "target_workspace_id" in payload ? payload.target_workspace_id : null
-  });
   return data as ArtifactShare;
 }
 
 export async function acceptShareInvite(shareId: string) {
-  const { user, memberships } = await getViewerContext();
+  const { user } = await getViewerContext();
+  if (!user.email_confirmed_at) throw new Error("Confirm your email before accepting an invitation.");
   const supabase = createServerSupabase();
-  const { data: share, error } = await supabase.from("artifact_shares").select("*").eq("id", shareId).single();
-  if (error || !share) throw new Error("Invite not found.");
-  if (share.status !== "pending") throw new Error("This invite is no longer pending.");
-  if ((share.target_email ?? "").toLowerCase() !== (user.email ?? "").toLowerCase()) throw new Error("This invite is not addressed to your account.");
-
-  const updatePayload =
-    share.target_type === "user"
-      ? { status: "active", target_user_id: user.id, activated_at: new Date().toISOString() }
-      : {
-          status: "active",
-          target_workspace_id: share.target_workspace_id,
-          activated_at: new Date().toISOString()
-        };
-
-  if (share.target_type === "workspace") {
-    const targetMembership = memberships.find((membership) => membership.workspace_id === share.target_workspace_id);
-    if (!targetMembership || targetMembership.role !== "owner") {
-      throw new Error("You must be the owner of the invited workspace before accepting this share.");
-    }
-  }
-
-  const { data: updated, error: updateError } = await supabase
-    .from("artifact_shares")
-    .update(updatePayload)
-    .eq("id", shareId)
-    .eq("status", "pending")
-    .select("*")
-    .single();
-  if (updateError) throw updateError;
-  await recordShareAudit(share.source_workspace_id, share.artifact_id, user.email ?? "Unknown", "share_accepted", {
-    shareId
-  });
-  return updated as ArtifactShare;
+  const { data, error } = await supabase.rpc("respond_to_artifact_share", { p_share_id: shareId, p_actor_user_id: user.id, p_actor_email: user.email ?? "", p_accept: true });
+  if (error) throw error;
+  return data as ArtifactShare;
 }
 
 export async function declineShareInvite(shareId: string) {
   const { user } = await getViewerContext();
+  if (!user.email_confirmed_at) throw new Error("Confirm your email before responding to an invitation.");
   const supabase = createServerSupabase();
-  const { data: share, error } = await supabase.from("artifact_shares").select("*").eq("id", shareId).single();
-  if (error || !share) throw new Error("Invite not found.");
-  if ((share.target_email ?? "").toLowerCase() !== (user.email ?? "").toLowerCase()) throw new Error("This invite is not addressed to your account.");
-  const { data: updated, error: updateError } = await supabase
-    .from("artifact_shares")
-    .update({ status: "declined", declined_at: new Date().toISOString() })
-    .eq("id", shareId)
-    .select("*")
-    .single();
-  if (updateError) throw updateError;
-  await recordShareAudit(share.source_workspace_id, share.artifact_id, user.email ?? "Unknown", "share_declined", {
-    shareId
-  });
-  return updated as ArtifactShare;
+  const { data, error } = await supabase.rpc("respond_to_artifact_share", { p_share_id: shareId, p_actor_user_id: user.id, p_actor_email: user.email ?? "", p_accept: false });
+  if (error) throw error;
+  return data as ArtifactShare;
 }
 
 export async function revokeShare(shareId: string) {
@@ -214,27 +179,9 @@ export async function revokeShare(shareId: string) {
   });
   if (!permission?.canManageShares) throw new Error("Only source workspace owners or reviewers can revoke a share.");
 
-  const { data: updated, error: updateError } = await supabase
-    .from("artifact_shares")
-    .update({ status: "revoked", revoked_at: new Date().toISOString() })
-    .eq("id", shareId)
-    .select("*")
-    .single();
-  if (updateError) throw updateError;
-  await recordShareAudit(share.source_workspace_id, share.artifact_id, user.email ?? "Unknown", "share_revoked", {
-    shareId
-  });
-  return updated as ArtifactShare;
-}
-
-async function recordShareAudit(workspaceId: string, artifactId: string, actorName: string, eventType: string, metadata: Record<string, unknown>) {
-  await createServerSupabase().from("audit_events").insert({
-    workspace_id: workspaceId,
-    artifact_id: artifactId,
-    actor_name: actorName,
-    event_type: eventType,
-    metadata
-  });
+  const { data, error: revokeError } = await supabase.rpc("revoke_artifact_share", { p_share_id: shareId, p_actor_user_id: user.id, p_actor_email: user.email ?? "" });
+  if (revokeError) throw revokeError;
+  return data as ArtifactShare;
 }
 
 function normalizeEmail(value: string | undefined) {

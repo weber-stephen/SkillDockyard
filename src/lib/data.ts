@@ -4,7 +4,7 @@ import { getArtifactShares } from "@/lib/shares";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getProductMode } from "@/lib/product-mode";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
-import type { Artifact, ArtifactDetail, GovernanceExportRow, Proposal } from "@/lib/types";
+import type { Artifact, ArtifactDetail, ArtifactShare, GovernanceExportRow, Proposal } from "@/lib/types";
 
 export async function listArtifacts(): Promise<Artifact[]> {
   if ((await getProductMode()) === "demo") return sampleArtifacts;
@@ -33,7 +33,7 @@ export async function listArtifacts(): Promise<Artifact[]> {
     .order("updated_at", { ascending: false });
 
   if (error) throw error;
-  const sharesByArtifact = groupSharesByArtifact(sharedRows ?? []);
+  const sharesByArtifact = groupSharesByArtifact((sharedRows ?? []) as ArtifactShare[]);
   const sourceWorkspaceIds = [...new Set((data ?? []).map((artifact) => artifact.workspace_id as string))];
   const { data: sourceWorkspaces, error: sourceWorkspaceError } = sourceWorkspaceIds.length
     ? await supabase.from("workspaces").select("id, name").in("id", sourceWorkspaceIds)
@@ -136,8 +136,8 @@ export function getDemoArtifactDetail(id: string): ArtifactDetail | null {
   return sampleDetails[id] ?? null;
 }
 
-function groupSharesByArtifact(rows: Array<{ artifact_id: string }>) {
-  const result = new Map<string, any[]>();
+function groupSharesByArtifact(rows: ArtifactShare[]) {
+  const result = new Map<string, ArtifactShare[]>();
   for (const row of rows) {
     const current = result.get(row.artifact_id) ?? [];
     current.push(row);

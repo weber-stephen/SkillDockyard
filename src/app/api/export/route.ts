@@ -2,24 +2,28 @@ import { NextResponse } from "next/server";
 import { listGovernanceExportRows } from "@/lib/data";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { ensureWorkspaceId } from "@/lib/settings";
+import { requireUser } from "@/lib/supabase/auth";
+import { actionRateLimit } from "@/lib/api-rate-limit";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const format = url.searchParams.get("format") ?? "json";
   const demo = url.searchParams.get("demo") === "1";
+  if (!demo) {
+    const user = await requireUser();
+    const limited = await actionRateLimit("export", user.id, 10);
+    if (limited) return limited;
+  }
   const rows = await listGovernanceExportRows(demo);
 
   if (hasSupabaseConfig() && !demo) {
-    try {
-      const supabase = createServerSupabase();
-      await supabase.from("export_runs").insert({
-        workspace_id: await ensureWorkspaceId(),
-        format,
-        artifact_count: rows.length
-      });
-    } catch {
-      // Export downloads should not fail because bookkeeping failed.
-    }
+    const supabase = createServerSupabase();
+    const { error } = await supabase.from("export_runs").insert({
+      workspace_id: await ensureWorkspaceId(),
+      format,
+      artifact_count: rows.length
+    });
+    if (error) return NextResponse.json({ error: "The skill list could not be recorded for download." }, { status: 500 });
   }
 
   if (format === "csv") {

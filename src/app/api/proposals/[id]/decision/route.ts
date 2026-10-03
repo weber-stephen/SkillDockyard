@@ -3,11 +3,15 @@ import { getProposal, validateProposalDecision } from "@/lib/proposals";
 import { getViewerContext } from "@/lib/access";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { notifyDownloadedUsersOfUpdate } from "@/lib/update-notifications";
+import { z } from "zod";
+import { readJsonSchema } from "@/lib/request-body";
+
+const decisionSchema = z.object({ decision: z.enum(["published", "changes_requested", "rejected"]), note: z.string().trim().max(4000).optional() }).strict();
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   const { id } = await params;
-  const body = await request.json();
+  const body = await readJsonSchema(request, decisionSchema, 8 * 1024);
   if (!validateProposalDecision(body.decision)) return NextResponse.json({ error: "Choose publish, request changes, or reject." }, { status: 400 });
   if ((body.decision === "changes_requested" || body.decision === "rejected") && (typeof body.note !== "string" || !body.note.trim())) {
     return NextResponse.json({ error: "Add a note explaining what should change or why this proposal was rejected." }, { status: 400 });

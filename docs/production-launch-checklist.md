@@ -18,7 +18,8 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 
 - [x] **LAUNCH-001 — P0 — Stephen:** Purchase the canonical domain `skilldockyard.com`.
   - Evidence: Stephen confirmed ownership on October 3, 2026.
-- [ ] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
+- [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
+  - Evidence: Stephen selected unrestricted self-service signup on October 3, 2026; Cloudflare Turnstile is the required bot-protection provider.
   - Record the decision and initial user list outside the repository if it contains personal information.
 - [ ] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
   - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
@@ -28,14 +29,20 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 
 ## 1. Source control and release gates
 
-- [ ] **REL-001 — P0 — Codex:** Create a dedicated launch-readiness branch without overwriting unrelated or uncommitted work.
-- [ ] **REL-002 — P0 — Codex:** Upgrade the supported runtime to Node.js 22 or later everywhere.
+- [x] **REL-001 — P0 — Codex:** Create a dedicated launch-readiness branch without overwriting unrelated or uncommitted work.
+  - Evidence: Created `launch/production-readiness` from the existing `prod` preparation commit on October 3, 2026.
+- [x] **REL-002 — P0 — Codex:** Upgrade the supported runtime to Node.js 22 or later everywhere.
+  - Evidence: `package.json`, `.node-version`, CLI build target, CI, publish workflow, and README now require Node 22 (minimum 22.12 where package engines apply).
   - Update `package.json` engines, CLI build target, GitHub Actions, local documentation, and Vercel runtime settings.
-- [ ] **REL-003 — P0 — Codex:** Upgrade production dependencies to patched, mutually compatible releases and commit the lockfile.
+- [x] **REL-003 — P0 — Codex:** Upgrade production dependencies to patched, mutually compatible releases and commit the lockfile.
+  - Evidence: Patched framework and parser dependencies; replaced vulnerable glob/frontmatter packages; `npm audit --omit=dev --audit-level=high` reported zero vulnerabilities on October 3, 2026.
   - `npm audit --omit=dev` reports no unresolved critical or high vulnerabilities, or an explicitly documented exception is approved by Stephen.
-- [ ] **REL-004 — P0 — Codex:** Replace the obsolete `next lint` script with a working ESLint command and configuration.
-- [ ] **REL-005 — P0 — Codex:** Fix stale page-smoke assertions and make the production page suite pass.
-- [ ] **REL-006 — P0 — Codex:** Run CI for pull requests and pushes to `main`.
+- [x] **REL-004 — P0 — Codex:** Replace the obsolete `next lint` script with a working ESLint command and configuration.
+  - Evidence: Flat ESLint configuration added; `npm run lint` passed with zero warnings on October 3, 2026.
+- [x] **REL-005 — P0 — Codex:** Fix stale page-smoke assertions and make the production page suite pass.
+  - Evidence: Webpack production build passed and page smoke checks passed for 24 explicit pages plus 23 discovered internal links on October 3, 2026.
+- [x] **REL-006 — P0 — Codex:** Run CI for pull requests and pushes to `main`.
+  - Evidence: CI now runs on pull requests and pushes to `main`, with install, typecheck, lint, unit, page/build, production audit, CLI build, and package dry-run gates.
   - Required checks: clean install, typecheck, lint, unit tests, production build/page smoke, and production dependency audit.
 - [ ] **REL-007 — P0 — Codex:** Protect `main` so required CI checks must pass before merge.
   - If Codex cannot change the GitHub setting, it provides Stephen the exact setting to enable.
@@ -61,14 +68,19 @@ npm pack --dry-run
 
 ## 2. Database, auth, permissions, and audit integrity
 
-- [ ] **DATA-001 — P0 — Codex:** Review and commit the pending `user_accounts` migrations and their tests as one coherent change.
-- [ ] **DATA-002 — P0 — Codex:** Update the README migration list so it exactly matches the committed migration directory.
-- [ ] **DATA-003 — P0 — Codex:** Make initial personal-workspace provisioning atomic.
+- [x] **DATA-001 — P0 — Codex:** Review and commit the pending `user_accounts` migrations and their tests as one coherent change.
+  - Evidence: Account type, access restriction, service-role grant migrations, and coverage tests are included in the launch branch verification suite.
+- [x] **DATA-002 — P0 — Codex:** Update the README migration list so it exactly matches the committed migration directory.
+  - Evidence: Sorted migration-directory and README lists matched with no differences on October 3, 2026.
+- [x] **DATA-003 — P0 — Codex:** Make initial personal-workspace provisioning atomic.
+  - Evidence: `ensure_personal_workspace` uses a per-user transaction advisory lock, creates workspace/membership/audit state together, and fails closed on inconsistent existing ownership.
   - Workspace creation, accountable owner assignment, owner membership creation, and any required audit event succeed or fail together.
   - Concurrent first requests cannot create inconsistent or duplicate ownership.
 - [ ] **DATA-004 — P0 — Codex:** Add regression tests for missing owner membership, mismatched ownership, duplicate provisioning, concurrent provisioning, and rollback on failure.
-- [ ] **DATA-005 — P0 — Codex:** Verify every public-schema table has RLS enabled or is deliberately inaccessible through the Data API.
-- [ ] **DATA-006 — P0 — Codex:** Verify every privileged database function has an intentional security mode, fixed `search_path`, explicit execute grants, and no unintended `PUBLIC`, `anon`, or `authenticated` access.
+- [x] **DATA-005 — P0 — Codex:** Verify every public-schema table has RLS enabled or is deliberately inaccessible through the Data API.
+  - Evidence: Migration inventory review found an RLS enable statement for every public table; the live production state remains covered by DATA-011 and DATA-012.
+- [x] **DATA-006 — P0 — Codex:** Verify every privileged database function has an intentional security mode, fixed `search_path`, explicit execute grants, and no unintended `PUBLIC`, `anon`, or `authenticated` access.
+  - Evidence: New functions are explicit invokers except the private auth trigger; legacy functions are hardened by `20261003153210_harden_function_execution.sql`; execution is revoked from public browser roles.
 - [ ] **DATA-007 — P0 — Codex:** Verify server authorization for every object-level operation.
   - List, read, download, submit, publish, request changes, reject, withdraw, share, accept, decline, revoke, invite, rename, and export.
 - [ ] **DATA-008 — P0 — Codex:** Make security-sensitive mutations and required audit records atomic.
@@ -83,28 +95,38 @@ npm pack --dry-run
 
 ## 3. Application security and abuse controls
 
-- [ ] **SEC-001 — P0 — Codex:** Add and verify production security headers.
+- [x] **SEC-001 — P0 — Codex:** Add and verify production security headers.
+  - Evidence: Nonced CSP, HSTS, content-type, referrer, frame, and permissions headers are centralized in `src/proxy.ts`; source invariants and production build passed.
   - Content Security Policy, `X-Content-Type-Options`, referrer policy, frame protection, permissions policy, and HSTS behavior are deliberate.
 - [ ] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
   - Protect pairing-code exchange, scan/import, submissions, invitations, sharing, exports, and other expensive or abuse-sensitive endpoints.
-- [ ] **SEC-003 — P0 — Codex:** Apply bounded request parsing and schema validation to every state-changing or expensive API route.
-- [ ] **SEC-004 — P0 — Codex:** Verify state-changing browser requests cannot be triggered cross-origin with authenticated cookies.
-- [ ] **SEC-005 — P0 — Codex:** Confirm the Supabase service-role key is referenced only by server code and never appears in client bundles, logs, errors, or committed files.
-- [ ] **SEC-006 — P0 — Codex:** Confirm secrets and tokens are stored hashed where applicable and are redacted from logs and UI responses.
+- [x] **SEC-003 — P0 — Codex:** Apply bounded request parsing and schema validation to every state-changing or expensive API route.
+  - Evidence: All body-bearing API routes use bounded readers; state-changing structured bodies use strict Zod schemas. No raw `request.json()` calls remain under `src/app/api`.
+- [x] **SEC-004 — P0 — Codex:** Verify state-changing browser requests cannot be triggered cross-origin with authenticated cookies.
+  - Evidence: Cookie-authenticated API mutations reject cross-site fetch metadata and mismatched exact origins; bearer-only connected-computer requests remain supported.
+- [x] **SEC-005 — P0 — Codex:** Confirm the Supabase service-role key is referenced only by server code and never appears in client bundles, logs, errors, or committed files.
+  - Evidence: Tracked-secret and public-environment-name scans passed on October 3, 2026; only `.env.example` is tracked.
+- [x] **SEC-006 — P0 — Codex:** Confirm secrets and tokens are stored hashed where applicable and are redacted from logs and UI responses.
+  - Evidence: Invitation, import, pairing, and connected-computer tokens use SHA-256 database hashes; monitoring scrubs request headers, cookies, bodies, and user details.
 - [ ] **SEC-007 — P0 — Codex:** Add authorization regression tests for cross-workspace IDs, private drafts, view-only shares, revoked shares, invitation email mismatch, and reviewer/owner boundaries.
-- [ ] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
+- [x] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
+  - Evidence: Production audit is a CI gate; exceptions require explicit Stephen approval under REL-003 and the security audit records residual risk.
 - [ ] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
 
 ## 4. Account lifecycle and transactional email
 
-- [ ] **AUTH-001 — P0 — Codex:** Implement **Forgot password** and **Reset password** flows using Supabase Auth.
-- [ ] **AUTH-002 — P0 — Codex:** Use generic recovery responses that do not disclose whether an email address has an account.
-- [ ] **AUTH-003 — P0 — Codex:** Validate safe same-origin redirects for confirmation, invitation continuation, and password reset.
+- [x] **AUTH-001 — P0 — Codex:** Implement **Forgot password** and **Reset password** flows using Supabase Auth.
+  - Evidence: `/forgot-password` requests a recovery email and `/reset-password` updates the authenticated recovery session password.
+- [x] **AUTH-002 — P0 — Codex:** Use generic recovery responses that do not disclose whether an email address has an account.
+  - Evidence: The recovery form always returns the same “If an account matches” message.
+- [x] **AUTH-003 — P0 — Codex:** Validate safe same-origin redirects for confirmation, invitation continuation, and password reset.
+  - Evidence: Shared safe-path validation rejects external, protocol-relative, and backslash-ambiguous paths; unit tests pass.
 - [ ] **AUTH-004 — P0 — Joint:** Configure a production SMTP provider and authenticated sender domain.
 - [ ] **AUTH-005 — P0 — Joint:** Configure and test confirmation, recovery, email-change, and other security-sensitive email templates.
 - [ ] **AUTH-006 — P0 — Joint:** Verify deliverability to at least two major email providers and confirm links use `https://skilldockyard.com`.
 - [ ] **AUTH-007 — P1 — Joint:** Define the support-assisted owner recovery process for an unavailable or deleted workspace owner.
-- [ ] **AUTH-008 — P1 — Codex:** Provide a safe sign-out path and clear expired-session behavior.
+- [x] **AUTH-008 — P1 — Codex:** Provide a safe sign-out path and clear expired-session behavior.
+  - Evidence: Existing sign-out revokes the browser session and returns home; expired recovery sessions show a safe actionable error.
 
 ## 5. Core product acceptance
 
@@ -127,10 +149,13 @@ npm pack --dry-run
 
 ## 6. CLI packaging and distribution
 
-- [ ] **CLI-001 — P0 — Codex:** Build the CLI for Node 22 and verify every command starts successfully.
+- [x] **CLI-001 — P0 — Codex:** Build the CLI for Node 22 and verify every command starts successfully.
+  - Evidence: Node 22-targeted build passed; every packaged command and nested `config validate` help screen started from an isolated install.
 - [ ] **CLI-002 — P0 — Joint:** Confirm the npm package name `skill-dockyard` is available or choose the final package name before changing public commands.
-- [ ] **CLI-003 — P0 — Codex:** Verify the dry-run tarball contains only intended files and no local paths, secrets, fixtures, or application-only source.
-- [ ] **CLI-004 — P0 — Codex:** Test the packed tarball in a clean temporary directory on a supported Node version.
+- [x] **CLI-003 — P0 — Codex:** Verify the dry-run tarball contains only intended files and no local paths, secrets, fixtures, or application-only source.
+  - Evidence: Dry-run contained 14 intended README, bin, dist, and manifest files only.
+- [x] **CLI-004 — P0 — Codex:** Test the packed tarball in a clean temporary directory on a supported Node version.
+  - Evidence: Isolated tarball install completed and every CLI command help screen passed on October 3, 2026.
 - [ ] **CLI-005 — P0 — Joint:** Configure npm trusted publishing or the scoped `NPM_TOKEN` secret used by the release workflow.
 - [ ] **CLI-006 — P0 — Joint:** Publish the first production CLI release with provenance.
 - [ ] **CLI-007 — P0 — Joint:** Verify `npx skill-dockyard --help` works without a repository checkout.
@@ -140,8 +165,10 @@ npm pack --dry-run
 
 ## 7. Vercel, DNS, and production configuration
 
-- [ ] **PLAT-001 — P0 — Stephen:** Add `skilldockyard.com` to the production Vercel project.
-- [ ] **PLAT-002 — P0 — Stephen:** Configure the registrar DNS records exactly as Vercel specifies and wait for verification.
+- [x] **PLAT-001 — P0 — Stephen:** Add `skilldockyard.com` to the production Vercel project.
+  - Evidence: `https://skilldockyard.com` returned HTTP 200 with Vercel response headers on October 3, 2026.
+- [x] **PLAT-002 — P0 — Stephen:** Configure the registrar DNS records exactly as Vercel specifies and wait for verification.
+  - Evidence: The apex resolved over TLS to the Vercel deployment on October 3, 2026; `www` remains open under PLAT-003.
 - [ ] **PLAT-003 — P0 — Stephen:** Add `www.skilldockyard.com` and configure a permanent redirect to `https://skilldockyard.com`.
 - [ ] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
   - `NEXT_PUBLIC_SUPABASE_URL`
@@ -149,11 +176,13 @@ npm pack --dry-run
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `NEXT_PUBLIC_SITE_URL=https://skilldockyard.com`
   - Any selected rate-limit, SMTP, monitoring, or server-only ingest credentials
-- [ ] **PLAT-005 — P0 — Stephen:** Make the production deployment publicly reachable; keep preview protection separate from production access.
+- [x] **PLAT-005 — P0 — Stephen:** Make the production deployment publicly reachable; keep preview protection separate from production access.
+  - Evidence: Anonymous HTTPS request to the canonical homepage returned HTTP 200 on October 3, 2026.
 - [ ] **PLAT-006 — P0 — Joint:** Deploy the approved commit and confirm the production alias points to that exact commit.
 - [ ] **PLAT-007 — P0 — Joint:** Verify TLS, canonical redirects, no mixed content, and expected cache behavior.
 - [ ] **PLAT-008 — P0 — Joint:** Verify `/`, `/demo`, `/signup`, `/login`, `/app`, auth callbacks, downloads, and API routes on the canonical domain.
-- [ ] **PLAT-009 — P1 — Codex:** Add canonical metadata, sitemap/robots behavior, and social metadata appropriate to the selected rollout mode.
+- [x] **PLAT-009 — P1 — Codex:** Add canonical metadata, sitemap/robots behavior, and social metadata appropriate to the selected rollout mode.
+  - Evidence: Public metadata, Open Graph image route, sitemap, and robots directives are included in the passing production build.
 - [ ] **PLAT-010 — P1 — Joint:** Remove or redirect obsolete deployment aliases after the canonical domain is stable.
 
 ## 8. Monitoring, backups, support, and legal readiness
@@ -163,9 +192,11 @@ npm pack --dry-run
 - [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
 - [ ] **OPS-004 — P0 — Stephen:** Confirm the Supabase backup schedule is appropriate for production.
 - [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise or provider-supported restore verification.
-- [ ] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
+- [x] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
+  - Evidence: See [production-operations-runbook.md](production-operations-runbook.md).
 - [ ] **OPS-007 — P0 — Stephen:** Select and publish a monitored support email address.
-- [ ] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
+- [x] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
+  - Evidence: `/privacy`, `/terms`, and `/support` are linked publicly and included in the production build; legal approval remains OPS-009.
 - [ ] **OPS-009 — P0 — Stephen:** Obtain legal review and approve the privacy policy, terms, retention language, and subprocessors.
 - [ ] **OPS-010 — P1 — Joint:** Define account/data deletion, data export, retention, and incident-notification procedures.
 - [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
@@ -195,7 +226,7 @@ Complete this section only when the release candidate is ready.
 
 | Field | Value |
 | --- | --- |
-| Rollout mode | `TBD` |
+| Rollout mode | `Unrestricted self-service signup` |
 | Decision | `GO / NO-GO` |
 | Decision owner | `TBD` |
 | Decision time | `TBD` |
@@ -208,4 +239,3 @@ Complete this section only when the release candidate is ready.
 | Monitoring dashboard | `TBD` |
 | Incident contact | `TBD` |
 | Rollback target | `TBD` |
-
