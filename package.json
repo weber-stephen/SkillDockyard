@@ -21,6 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:pages": "npm run build && tsx scripts/smoke-pages.ts",
+    "test:browser": "playwright test",
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node22 --out-dir dist --clean",
     "cli": "npm run cli:build --silent && node bin/run.js",
@@ -47,6 +48,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.0.3",

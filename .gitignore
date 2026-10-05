@@ -5,6 +5,8 @@ node_modules
 .env.local
 .turbo
 coverage
+playwright-report
+test-results
 *.tsbuildinfo
 skill-dockyard-export.*
 .DS_Store
