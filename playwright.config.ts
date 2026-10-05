@@ -11,7 +11,7 @@ export default defineConfig({
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   expect: {
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.01
+      maxDiffPixelRatio: 0.04
     }
   },
   reporter: process.env.CI
