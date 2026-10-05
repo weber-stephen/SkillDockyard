@@ -8,6 +8,21 @@ Read [docs/architecture.md](docs/architecture.md) before changing authentication
 
 This repository is connected to Vercel. When work is intended for visual review, publish the relevant feature branch to the configured Git remote so Vercel can create a branch preview deployment. Preserve production deployment settings unless the user explicitly asks to change them, and report the resulting Vercel preview link when available.
 
+## Git and pull requests
+
+`main` is the protected production branch. Never commit or push directly to `main`, force-push it, or bypass its ruleset. All changes, including documentation and configuration changes, must use a short-lived feature branch and a pull request.
+
+Use this workflow:
+
+1. Start from an up-to-date `main` and create a focused branch, for example `docs/auth-architecture` or `fix/invite-authorization`.
+2. Make the change, run the relevant local checks, and commit it to the feature branch.
+3. Push the feature branch to `origin` and open a pull request targeting `main`. Include a concise summary, verification performed, and any remaining launch or provider-side work.
+4. Wait for the required GitHub Actions check `CI / verify` to pass. Do not merge while it is failing, missing, or based on an outdated commit.
+5. Review the complete diff yourself as the repository owner. This is a solo-maintainer repository, so do not add a required approval from another person; your own approval cannot satisfy an independent-review requirement.
+6. Resolve all review conversations, then squash-merge the pull request into `main` and delete the feature branch.
+
+Before reporting work as complete, confirm that the pull request was merged successfully and that `main` contains the intended commit. If a change needs follow-up, open a new branch and pull request rather than editing `main` directly.
+
 ## Brand strategy
 
 Read [docs/brand-strategy.md](docs/brand-strategy.md) before changing public positioning, marketing copy, brand identity, homepage narrative, or the product name. It defines the target customer, positioning, messaging hierarchy, brand personality, competitive territory, and naming guardrails.
