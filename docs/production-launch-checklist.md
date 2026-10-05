@@ -97,8 +97,10 @@ npm pack --dry-run
 - [ ] **DATA-011 — P0 — Joint:** Run Supabase Security, Performance, Index, and service-health advisors; resolve every error and review every warning.
 - [x] **DATA-012 — P0 — Joint:** Run safe production queries that verify owner consistency, private-draft isolation, invitation constraints, and RLS status without exposing customer data.
   - Evidence: Aggregate-only production checks returned zero inconsistent owners, shared private drafts, invalid invitations, public tables without RLS, and browser-executable sensitive functions on October 3, 2026.
-- [ ] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
-- [ ] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
+- [x] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
+  - Evidence: Supabase Auth Site URL and production redirect allowlist were verified on October 5, 2026. Confirmation and password-recovery callbacks use the canonical origin and `/auth/confirm` route.
+- [x] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
+  - Evidence: Email confirmation and invitation acceptance were tested end to end with disposable accounts on October 5, 2026. Invitations require a verified account with a matching recipient email.
 - [x] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
   - Evidence: Recorded October 5, 2026: JWT expiry `3600` seconds; inactivity timeout `0`; time-box user sessions `0`; compromised refresh-token detection and revocation enabled. Leaked-password protection remains disabled because it requires a Supabase plan upgrade.
 
