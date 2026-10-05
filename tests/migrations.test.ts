@@ -120,4 +120,12 @@ describe("Supabase migration coverage", () => {
     expect(sql.match(/drop policy if exists/g)?.length).toBeGreaterThanOrEqual(24);
     expect(sql).not.toContain("disable row level security");
   });
+
+  it("removes direct browser table grants while preserving server-side access", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261005220703_revoke_browser_table_grants.sql"), "utf8");
+    expect(sql).toContain("revoke all privileges on all tables in schema public from anon, authenticated");
+    expect(sql).toContain("alter default privileges in schema public");
+    expect(sql).toContain("revoke all privileges on tables from anon, authenticated");
+    expect(sql).not.toContain("revoke all privileges on all tables in schema public from service_role");
+  });
 });
