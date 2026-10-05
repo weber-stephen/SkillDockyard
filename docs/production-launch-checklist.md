@@ -21,9 +21,10 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 - [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
   - Evidence: Stephen selected unrestricted self-service signup on October 3, 2026; Cloudflare Turnstile is the required bot-protection provider.
   - Record the decision and initial user list outside the repository if it contains personal information.
-- [ ] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
+- [x] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
   - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
   - Preview deployments remain non-canonical and are not indexed.
+  - Evidence: Canonical apex and `www` redirect configuration confirmed on October 5, 2026.
 - [ ] **LAUNCH-004 — P1 — Stephen:** Complete professional trademark clearance for **Skill Dockyard** before broad public promotion.
 - [ ] **LAUNCH-005 — P0 — Joint:** Record the launch decision, approver, production commit SHA, database migration version, web version, CLI version, and launch time in the launch record at the bottom of this document.
 
@@ -44,12 +45,14 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 - [x] **REL-006 — P0 — Codex:** Run CI for pull requests and pushes to `main`.
   - Evidence: CI now runs on pull requests and pushes to `main`, with install, typecheck, lint, unit, page/build, production audit, CLI build, and package dry-run gates.
   - Required checks: clean install, typecheck, lint, unit tests, production build/page smoke, and production dependency audit.
-- [ ] **REL-007 — P0 — Codex:** Protect `main` so required CI checks must pass before merge.
+- [x] **REL-007 — P0 — Codex:** Protect `main` so required CI checks must pass before merge.
   - If Codex cannot change the GitHub setting, it provides Stephen the exact setting to enable.
-- [ ] **REL-008 — P0 — Codex:** Verify a clean checkout with Node 22 using only committed files and documented environment variables.
+- [x] **REL-008 — P0 — Codex:** Verify a clean checkout with Node 22 using only committed files and documented environment variables.
+  - Evidence: Clean-checkout release verification completed on October 5, 2026.
 - [x] **REL-009 — P1 — Codex:** Remove stale generated files and repository noise from the launch branch without deleting user work.
   - Evidence: Removed tracked `.DS_Store` files; `.gitignore` already excludes generated output, dependencies, coverage, logs, and environment files.
-- [ ] **REL-010 — P0 — Joint:** Merge only after the Vercel branch preview passes visual and functional review.
+- [x] **REL-010 — P0 — Joint:** Merge only after the Vercel branch preview passes visual and functional review.
+  - Evidence: Vercel branch preview passed visual and functional review on October 5, 2026.
 
 ### Required release commands
 
@@ -94,8 +97,10 @@ npm pack --dry-run
 - [ ] **DATA-011 — P0 — Joint:** Run Supabase Security, Performance, Index, and service-health advisors; resolve every error and review every warning.
 - [x] **DATA-012 — P0 — Joint:** Run safe production queries that verify owner consistency, private-draft isolation, invitation constraints, and RLS status without exposing customer data.
   - Evidence: Aggregate-only production checks returned zero inconsistent owners, shared private drafts, invalid invitations, public tables without RLS, and browser-executable sensitive functions on October 3, 2026.
-- [ ] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
-- [ ] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
+- [x] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
+  - Evidence: Supabase Auth Site URL and production redirect allowlist were verified on October 5, 2026. Confirmation and password-recovery callbacks use the canonical origin and `/auth/confirm` route.
+- [x] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
+  - Evidence: Email confirmation and invitation acceptance were tested end to end with disposable accounts on October 5, 2026. Invitations require a verified account with a matching recipient email.
 - [x] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
   - Evidence: Recorded October 5, 2026: JWT expiry `3600` seconds; inactivity timeout `0`; time-box user sessions `0`; compromised refresh-token detection and revocation enabled. Leaked-password protection remains disabled because it requires a Supabase plan upgrade.
 
@@ -104,8 +109,9 @@ npm pack --dry-run
 - [x] **SEC-001 — P0 — Codex:** Add and verify production security headers.
   - Evidence: Nonced CSP, HSTS, content-type, referrer, frame, and permissions headers are centralized in `src/proxy.ts`; source invariants and production build passed.
   - Content Security Policy, `X-Content-Type-Options`, referrer policy, frame protection, permissions policy, and HSTS behavior are deliberate.
-- [ ] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
+- [x] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
   - Protect pairing-code exchange, scan/import, submissions, invitations, sharing, exports, and other expensive or abuse-sensitive endpoints.
+  - Evidence: Upstash Redis shared rate-limit database created and production values configured on October 5, 2026.
 - [x] **SEC-003 — P0 — Codex:** Apply bounded request parsing and schema validation to every state-changing or expensive API route.
   - Evidence: All body-bearing API routes use bounded readers; state-changing structured bodies use strict Zod schemas. No raw `request.json()` calls remain under `src/app/api`.
 - [x] **SEC-004 — P0 — Codex:** Verify state-changing browser requests cannot be triggered cross-origin with authenticated cookies.
@@ -118,7 +124,8 @@ npm pack --dry-run
   - Evidence: `tests/access.test.ts` and `tests/share-invite-acceptance.test.ts` cover cross-workspace membership, private drafts, view-only and revoked shares, verified-email requirements, and reviewer/owner capability boundaries.
 - [x] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
   - Evidence: Production audit is a CI gate; exceptions require explicit Stephen approval under REL-003 and the security audit records residual risk.
-- [ ] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
+- [x] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
+  - Evidence: Cloudflare Turnstile configured for signup, login, and recovery on October 5, 2026.
 
 ## 4. Account lifecycle and transactional email
 
@@ -128,9 +135,12 @@ npm pack --dry-run
   - Evidence: The recovery form always returns the same “If an account matches” message.
 - [x] **AUTH-003 — P0 — Codex:** Validate safe same-origin redirects for confirmation, invitation continuation, and password reset.
   - Evidence: Shared safe-path validation rejects external, protocol-relative, and backslash-ambiguous paths; unit tests pass.
-- [ ] **AUTH-004 — P0 — Joint:** Configure a production SMTP provider and authenticated sender domain.
-- [ ] **AUTH-005 — P0 — Joint:** Configure and test confirmation, recovery, email-change, and other security-sensitive email templates.
-- [ ] **AUTH-006 — P0 — Joint:** Verify deliverability to at least two major email providers and confirm links use `https://skilldockyard.com`.
+- [x] **AUTH-004 — P0 — Joint:** Configure a production SMTP provider and authenticated sender domain.
+  - Evidence: Production SMTP and authenticated sender configuration completed on October 5, 2026.
+- [x] **AUTH-005 — P0 — Joint:** Configure and test confirmation, recovery, email-change, and other security-sensitive email templates.
+  - Evidence: Security-sensitive Supabase Auth email templates configured and tested on October 5, 2026.
+- [x] **AUTH-006 — P0 — Joint:** Verify deliverability to at least two major email providers and confirm links use `https://skilldockyard.com`.
+  - Evidence: Delivery tests passed with links using `https://skilldockyard.com` on October 5, 2026.
 - [ ] **AUTH-007 — P1 — Joint:** Define the support-assisted owner recovery process for an unavailable or deleted workspace owner.
 - [x] **AUTH-008 — P1 — Codex:** Provide a safe sign-out path and clear expired-session behavior.
   - Evidence: Existing sign-out revokes the browser session and returns home; expired recovery sessions show a safe actionable error.
@@ -180,25 +190,31 @@ npm pack --dry-run
   - Evidence: `https://skilldockyard.com` returned HTTP 200 with Vercel response headers on October 3, 2026.
 - [x] **PLAT-002 — P0 — Stephen:** Configure the registrar DNS records exactly as Vercel specifies and wait for verification.
   - Evidence: The apex resolved over TLS to the Vercel deployment on October 3, 2026; `www` remains open under PLAT-003.
-- [ ] **PLAT-003 — P0 — Stephen:** Add `www.skilldockyard.com` and configure a permanent redirect to `https://skilldockyard.com`.
-- [ ] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
+- [x] **PLAT-003 — P0 — Stephen:** Add `www.skilldockyard.com` and configure a permanent redirect to `https://skilldockyard.com`.
+  - Evidence: `www` domain and permanent canonical redirect configured on October 5, 2026.
+- [x] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `NEXT_PUBLIC_SITE_URL=https://skilldockyard.com`
   - Any selected rate-limit, SMTP, monitoring, or server-only ingest credentials
+  - Evidence: Stephen confirmed the production Vercel environment variables were configured on October 5, 2026. Values are intentionally not recorded here.
 - [x] **PLAT-005 — P0 — Stephen:** Make the production deployment publicly reachable; keep preview protection separate from production access.
   - Evidence: Anonymous HTTPS request to the canonical homepage returned HTTP 200 on October 3, 2026.
-- [ ] **PLAT-006 — P0 — Joint:** Deploy the approved commit and confirm the production alias points to that exact commit.
-- [ ] **PLAT-007 — P0 — Joint:** Verify TLS, canonical redirects, no mixed content, and expected cache behavior.
-- [ ] **PLAT-008 — P0 — Joint:** Verify `/`, `/demo`, `/signup`, `/login`, `/app`, auth callbacks, downloads, and API routes on the canonical domain.
+- [x] **PLAT-006 — P0 — Joint:** Deploy the approved commit and confirm the production alias points to that exact commit.
+  - Evidence: Approved commit deployed and production alias verified on October 5, 2026.
+- [x] **PLAT-007 — P0 — Joint:** Verify TLS, canonical redirects, no mixed content, and expected cache behavior.
+  - Evidence: TLS, canonical redirects, mixed-content checks, and cache behavior verified on October 5, 2026.
+- [x] **PLAT-008 — P0 — Joint:** Verify `/`, `/demo`, `/signup`, `/login`, `/app`, auth callbacks, downloads, and API routes on the canonical domain.
+  - Evidence: Canonical-domain route and API smoke checks passed on October 5, 2026.
 - [x] **PLAT-009 — P1 — Codex:** Add canonical metadata, sitemap/robots behavior, and social metadata appropriate to the selected rollout mode.
   - Evidence: Public metadata, Open Graph image route, sitemap, and robots directives are included in the passing production build.
 - [ ] **PLAT-010 — P1 — Joint:** Remove or redirect obsolete deployment aliases after the canonical domain is stable.
 
 ## 8. Monitoring, backups, support, and legal readiness
 
-- [ ] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
+- [x] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
+  - Evidence: Sentry project and production configuration completed on October 5, 2026; application-side scrubbing and server-only source-map credentials are configured.
 - [ ] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, demo, login, and a safe application health signal.
 - [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
 - [ ] **OPS-004 — P0 — Stephen:** Confirm the Supabase backup schedule is appropriate for production.
