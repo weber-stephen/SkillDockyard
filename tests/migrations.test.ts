@@ -128,4 +128,12 @@ describe("Supabase migration coverage", () => {
     expect(sql).toContain("revoke all privileges on tables from anon, authenticated");
     expect(sql).not.toContain("revoke all privileges on all tables in schema public from service_role");
   });
+
+  it("adds covering indexes for the unindexed production foreign keys", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261005221243_add_foreign_key_indexes.sql"), "utf8");
+    expect(sql.match(/create index if not exists/g)?.length).toBe(31);
+    expect(sql).toContain("approvals_artifact_id_fkey_index");
+    expect(sql).toContain("proposals_supersedes_proposal_id_fkey_index");
+    expect(sql).toContain("workspace_invites_invited_by_user_id_fkey_index");
+  });
 });
