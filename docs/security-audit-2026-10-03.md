@@ -6,6 +6,8 @@ Reviewed the Next.js application and API routes, Supabase migrations and server 
 
 No destructive tests or live-production exploit attempts were performed. Production Supabase policies, provider settings, Vercel environment values, email delivery, backups, and monitoring delivery still require provider-side verification. On October 5, 2026, Stephen recorded the production Auth session settings: JWT expiry `3600` seconds, inactivity timeout `0`, time-boxed sessions `0`, and compromised refresh-token detection/revocation enabled. Stephen accepted leaked-password protection remaining disabled on the Free Plan as a documented residual risk; no further launch action is required unless the Supabase plan changes.
 
+On October 5, 2026, Stephen also accepted retaining the 47 unused-index informational findings reported by the Supabase Performance Advisor. These indexes support intentional application access paths, while the production database remains nearly empty; the findings will be re-evaluated after launch traffic.
+
 ## Findings
 
 ID: SEC-001  
