@@ -4,7 +4,7 @@
 
 Reviewed the Next.js application and API routes, Supabase migrations and server data layer, authentication and invitation flows, connected-computer token handling, dependency tree, security headers, request parsing, and release configuration. Validation used static request-path tracing, unit tests, a production build, local page smoke tests, `npm audit --omit=dev`, and repository secret-pattern scans.
 
-No destructive tests or live-production exploit attempts were performed. Production Supabase policies, provider settings, Vercel environment values, email delivery, backups, and monitoring delivery still require provider-side verification.
+No destructive tests or live-production exploit attempts were performed. Production Supabase policies, provider settings, Vercel environment values, email delivery, backups, and monitoring delivery still require provider-side verification. On October 5, 2026, Stephen recorded the production Auth session settings: JWT expiry `3600` seconds, inactivity timeout `0`, time-boxed sessions `0`, and compromised refresh-token detection/revocation enabled. Leaked-password protection remains disabled because it requires a Supabase plan upgrade.
 
 ## Findings
 

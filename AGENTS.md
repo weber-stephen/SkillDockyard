@@ -1,5 +1,9 @@
 # Agent instructions
 
+## Architecture map
+
+Read [docs/architecture.md](docs/architecture.md) before changing authentication, permissions, database migrations, API routes, deployment configuration, or the connected-computer command. It is the repository’s shared system map for humans and AI agents. Keep it current when an intentional architectural decision changes.
+
 ## Deployment and previews
 
 This repository is connected to Vercel. When work is intended for visual review, publish the relevant feature branch to the configured Git remote so Vercel can create a branch preview deployment. Preserve production deployment settings unless the user explicitly asks to change them, and report the resulting Vercel preview link when available.

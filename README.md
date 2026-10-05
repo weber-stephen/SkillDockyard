@@ -35,6 +35,8 @@ Run the fast unit suite with `npm test`. Run the full page smoke suite with `npm
 
 Use [the production launch checklist](docs/production-launch-checklist.md) to track go-live readiness for Codex and human owners. Follow [the production launch implementation plan](docs/production-launch-plan.md) for the ordered engineering, Supabase, Vercel, DNS, npm, monitoring, acceptance, and rollback work. The canonical production domain is `https://skilldockyard.com`.
 
+See the [architecture map](docs/architecture.md) for the system boundaries, data model, authentication flow, environment contract, and change protocol.
+
 Package maintainers should follow the [Skill Dockyard command release guide](docs/cli-release-guide.md) for publishing, compatibility, revocation, and deprecation procedures.
 
 ### 3. Submit a skill without Git

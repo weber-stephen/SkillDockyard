@@ -96,7 +96,8 @@ npm pack --dry-run
   - Evidence: Aggregate-only production checks returned zero inconsistent owners, shared private drafts, invalid invitations, public tables without RLS, and browser-executable sensitive functions on October 3, 2026.
 - [ ] **DATA-013 — P0 — Joint:** Verify Supabase Auth Site URL and redirect allowlist use `https://skilldockyard.com` and the required auth callback/reset routes.
 - [ ] **DATA-014 — P0 — Joint:** Verify email confirmation is required and that only verified recipient emails can accept invitations.
-- [ ] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
+- [x] **DATA-015 — P1 — Stephen:** Review Supabase JWT lifetime, session revocation expectations, and account-deletion behavior for the pilot threat model.
+  - Evidence: Recorded October 5, 2026: JWT expiry `3600` seconds; inactivity timeout `0`; time-box user sessions `0`; compromised refresh-token detection and revocation enabled. Leaked-password protection remains disabled because it requires a Supabase plan upgrade.
 
 ## 3. Application security and abuse controls
 
