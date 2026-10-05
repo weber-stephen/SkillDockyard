@@ -61,6 +61,20 @@ describe("artifact permissions", () => {
     expect(canProposeRole("viewer")).toBe(false);
   });
 
+  it("limits publication and share management to owners and reviewers", () => {
+    for (const role of ["owner", "reviewer"] as const) {
+      expect(computeArtifactPermission({ artifact, memberships: [membership(role)], workspaces, shares: [], userId: "user" })).toMatchObject({
+        canPublish: true,
+        canManageShares: true
+      });
+    }
+    expect(computeArtifactPermission({ artifact, memberships: [membership("editor")], workspaces, shares: [], userId: "user" })).toMatchObject({
+      canPublish: false,
+      canManageShares: false,
+      canProposeUpdate: true
+    });
+  });
+
   it("gives source workspace viewers no proposal or publishing rights", () => {
     expect(computeArtifactPermission({ artifact, memberships: [membership("viewer")], workspaces, shares: [], userId: "user" })).toMatchObject({
       accessScope: "owned_workspace",

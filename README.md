@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000). The public landing page exp
 
 ### Page and code checks
 
-Run the fast unit suite with `npm test`. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down. Run `npx playwright install chromium` once, then `npm run test:browser` to exercise the demo browse and submission journeys against that production build.
+Run the fast unit suite with `npm test`. It covers skill validation plus server-side authorization, invitation, sharing, and submission decision boundaries with mocked Supabase RPC contracts. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down. Run `npx playwright install chromium` once, then `npm run test:browser` to exercise the demo browse, navigation, review, and submission journeys against that production build. The browser suite also maintains deterministic screenshots for the demo Skills and review pages; CI uploads traces, screenshots, and the HTML report when a browser test fails.
 
 ### Production launch
 
