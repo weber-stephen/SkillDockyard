@@ -1,19 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Anchor } from "lucide-react";
 import { ProductLink as Link } from "@/components/product-link";
 import { TurnstileField } from "@/components/turnstile-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { safeLocalPath } from "@/lib/safe-redirect";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+export function AuthForm({ mode, nextPath }: { mode: "login" | "signup"; nextPath: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = safeLocalPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -31,13 +28,13 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       const client = createBrowserSupabase();
       if (signup) {
         const origin = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
-        const { error } = await client.auth.signUp({ email, password, options: { captchaToken: captchaToken ?? undefined, emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(next)}` } });
+        const { error } = await client.auth.signUp({ email, password, options: { captchaToken: captchaToken ?? undefined, emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(nextPath)}` } });
         if (error) throw error;
         setMessage("Check your inbox for a confirmation link. We’ll continue after you confirm your email.");
       } else {
         const { error } = await client.auth.signInWithPassword({ email, password, options: { captchaToken: captchaToken ?? undefined } });
         if (error) throw error;
-        router.push(next as never);
+        router.push(nextPath as never);
         router.refresh();
       }
     } catch {
