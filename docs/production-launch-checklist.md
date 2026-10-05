@@ -104,8 +104,9 @@ npm pack --dry-run
 - [x] **SEC-001 — P0 — Codex:** Add and verify production security headers.
   - Evidence: Nonced CSP, HSTS, content-type, referrer, frame, and permissions headers are centralized in `src/proxy.ts`; source invariants and production build passed.
   - Content Security Policy, `X-Content-Type-Options`, referrer policy, frame protection, permissions policy, and HSTS behavior are deliberate.
-- [ ] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
+- [x] **SEC-002 — P0 — Joint:** Replace process-local rate limiting with a shared production limiter, or configure equivalent platform protection.
   - Protect pairing-code exchange, scan/import, submissions, invitations, sharing, exports, and other expensive or abuse-sensitive endpoints.
+  - Evidence: Upstash Redis shared rate-limit database created and production values configured on October 5, 2026. The application uses the shared limiter in production and fails closed when its configuration is missing.
 - [x] **SEC-003 — P0 — Codex:** Apply bounded request parsing and schema validation to every state-changing or expensive API route.
   - Evidence: All body-bearing API routes use bounded readers; state-changing structured bodies use strict Zod schemas. No raw `request.json()` calls remain under `src/app/api`.
 - [x] **SEC-004 — P0 — Codex:** Verify state-changing browser requests cannot be triggered cross-origin with authenticated cookies.
@@ -118,7 +119,8 @@ npm pack --dry-run
   - Evidence: `tests/access.test.ts` and `tests/share-invite-acceptance.test.ts` cover cross-workspace membership, private drafts, view-only and revoked shares, verified-email requirements, and reviewer/owner capability boundaries.
 - [x] **SEC-008 — P1 — Codex:** Add dependency auditing to the release workflow and document the vulnerability exception process.
   - Evidence: Production audit is a CI gate; exceptions require explicit Stephen approval under REL-003 and the security audit records residual risk.
-- [ ] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
+- [x] **SEC-009 — P1 — Joint:** Configure provider-level bot or abuse protection for signup and login if the first release allows unrestricted self-service signup.
+  - Evidence: Cloudflare Turnstile configured for the unrestricted self-service rollout on October 5, 2026. Signup, login, and recovery use the configured CAPTCHA flow.
 
 ## 4. Account lifecycle and transactional email
 
@@ -181,12 +183,13 @@ npm pack --dry-run
 - [x] **PLAT-002 — P0 — Stephen:** Configure the registrar DNS records exactly as Vercel specifies and wait for verification.
   - Evidence: The apex resolved over TLS to the Vercel deployment on October 3, 2026; `www` remains open under PLAT-003.
 - [ ] **PLAT-003 — P0 — Stephen:** Add `www.skilldockyard.com` and configure a permanent redirect to `https://skilldockyard.com`.
-- [ ] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
+- [x] **PLAT-004 — P0 — Joint:** Configure Vercel production environment variables without exposing values.
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `NEXT_PUBLIC_SITE_URL=https://skilldockyard.com`
   - Any selected rate-limit, SMTP, monitoring, or server-only ingest credentials
+  - Evidence: Stephen confirmed the production Vercel environment variables were configured on October 5, 2026. Values are intentionally not recorded here.
 - [x] **PLAT-005 — P0 — Stephen:** Make the production deployment publicly reachable; keep preview protection separate from production access.
   - Evidence: Anonymous HTTPS request to the canonical homepage returned HTTP 200 on October 3, 2026.
 - [ ] **PLAT-006 — P0 — Joint:** Deploy the approved commit and confirm the production alias points to that exact commit.
@@ -198,7 +201,8 @@ npm pack --dry-run
 
 ## 8. Monitoring, backups, support, and legal readiness
 
-- [ ] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
+- [x] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
+  - Evidence: Sentry project and production configuration were completed on October 5, 2026. Application-side scrubbing removes request bodies, headers, cookies, and user details other than the internal user id; source-map upload credentials are server-only.
 - [ ] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, demo, login, and a safe application health signal.
 - [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
 - [ ] **OPS-004 — P0 — Stephen:** Confirm the Supabase backup schedule is appropriate for production.
