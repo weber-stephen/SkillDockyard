@@ -28,4 +28,13 @@ describe("production security controls", () => {
       expect(source).not.toMatch(/NEXT_PUBLIC_(?:SUPABASE_SERVICE_ROLE_KEY|UPSTASH_REDIS_REST_TOKEN|SENTRY_AUTH_TOKEN)/);
     }
   });
+
+  it("keeps non-essential performance tracing disabled while retaining error scrubbing", () => {
+    const source = fs.readFileSync(path.resolve("src/lib/sentry-options.ts"), "utf8");
+    expect(source).toMatch(/tracesSampleRate:\s*0/);
+    expect(source).toContain("beforeSend(event)");
+    expect(source).toContain("delete event.request.cookies");
+    expect(source).toContain("delete event.request.data");
+    expect(source).toContain("delete event.request.headers");
+  });
 });
