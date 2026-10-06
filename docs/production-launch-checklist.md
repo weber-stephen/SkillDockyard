@@ -4,6 +4,8 @@ This is the shared go-live checklist for Codex and Stephen. The canonical produc
 
 Use this document together with [production-launch-plan.md](production-launch-plan.md). The plan explains how to implement each checklist item; this file records whether the launch bar has actually been met.
 
+For legal decisions, risk status, document versions, provider posture, and evidence references, use [legal-governance/README.md](legal-governance/README.md). Do not mark a legal gate complete without the corresponding evidence entry.
+
 ## How to use this checklist
 
 - Leave an item unchecked until its verification step has passed in the relevant environment.
