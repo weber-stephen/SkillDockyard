@@ -19,7 +19,7 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 - [x] **LAUNCH-001 — P0 — Stephen:** Purchase the canonical domain `skilldockyard.com`.
   - Evidence: Stephen confirmed ownership on October 3, 2026.
 - [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
-  - Evidence: Stephen selected a closed, invite-only pilot on October 6, 2026. Public self-service signup remains disabled; invitation use is additionally gated by OPS-007, OPS-009, and OPS-010.
+  - Evidence: The current release is a closed, invite-only pilot. Stephen selected self-service beta as the next target; implementation and release gates are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md) and are not yet complete.
   - Record the decision and initial user list outside the repository if it contains personal information.
 - [x] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
   - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
@@ -235,6 +235,7 @@ npm pack --dry-run
   - Evidence: see [closed-pilot-operations.md](closed-pilot-operations.md). Do not invent statutory response times, retention periods, or incident-notification commitments.
 - [ ] **OPS-012 — P0 — Joint:** Keep public self-service signup disabled and invite only approved pilot users after OPS-007, OPS-009, and OPS-010 are complete.
   - Evidence: Supabase Auth **Allow new users to sign up** is disabled; the public `/signup` page is invitation-only; invitation-email and password-setup flow have been tested with a controlled account.
+  - Superseding plan: transition to a self-service beta only through the documented implementation and release gates in [self-service-beta-readiness.md](self-service-beta-readiness.md).
 - [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
 
 ## 9. Production acceptance and go/no-go

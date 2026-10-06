@@ -4,7 +4,7 @@
 
 **Review date:** October 5, 2026  
 **Product:** Skill Dockyard  
-**Current launch posture:** Closed, invite-only, business-use-oriented pilot for adults. Public self-service signup and global availability are blocked pending qualified counsel review. There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
+**Current launch posture:** Closed, invite-only, business-use-oriented pilot for adults. The next planned posture is a self-service beta; its implementation and unresolved owner/counsel gates are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). Public self-service signup and global availability are currently blocked. There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
 
 Every item marked **Requires counsel/owner decision** must be resolved before it is represented as final public legal language or the service is opened broadly.
 
