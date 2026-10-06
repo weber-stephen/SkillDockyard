@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 
@@ -18,7 +19,12 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Reading the per-request nonce keeps this layout dynamic. Next.js can then
+  // attach the proxy-issued nonce to its inline hydration scripts, which CSP
+  // otherwise blocks on statically rendered pages.
+  await headers();
+
   return (
     <html lang="en">
       <body className="font-sans">
