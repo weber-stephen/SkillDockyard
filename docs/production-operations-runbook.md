@@ -42,8 +42,8 @@ The Supabase Free Plan does not provide managed project backups. The repository 
 1. Select a known backup and verify its checksum before decrypting it.
 2. Restore only into a disposable local or staging database. Never restore over production as a launch exercise.
 3. Decrypt the archive with the matching age private key and unpack it into a temporary directory.
-4. Restore roles, schema, and data using the Supabase logical restore procedure and a single transaction where supported.
-5. Verify migration history, RLS/function grants, owner consistency, private-draft isolation, invitation constraints, and the aggregate integrity queries used by `DATA-012`.
+4. Restore roles, schema, and data using the Supabase logical restore procedure and a single transaction where supported. A local verification may need the matching Supabase Postgres image for provider-managed Auth and Storage schemas.
+5. Verify migration history, RLS/function grants, owner consistency, private-draft isolation, invitation constraints, and the aggregate integrity queries used by `DATA-012`. Record any provider-managed schema sections that could not be replayed locally; do not claim a full provider restore from a partial local replay.
 6. Record the backup timestamp, restore target, verifier, and result in the launch record without recording customer rows or credentials.
 
 ## Secret rotation
