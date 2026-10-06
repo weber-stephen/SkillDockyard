@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { exchangeCliPairingCode } from "@/lib/cli-auth";
-import { consumeRateLimit, RateLimitConfigurationError } from "@/lib/rate-limit";
+import { consumeRateLimit, recordRateLimitFailure, RateLimitConfigurationError } from "@/lib/rate-limit";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
 
 export async function POST(request: Request) {
@@ -11,7 +11,10 @@ export async function POST(request: Request) {
     if (error instanceof RateLimitConfigurationError) return NextResponse.json({ error: "This service is temporarily unavailable." }, { status: 503 });
     throw error;
   }
-  if (!limit.allowed) return NextResponse.json({ error: "Too many pairing attempts. Try again later." }, { status: 429 });
+  if (!limit.allowed) {
+    recordRateLimitFailure("cli-pair");
+    return NextResponse.json({ error: "Too many pairing attempts. Try again later." }, { status: 429 });
+  }
   let body: { code?: unknown };
   try {
     body = await readJsonBody<{ code?: unknown }>(request, 1024);

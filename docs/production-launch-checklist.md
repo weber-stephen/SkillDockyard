@@ -218,7 +218,8 @@ npm pack --dry-run
   - Evidence: Sentry project and production configuration completed on October 5, 2026; application-side scrubbing and server-only source-map credentials are configured.
 - [x] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, login, and a safe application health signal.
   - Evidence: UptimeRobot monitors were configured for `https://skilldockyard.com/`, `https://skilldockyard.com/login`, and `https://skilldockyard.com/api/health` on October 5, 2026. The `/demo` route is intentionally excluded from launch monitoring because it is not part of the initial monitored production surface.
-- [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
+- [x] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
+  - Evidence: On October 6, 2026, UptimeRobot monitors and Sentry production alerts were routed to `me@stephenweber.io`. Homepage, login, and `/api/health` checks open an alert after three consecutive one-minute failures; Sentry production issues cover repeated server errors and rate-limit-exceeded operational signals. Escalation is manual to the workspace owner under the [production operations runbook](production-operations-runbook.md); the owner coordinates Vercel, Supabase, Upstash, and customer communications as applicable. No credentials are recorded here.
 - [ ] **OPS-004 — P0 — Stephen:** Establish and confirm a manual logical-backup schedule for the Supabase Free Plan project.
   - Requirement: The Free Plan does not include managed project backups. Export the database with `supabase db dump` before every production migration and on a recurring schedule; keep encrypted copies outside the repository.
 - [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise using a logical dump in a disposable local or staging environment.
