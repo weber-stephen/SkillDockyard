@@ -1,18 +1,18 @@
-# Legal-readiness review — global B2B pilot
+# Legal-readiness review — closed B2B pilot
 
 **Status:** Working launch-review package. This is not legal advice and is not attorney-approved.
 
 **Review date:** October 5, 2026  
 **Product:** Skill Dockyard  
-**Intended launch posture:** Free, business-use-oriented pilot for adults; global technical availability; no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
+**Current launch posture:** Closed, invite-only, business-use-oriented pilot for adults. Public self-service signup and global availability are blocked pending qualified counsel review. There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
 
 Every item marked **Requires counsel/owner decision** must be resolved before it is represented as final public legal language or the service is opened broadly.
 
 ## Executive assessment
 
-The current Privacy, Terms, and Support pages are concise product explanations, not yet a globally launch-ready legal package. The implementation stores more data and uses more providers than the Privacy page identifies. It has no self-service account-deletion or personal-data-export workflow, no defined retention schedule, no accepted final legal identity or governing-law posture, and no published subprocessor/transfer framework.
+The current Privacy, Terms, and Support pages are concise product explanations, not yet a broadly launch-ready legal package. The implementation stores more data and uses more providers than the Privacy page identifies. It has no self-service account-deletion or personal-data-export workflow, no defined retention schedule, no accepted final legal identity or governing-law posture, and no published subprocessor/transfer framework.
 
-Global availability does not itself establish that no local representative is required. Qualified counsel must assess territorial scope and any EU/UK representative or similar obligation before inviting users in those regions. The global pilot should not claim a representative exemption, compliance certification, or a statutory response time.
+Global availability does not itself establish that no local representative is required. Qualified counsel must assess territorial scope and any EU/UK representative or similar obligation before inviting users in those regions. The pilot must not claim a representative exemption, compliance certification, or a statutory response time.
 
 ## Evidence-based inventory
 
@@ -20,10 +20,10 @@ Global availability does not itself establish that no local representative is re
 
 | Surface | Current behavior | Review result |
 | --- | --- | --- |
-| `/privacy` | General collection, use, provider, retention, and contact statements. | Incomplete for the implementation and global launch. |
+| `/privacy` | General collection, use, provider, retention, and contact statements. | Incomplete for the implementation and broader launch. |
 | `/terms` | General account, workspace, availability, and acceptable-use statements. | Missing material user-content, IP, suspension, termination, governing-law, dispute, and limitation provisions. |
 | `/support` | Support, account recovery, and security-report guidance. | Updated in this branch with verified privacy-request and connected-computer guidance; monitored ownership remains unconfirmed. |
-| Signup | Email/password, CAPTCHA, confirmation email. | No explicit Terms acceptance or versioned acceptance record. |
+| Signup | Public self-service signup is closed. Controlled operators can use a server-only Supabase Auth invitation after the documented legal gates are complete. | No in-product Terms acceptance or versioned acceptance record; counsel must approve the pilot-agreement process before any external invitation. |
 
 ### Information processed in the application
 
