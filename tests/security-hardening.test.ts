@@ -38,12 +38,29 @@ describe("production security controls", () => {
     expect(source).toContain("delete event.request.headers");
   });
 
-  it("keeps public signup closed while the product is a controlled pilot", () => {
+  it("routes public signup through server-side controls", () => {
     const source = fs.readFileSync(path.resolve("src/components/auth-form.tsx"), "utf8");
-    const operations = fs.readFileSync(path.resolve("docs/closed-pilot-operations.md"), "utf8");
-    expect(source).toContain("Pilot access is by invitation");
+    const route = fs.readFileSync(path.resolve("src/app/api/signup/route.ts"), "utf8");
+    const operations = fs.readFileSync(path.resolve("docs/public-beta-owner-runbook.md"), "utf8");
     expect(source).not.toContain("client.auth.signUp(");
-    expect(operations).toContain("Allow new users to sign up** is disabled");
-    expect(operations).toContain("PILOT_INVITATIONS_ENABLED=true");
+    expect(route).toContain("isSelfServiceSignupEnabled");
+    expect(route).toContain("acceptedTerms: z.literal(true)");
+    expect(route).toContain("acceptedPrivacy: z.literal(true)");
+    expect(route).toContain("captchaToken");
+    expect(route).toContain("actionRateLimit(\"signup\"");
+    expect(operations).toContain("SELF_SERVICE_SIGNUP_ENABLED=true");
+    expect(operations).toContain("Allow new users to sign up");
+  });
+
+  it("keeps legal acceptance server-managed and gates application access", () => {
+    const migration = fs.readFileSync(path.resolve("supabase/migrations/20261006044659_legal_acceptances.sql"), "utf8");
+    const acceptance = fs.readFileSync(path.resolve("src/lib/legal-acceptance.ts"), "utf8");
+    const layout = fs.readFileSync(path.resolve("src/app/app/layout.tsx"), "utf8");
+    expect(migration).toContain("alter table public.legal_acceptances enable row level security");
+    expect(migration).toContain("revoke all on table public.legal_acceptances from anon, authenticated");
+    expect(migration).toContain("source in ('signup', 'reacceptance')");
+    expect(acceptance).toContain("createServerSupabase");
+    expect(layout).toContain("hasCurrentLegalAcceptance(user.id)");
+    expect(layout).toContain('redirect("/legal/accept?next=/app"');
   });
 });

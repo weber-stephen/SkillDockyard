@@ -136,4 +136,15 @@ describe("Supabase migration coverage", () => {
     expect(sql).toContain("proposals_supersedes_proposal_id_fkey_index");
     expect(sql).toContain("workspace_invites_invited_by_user_id_fkey_index");
   });
+
+  it("keeps legal acceptance records append-only and inaccessible to browser roles", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261006044659_legal_acceptances.sql"), "utf8");
+    expect(sql).toContain("create table public.legal_acceptances");
+    expect(sql).toContain("user_id uuid not null references auth.users(id) on delete cascade");
+    expect(sql).toContain("terms_version text not null");
+    expect(sql).toContain("privacy_version text not null");
+    expect(sql).toContain("alter table public.legal_acceptances enable row level security");
+    expect(sql).toContain("revoke all on table public.legal_acceptances from anon, authenticated");
+    expect(sql).not.toMatch(/create policy/i);
+  });
 });

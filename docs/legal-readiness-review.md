@@ -158,6 +158,8 @@ Use the published Support page in this branch: a privacy request goes to the mon
 | OPS-010 | Open; privacy portions recommended P0 | Documented and tested verified rights-request, deletion, export, retention, backup, and incident-notification procedure. |
 | AUTH-007 | Open P1 | Support-assisted owner-recovery procedure that preserves authorization and audit history. |
 
+The detailed non-repository operating procedure for OPS-007 and OPS-010 is [public-beta-owner-runbook.md](public-beta-owner-runbook.md). It does not close OPS-009 or make the public documents attorney-approved.
+
 ## Reviewed evidence
 
 - `AGENTS.md`

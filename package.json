@@ -25,7 +25,6 @@
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node22 --out-dir dist --clean",
     "cli": "npm run cli:build --silent && node bin/run.js",
-    "pilot:invite": "tsx scripts/invite-pilot-user.ts",
     "prepare": "npm run cli:build"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 # Closed-pilot operations
 
-This procedure supports a limited Skill Dockyard test. It is not legal advice and does not make the public legal pages attorney-approved.
+This procedure is retained as historical guidance for a limited, invitation-only Skill Dockyard test. Public self-service beta operations are governed by [public-beta-owner-runbook.md](public-beta-owner-runbook.md). Neither document is legal advice or makes the public legal pages attorney-approved.
 
 ## Non-negotiable release gates
 
@@ -16,11 +16,10 @@ These gates are intentionally stricter than hiding the signup form. A public Sup
 ## Controlled pilot invitation
 
 1. Confirm the tester is an approved adult business participant and has completed the counsel-approved pilot-agreement process. Record the applicable agreement version in the private pilot register.
-2. In the controlled operator shell, set `PILOT_INVITATIONS_ENABLED=true` for that invocation only. Do not add it to browser-visible configuration.
-3. Run `npm run pilot:invite -- person@example.com`. The command uses Supabase’s server-only admin invitation flow; it never prints credentials or an invitation link.
-4. Record the recipient, authorization source, invitation time, and responsible operator in the private pilot register. Do not store the register in this repository.
-5. The recipient uses the Supabase invitation email to confirm their address and set a password. Test this flow with a controlled account before inviting anyone external.
-6. For a failed, expired, or misdirected invitation, do not bypass verification. Revoke or remove the Auth user through the approved operator process, document the outcome, and issue a fresh invitation only after re-approval.
+2. Use the provider's controlled-account invitation process only if it remains enabled in the production configuration. Do not add an operator credential or invitation token to browser-visible configuration.
+3. Record the recipient, authorization source, invitation time, and responsible operator in the private pilot register. Do not store the register in this repository.
+4. The recipient uses the provider invitation email to confirm their address and set a password. Test this flow with a controlled account before inviting anyone external.
+5. For a failed, expired, or misdirected invitation, do not bypass verification. Revoke or remove the Auth user through the approved operator process, document the outcome, and issue a fresh invitation only after re-approval.
 
 Pilot-account invitations create an account only. They do not grant workspace membership or skill access. Workspace invitations and skill shares keep their existing authorization rules.
 
