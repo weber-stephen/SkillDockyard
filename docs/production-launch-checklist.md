@@ -216,10 +216,13 @@ npm pack --dry-run
 
 - [x] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
   - Evidence: Sentry project and production configuration completed on October 5, 2026; application-side scrubbing and server-only source-map credentials are configured.
-- [ ] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, demo, login, and a safe application health signal.
+- [x] **OPS-002 — P0 — Joint:** Configure external uptime checks for the homepage, login, and a safe application health signal.
+  - Evidence: UptimeRobot monitors were configured for `https://skilldockyard.com/`, `https://skilldockyard.com/login`, and `https://skilldockyard.com/api/health` on October 5, 2026. The `/demo` route is intentionally excluded from launch monitoring because it is not part of the initial monitored production surface.
 - [ ] **OPS-003 — P0 — Joint:** Configure alerts with a named recipient and escalation path.
-- [ ] **OPS-004 — P0 — Stephen:** Confirm the Supabase backup schedule is appropriate for production.
-- [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise or provider-supported restore verification.
+- [ ] **OPS-004 — P0 — Stephen:** Establish and confirm a manual logical-backup schedule for the Supabase Free Plan project.
+  - Requirement: The Free Plan does not include managed project backups. Export the database with `supabase db dump` before every production migration and on a recurring schedule; keep encrypted copies outside the repository.
+- [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise using a logical dump in a disposable local or staging environment.
+  - Requirement: Do not restore over production. Verify schema, migration history, RLS/function grants, and aggregate integrity checks after restoring the dump.
 - [x] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
   - Evidence: See [production-operations-runbook.md](production-operations-runbook.md).
 - [ ] **OPS-007 — P0 — Stephen:** Select and publish a monitored support email address.
