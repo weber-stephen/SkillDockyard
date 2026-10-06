@@ -37,4 +37,13 @@ describe("production security controls", () => {
     expect(source).toContain("delete event.request.data");
     expect(source).toContain("delete event.request.headers");
   });
+
+  it("keeps public signup closed while the product is a controlled pilot", () => {
+    const source = fs.readFileSync(path.resolve("src/components/auth-form.tsx"), "utf8");
+    const operations = fs.readFileSync(path.resolve("docs/closed-pilot-operations.md"), "utf8");
+    expect(source).toContain("Pilot access is by invitation");
+    expect(source).not.toContain("client.auth.signUp(");
+    expect(operations).toContain("Allow new users to sign up** is disabled");
+    expect(operations).toContain("PILOT_INVITATIONS_ENABLED=true");
+  });
 });

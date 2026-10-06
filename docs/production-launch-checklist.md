@@ -19,7 +19,7 @@ Use this document together with [production-launch-plan.md](production-launch-pl
 - [x] **LAUNCH-001 — P0 — Stephen:** Purchase the canonical domain `skilldockyard.com`.
   - Evidence: Stephen confirmed ownership on October 3, 2026.
 - [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
-  - Evidence: Stephen selected unrestricted self-service signup on October 3, 2026; Cloudflare Turnstile is the required bot-protection provider.
+  - Evidence: Stephen selected a closed, invite-only pilot on October 6, 2026. Public self-service signup remains disabled; invitation use is additionally gated by OPS-007, OPS-009, and OPS-010.
   - Record the decision and initial user list outside the repository if it contains personal information.
 - [x] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
   - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
@@ -222,11 +222,15 @@ npm pack --dry-run
 - [ ] **OPS-005 — P0 — Joint:** Perform and document a restore exercise or provider-supported restore verification.
 - [x] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
   - Evidence: See [production-operations-runbook.md](production-operations-runbook.md).
-- [ ] **OPS-007 — P0 — Stephen:** Select and publish a monitored support email address.
+- [ ] **OPS-007 — P0 — Stephen:** Select, monitor, and publish a support email address.
+  - Required evidence: named primary owner, backup owner, security-incident escalation recipient, access test, and documented business-day monitoring procedure. Do not claim monitoring publicly until those are complete.
 - [x] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
   - Evidence: `/privacy`, `/terms`, and `/support` are linked publicly and included in the production build; legal approval remains OPS-009.
-- [ ] **OPS-009 — P0 — Stephen:** Obtain legal review and approve the privacy policy, terms, retention language, and subprocessors.
-- [ ] **OPS-010 — P1 — Joint:** Define account/data deletion, data export, retention, and incident-notification procedures.
+- [ ] **OPS-009 — P0 — Stephen:** Obtain qualified-counsel review and written approval of the pilot agreement, Privacy Policy, Terms, retention language, providers/subprocessors, and pilot territory. Global availability remains blocked pending a separate written approval.
+- [ ] **OPS-010 — P0 — Joint:** Define, approve, and test account/data deletion, data export, retention, backup, and incident-notification procedures before inviting external pilot users.
+  - Evidence: see [closed-pilot-operations.md](closed-pilot-operations.md). Do not invent statutory response times, retention periods, or incident-notification commitments.
+- [ ] **OPS-012 — P0 — Joint:** Keep public self-service signup disabled and invite only approved pilot users after OPS-007, OPS-009, and OPS-010 are complete.
+  - Evidence: Supabase Auth **Allow new users to sign up** is disabled; the public `/signup` page is invitation-only; invitation-email and password-setup flow have been tested with a controlled account.
 - [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
 
 ## 9. Production acceptance and go/no-go
@@ -254,7 +258,7 @@ Complete this section only when the release candidate is ready.
 
 | Field | Value |
 | --- | --- |
-| Rollout mode | `Unrestricted self-service signup` |
+| Rollout mode | `Closed invite-only pilot` |
 | Decision | `GO / NO-GO` |
 | Decision owner | `TBD` |
 | Decision time | `TBD` |

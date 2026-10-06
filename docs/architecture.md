@@ -42,12 +42,13 @@ Next.js App Router + proxy headers/CSRF checks
 
 ## Authentication flow
 
-1. Signup and login render `TurnstileField` and call Supabase Auth with a CAPTCHA token.
-2. Signup emails link to `/auth/confirm` with a token hash and email type.
-3. `src/app/auth/confirm/route.ts` verifies the token server-side, sets the session cookies, and redirects only to a safe local path.
-4. Password recovery uses the same confirmation route and continues to `/reset-password`.
-5. The app creates or retrieves exactly one personal workspace through the transactional `ensure_personal_workspace` RPC.
-6. Workspace invitations require a verified, normalized matching email and are accepted through transactional database functions.
+1. Public self-service signup is closed during the pilot. The `/signup` page directs prospective users to invitation support rather than calling `signUp`.
+2. A controlled operator can use `npm run pilot:invite -- person@example.com` only after the legal gates in [closed-pilot-operations.md](closed-pilot-operations.md) are complete. It uses the server-only service-role key to send Supabase Auth’s expiring invitation email and redirects the recipient through `/auth/confirm` to set a password.
+3. Supabase Auth must also have **Allow new users to sign up** disabled; removing the browser form alone is not an authorization boundary.
+4. `src/app/auth/confirm/route.ts` verifies the token server-side, sets the session cookies, and redirects only to a safe local path.
+5. Password recovery uses the same confirmation route and continues to `/reset-password`.
+6. The app creates or retrieves exactly one personal workspace through the transactional `ensure_personal_workspace` RPC.
+7. Workspace invitations require a verified, normalized matching email and are accepted through transactional database functions. They are distinct from pilot-account invitations.
 
 Production Auth decisions recorded on October 5, 2026:
 
@@ -111,6 +112,7 @@ Browser-safe values use `NEXT_PUBLIC_`. Everything else is server-only:
 - CAPTCHA: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`; the corresponding secret is configured in Supabase Auth CAPTCHA settings
 - Monitoring: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
 - Optional direct scanner connector: `SKILL_DOCKYARD_INGEST_TOKEN`, `SKILL_DOCKYARD_INGEST_WORKSPACE_ID`
+- Closed-pilot operator gate: `PILOT_INVITATIONS_ENABLED=true` only in a controlled operator environment after counsel approval; it is not a browser-safe value.
 
 Local values belong in `.env.local`. Production values belong in Vercel. Never commit populated environment files or copy secrets into documentation.
 
