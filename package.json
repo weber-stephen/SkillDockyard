@@ -21,6 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:pages": "npm run build && tsx scripts/smoke-pages.ts",
+    "backup:supabase": "bash scripts/supabase-backup.sh",
     "test:browser": "playwright test",
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node22 --out-dir dist --clean",

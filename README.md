@@ -39,6 +39,10 @@ See the [architecture map](docs/architecture.md) for the system boundaries, data
 
 Package maintainers should follow the [Skill Dockyard command release guide](docs/cli-release-guide.md) for publishing, compatibility, revocation, and deprecation procedures.
 
+### Local Supabase backups
+
+The Supabase Free Plan does not include managed project backups. Set up the [local Supabase backup skill](.agents/skills/supabase-backup/SKILL.md), then run `npm run backup:supabase` before production migrations and on the recurring schedule. Backups are encrypted and written outside the repository.
+
 ### 3. Submit a skill without Git
 
 Open [http://localhost:3000/app/submit](http://localhost:3000/app/submit) to add a new skill, or open [http://localhost:3000/app/submit/update](http://localhost:3000/app/submit/update) to submit an update:

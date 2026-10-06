@@ -100,6 +100,7 @@ All public tables must have deliberate RLS or be deliberately inaccessible throu
 | `src/cli` | Oclif command implementation compiled for Node 22. |
 | `tests` | Unit, migration-invariant, security, permissions, and workflow regression tests. |
 | `scripts/smoke-pages.ts` | Production route and internal-link smoke checks. |
+| `scripts/supabase-backup.sh` | Creates encrypted local Supabase logical backups outside the repository. |
 | `.github/workflows` | CI verification and tagged CLI publishing. |
 | `docs` | Brand, permissions, architecture, launch, security, operations, and release documentation. |
 
