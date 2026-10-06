@@ -42,13 +42,13 @@ Next.js App Router + proxy headers/CSRF checks
 
 ## Authentication flow
 
-1. Public self-service signup is closed during the pilot. The `/signup` page directs prospective users to invitation support rather than calling `signUp`.
-2. A controlled operator can use `npm run pilot:invite -- person@example.com` only after the legal gates in [closed-pilot-operations.md](closed-pilot-operations.md) are complete. It uses the server-only service-role key to send Supabase Auth’s expiring invitation email and redirects the recipient through `/auth/confirm` to set a password.
-3. Supabase Auth must also have **Allow new users to sign up** disabled; removing the browser form alone is not an authorization boundary.
+1. `/signup` submits to a same-origin server route. Production signup requires `SELF_SERVICE_SIGNUP_ENABLED=true`, a Turnstile token, Terms/Privacy acknowledgement, and Supabase email confirmation. It returns a generic result that does not enumerate accounts.
+2. Supabase Auth **Allow new users to sign up** is the emergency provider hard stop; the application flag supplies the public paused state. Both controls must agree before enabling registration.
+3. The signup route records a server-managed, append-only Terms/Privacy acceptance for a newly created account. Existing accounts with a changed document version must acknowledge the current version before entering `/app`; acceptance is not an authorization role and never uses editable Auth metadata.
 4. `src/app/auth/confirm/route.ts` verifies the token server-side, sets the session cookies, and redirects only to a safe local path.
 5. Password recovery uses the same confirmation route and continues to `/reset-password`.
 6. The app creates or retrieves exactly one personal workspace through the transactional `ensure_personal_workspace` RPC.
-7. Workspace invitations require a verified, normalized matching email and are accepted through transactional database functions. They are distinct from pilot-account invitations.
+7. Workspace invitations require a verified, normalized matching email and are accepted through transactional database functions. They are distinct from account registration.
 
 Production Auth decisions recorded on October 5, 2026:
 
@@ -85,6 +85,7 @@ Core relations include:
 - `artifact_shares`, `notifications`
 - `cli_pairing_codes`, `cli_tokens`, `skill_downloads`, `skill_installations`
 - `user_accounts`, `workspace_onboarding`, and workspace settings/risk rules
+- `legal_acceptances`, an append-only server-managed record of active public-document acknowledgements
 
 All public tables must have deliberate RLS or be deliberately inaccessible through the Data API. Privileged functions must declare their security mode, fixed `search_path`, and explicit execute grants.
 
@@ -112,7 +113,7 @@ Browser-safe values use `NEXT_PUBLIC_`. Everything else is server-only:
 - CAPTCHA: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`; the corresponding secret is configured in Supabase Auth CAPTCHA settings
 - Monitoring: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
 - Optional direct scanner connector: `SKILL_DOCKYARD_INGEST_TOKEN`, `SKILL_DOCKYARD_INGEST_WORKSPACE_ID`
-- Closed-pilot operator gate: `PILOT_INVITATIONS_ENABLED=true` only in a controlled operator environment after counsel approval; it is not a browser-safe value.
+- Self-service signup gate: `SELF_SERVICE_SIGNUP_ENABLED=true` only after the public-beta release gates are complete; it is not a browser-safe value.
 
 Local values belong in `.env.local`. Production values belong in Vercel. Never commit populated environment files or copy secrets into documentation.
 
@@ -133,5 +134,6 @@ Before changing a feature:
 - [Production launch checklist](production-launch-checklist.md)
 - [Production launch plan](production-launch-plan.md)
 - [Production operations runbook](production-operations-runbook.md)
+- [Public-beta owner runbook](public-beta-owner-runbook.md)
 - [Security audit](security-audit-2026-10-03.md)
 - [Permissions model](permissions.md)

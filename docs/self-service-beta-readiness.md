@@ -1,6 +1,6 @@
 # Self-service beta readiness
 
-**Status:** Planned. The current product remains a closed, invitation-only pilot until the implementation and provider tasks below are complete.
+**Status:** Implemented in the public-beta signup PR; provider settings and owner release gates remain incomplete until evidenced.
 
 This is an operational risk plan, not legal advice, an attorney-approved legal package, or a promise that launch eliminates personal liability.
 
@@ -59,6 +59,8 @@ Ratings reflect the repository and documented provider posture at the time of wr
 3. Support ownership, backup/restore, rights-request, and incident exercises are evidenced privately.
 4. The owner explicitly accepts the remaining risks or records qualified counsel’s written review. Do not represent the latter as completed unless it actually is.
 5. Enable Supabase self-service signup only after the deployed application and provider settings have been verified together.
+
+The detailed owner procedure is [public-beta-owner-runbook.md](public-beta-owner-runbook.md). It does not replace counsel approval or complete any unchecked P0 launch item.
 
 ## Verification
 
