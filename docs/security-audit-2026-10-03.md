@@ -4,7 +4,7 @@
 
 Reviewed the Next.js application and API routes, Supabase migrations and server data layer, authentication and invitation flows, connected-computer token handling, dependency tree, security headers, request parsing, and release configuration. Validation used static request-path tracing, unit tests, a production build, local page smoke tests, `npm audit --omit=dev`, and repository secret-pattern scans.
 
-No destructive tests or live-production exploit attempts were performed. Production Supabase policies, provider settings, Vercel environment values, email delivery, backups, and monitoring delivery still require provider-side verification. On October 5, 2026, Stephen recorded the production Auth session settings: JWT expiry `3600` seconds, inactivity timeout `0`, time-boxed sessions `0`, and compromised refresh-token detection/revocation enabled. Stephen accepted leaked-password protection remaining disabled on the Free Plan as a documented residual risk; no further launch action is required unless the Supabase plan changes.
+No destructive tests or live-production exploit attempts were performed. Production Supabase policies, provider settings, Vercel environment values, email delivery, monitoring delivery, and the manual backup/restore process still require verification. The Supabase Free Plan does not include managed project backups, so production requires encrypted logical exports outside the repository. On October 5, 2026, Stephen recorded the production Auth session settings: JWT expiry `3600` seconds, inactivity timeout `0`, time-boxed sessions `0`, and compromised refresh-token detection/revocation enabled. Stephen accepted leaked-password protection remaining disabled on the Free Plan as a documented residual risk; no further launch action is required unless the Supabase plan changes.
 
 On October 5, 2026, Stephen also accepted retaining the 47 unused-index informational findings reported by the Supabase Performance Advisor. These indexes support intentional application access paths, while the production database remains nearly empty; the findings will be re-evaluated after launch traffic.
 
@@ -63,7 +63,7 @@ Severity: High
 Title: Production database and provider configuration is not yet verified  
 Status: Needs verification — database portion verified
 Location: Supabase, Vercel, Upstash, Cloudflare Turnstile, Sentry, Resend dashboards  
-Evidence: Production migrations now match through `20261003154937`; aggregate integrity checks returned zero owner, private-draft, invitation, RLS, or function-grant violations. CAPTCHA secret, SMTP delivery, shared limiter, Sentry delivery, service health, and backups still require provider verification.
+Evidence: Production migrations now match through `20261003154937`; aggregate integrity checks returned zero owner, private-draft, invitation, RLS, or function-grant violations. CAPTCHA secret, SMTP delivery, shared limiter, Sentry delivery, service health, and the manual logical-backup/restore process still require verification.
 Impact: Missing configuration could block authentication or abuse controls, or leave production permissions different from reviewed migrations.  
 Attack precondition: Deployment with incomplete or stale provider configuration.  
 Recommendation: Complete DATA-009 through DATA-015, SEC-009, AUTH-004 through AUTH-006, PLAT-004, and OPS provider checks before inviting users.  
@@ -93,4 +93,4 @@ Regression test: Maintain cross-workspace and role-boundary tests for every new 
 | Tokens and secrets | Hashed token storage confirmed; tracked-secret scan clean |
 | Dependencies | Production audit clean on October 3, 2026 |
 | Database RLS/functions | Migration review completed; live advisors and state pending |
-| Monitoring, backups, restore | Code/runbook present; provider verification pending |
+| Monitoring, backups, restore | Code/runbook present; manual logical-backup and restore verification pending |

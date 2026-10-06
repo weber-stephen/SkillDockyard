@@ -8,7 +8,7 @@ import { validateManualSubmissionInput } from "@/lib/submissions";
 import { hasSupabaseConfig } from "@/lib/supabase/server";
 import { recordOnboardingMilestone } from "@/lib/onboarding";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
-import { consumeRateLimit, RateLimitConfigurationError } from "@/lib/rate-limit";
+import { consumeRateLimit, recordRateLimitFailure, RateLimitConfigurationError } from "@/lib/rate-limit";
 import type { ArtifactVisibility } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -54,6 +54,7 @@ export async function POST(request: Request) {
     if (existingArtifact?.workspace_id) workspaceIds.add(existingArtifact.workspace_id);
     const workspaceRates = await Promise.all([...workspaceIds].map((id) => consumeRateLimit(`submission-workspace:${id}`, 20, 60_000)));
     if (!userRate.allowed || workspaceRates.some((rate) => !rate.allowed)) {
+      recordRateLimitFailure(!userRate.allowed ? "submission-user" : "submission-workspace");
       const retryAfter = Math.max(userRate.retryAfterSeconds, ...workspaceRates.map((rate) => rate.retryAfterSeconds));
       return NextResponse.json({ error: "Too many submissions. Try again later." }, { status: 429, headers: { "Retry-After": String(retryAfter) } });
     }

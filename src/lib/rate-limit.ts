@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import * as Sentry from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -13,6 +14,14 @@ export class RateLimitConfigurationError extends Error {
 
 const localBuckets = new Map<string, Bucket>();
 const sharedLimiters = new Map<string, Ratelimit>();
+
+/** Records an aggregate operational signal only; never include an identity, IP, token, or request payload. */
+export function recordRateLimitFailure(scope: string) {
+  Sentry.captureMessage("Rate limit exceeded", {
+    level: "warning",
+    tags: { rate_limit_scope: scope, operational_signal: "rate_limit" }
+  });
+}
 
 export async function consumeRateLimit(key: string, limit: number, windowMs: number, now = Date.now()) {
   const url = process.env.UPSTASH_REDIS_REST_URL;

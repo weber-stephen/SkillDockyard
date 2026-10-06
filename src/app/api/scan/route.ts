@@ -5,7 +5,7 @@ import type { ScanArtifactInput } from "@/lib/types";
 import { resolveWorkspaceForScanToken } from "@/lib/scan-tokens";
 import { recordOnboardingMilestone } from "@/lib/onboarding";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
-import { consumeRateLimit, fingerprintRateLimitKey, RateLimitConfigurationError } from "@/lib/rate-limit";
+import { consumeRateLimit, fingerprintRateLimitKey, recordRateLimitFailure, RateLimitConfigurationError } from "@/lib/rate-limit";
 import { validateIngestBatch } from "@/lib/ingest-limits";
 import { resolveCliToken } from "@/lib/cli-auth";
 
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     throw error;
   }
   if (!workspaceRate.allowed || !tokenRate.allowed) {
+    recordRateLimitFailure(!workspaceRate.allowed ? "scan-workspace" : "scan-token");
     const retryAfter = Math.max(workspaceRate.retryAfterSeconds, tokenRate.retryAfterSeconds);
     return NextResponse.json({ error: "Too many scan requests. Try again later." }, { status: 429, headers: { "Retry-After": String(retryAfter) } });
   }
