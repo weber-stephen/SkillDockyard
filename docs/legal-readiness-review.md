@@ -2,6 +2,8 @@
 
 **Status:** Working launch-review package. This is not legal advice and is not attorney-approved.
 
+The current source of truth for legal decisions, risks, document status, provider posture, evidence references, and change control is [legal-governance/README.md](legal-governance/README.md). This review remains the implementation evidence baseline.
+
 **Review date:** October 5, 2026  
 **Product:** Skill Dockyard  
 **Current launch posture:** Closed, invite-only, business-use-oriented pilot for adults. The next planned posture is a self-service beta; its implementation and unresolved owner/counsel gates are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). Public self-service signup and global availability are currently blocked. There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
