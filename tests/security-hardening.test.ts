@@ -61,6 +61,7 @@ describe("production security controls", () => {
     expect(migration).toContain("source in ('signup', 'reacceptance')");
     expect(acceptance).toContain("createServerSupabase");
     expect(layout).toContain("hasCurrentLegalAcceptance(user.id)");
+    expect(layout).toContain("isSelfServiceSignupEnabled()");
     expect(layout).toContain('redirect("/legal/accept?next=/app"');
   });
 });
