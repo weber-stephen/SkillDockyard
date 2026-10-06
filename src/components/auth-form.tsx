@@ -8,6 +8,7 @@ import { TurnstileField } from "@/components/turnstile-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export function AuthForm({ mode, nextPath, signupEnabled = true }: { mode: "login" | "signup"; nextPath: string; signupEnabled?: boolean }) {
   const router = useRouter();
@@ -31,9 +32,10 @@ export function AuthForm({ mode, nextPath, signupEnabled = true }: { mode: "logi
         setMessage("Check your email to confirm your address. If an account already exists, use the sign-in or password reset options.");
       } else {
         const client = createBrowserSupabase();
-        const { error } = await client.auth.signInWithPassword({ email, password, options: { captchaToken: captchaToken ?? undefined } });
-        if (error) throw error;
-        router.push(nextPath as never);
+      const { error } = await client.auth.signInWithPassword({ email, password, options: { captchaToken: captchaToken ?? undefined } });
+      if (error) throw error;
+      trackAnalyticsEvent("login_succeeded", { entry_point: "login" });
+      router.push(nextPath as never);
         router.refresh();
       }
     } catch {

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export function InviteInbox({ invites }: { invites: Array<{ id: string; target_type: string; artifact_name: string; source_workspace_name: string }> }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -19,6 +20,7 @@ export function InviteInbox({ invites }: { invites: Array<{ id: string; target_t
       setMessage(payload.error ?? "We could not update that invite.");
       return;
     }
+    trackAnalyticsEvent("skill_share_response", { response: action });
     router.refresh();
   }
 

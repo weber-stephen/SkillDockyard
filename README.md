@@ -187,6 +187,7 @@ UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_GTM_CONTAINER_ID=
 SENTRY_AUTH_TOKEN=
 SENTRY_ORG=
 SENTRY_PROJECT=
@@ -203,6 +204,7 @@ SKILL_DOCKYARD_INGEST_WORKSPACE_ID=
 | `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis database | Server-only shared rate limiting. Production requests fail closed if these are missing. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile widget | Public site key. Configure the corresponding secret in Supabase Auth CAPTCHA settings, not in the web app. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry project settings | Public error-ingest endpoint. Event scrubbing removes request bodies, headers, cookies, and user details other than an internal user id. |
+| `NEXT_PUBLIC_GTM_CONTAINER_ID` | Google Tag Manager container settings | Optional browser-safe GTM container ID. Configure it only in Vercel Production; the app loads it only after a visitor allows analytics. |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | Sentry project settings | Server-only build credentials used to upload source maps. |
 | `SKILL_DOCKYARD_INGEST_TOKEN` | Generate a long random value | Required by the CLI scan endpoint. Keep server-only. |
 | `SKILL_DOCKYARD_INGEST_WORKSPACE_ID` | UUID of a workspace intended for CLI ingest | Required for a scanner connector; browser users receive their own workspace automatically. |

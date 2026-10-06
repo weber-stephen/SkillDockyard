@@ -10,6 +10,7 @@ import { clearLocalDrafts, readLocalDrafts, writeLocalDraft, type LocalDraftArti
 import type { SubmissionOptions } from "@/lib/submission-options";
 import type { Artifact, ArtifactDetail } from "@/lib/types";
 import { getSkillWritingChecks, skillTemplate } from "@/lib/skill-writing";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 interface SubmissionResponse {
   saved: boolean;
@@ -133,10 +134,12 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
         compareHref: null,
         message: "Saved as a demo draft in this browser. It was not sent to reviewers or teammates."
       });
+      trackAnalyticsEvent("skill_submission_succeeded", { submission_kind: mode, environment: "demo", visibility: "private" });
       return;
     }
 
     setResult(payload);
+    trackAnalyticsEvent("skill_submission_succeeded", { submission_kind: mode, environment: "live", visibility: mode === "new" ? visibility : "workspace" });
   }
 
   function continueToDetails() {

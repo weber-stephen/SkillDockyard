@@ -113,6 +113,7 @@ Browser-safe values use `NEXT_PUBLIC_`. Everything else is server-only:
 - Shared limiter: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 - CAPTCHA: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`; the corresponding secret is configured in Supabase Auth CAPTCHA settings
 - Monitoring: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
+- Optional analytics: `NEXT_PUBLIC_GTM_CONTAINER_ID` is browser-safe and is set only in Vercel Production. The client loads GTM only after explicit analytics consent.
 - Optional direct scanner connector: `SKILL_DOCKYARD_INGEST_TOKEN`, `SKILL_DOCKYARD_INGEST_WORKSPACE_ID`
 - Self-service signup gate: `SELF_SERVICE_SIGNUP_ENABLED=true` only after the public-beta release gates are complete; it is not a browser-safe value.
 

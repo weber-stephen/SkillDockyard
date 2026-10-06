@@ -19,6 +19,8 @@ describe("production security controls", () => {
     expect(source).toContain("isCrossOriginMutation");
     expect(source).toContain("sec-fetch-site");
     expect(source).toContain("allowed.has(origin)");
+    expect(source).toContain("https://www.googletagmanager.com");
+    expect(source).toContain("https://www.google-analytics.com");
   });
 
   it("keeps server credentials out of public environment names", () => {
