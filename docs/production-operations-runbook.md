@@ -25,6 +25,27 @@ Use this runbook for incidents affecting `https://skilldockyard.com`. Never past
 4. Run the fix in a non-production environment, run migration tests and Supabase advisors, then request explicit production authorization.
 5. After applying, verify owner consistency, private-draft isolation, invitation constraints, function grants, and RLS status.
 
+## Supabase logical backups
+
+The Supabase Free Plan does not provide managed project backups. The repository includes an encrypted local backup skill at [`.agents/skills/supabase-backup/SKILL.md`](../.agents/skills/supabase-backup/SKILL.md) and the `npm run backup:supabase` command.
+
+### Backup policy
+
+1. Stephen is the backup owner until a second operator is explicitly assigned.
+2. Run `npm run backup:supabase` before every production migration and on the recurring schedule recorded under `OPS-004` in the [production launch checklist](production-launch-checklist.md).
+3. Store encrypted archives and the age private key in separate locations. Never store either in Git, issues, logs, or customer-support messages.
+4. The dump covers the Postgres roles, schema, and data. It is not a backup of Supabase Storage API objects; handle any future Storage objects separately.
+5. Keep the archive checksum with the backup inventory, but do not record `SUPABASE_DB_URL`, database passwords, or private keys.
+
+### Restore verification
+
+1. Select a known backup and verify its checksum before decrypting it.
+2. Restore only into a disposable local or staging database. Never restore over production as a launch exercise.
+3. Decrypt the archive with the matching age private key and unpack it into a temporary directory.
+4. Restore roles, schema, and data using the Supabase logical restore procedure and a single transaction where supported.
+5. Verify migration history, RLS/function grants, owner consistency, private-draft isolation, invitation constraints, and the aggregate integrity queries used by `DATA-012`.
+6. Record the backup timestamp, restore target, verifier, and result in the launch record without recording customer rows or credentials.
+
 ## Secret rotation
 
 1. Revoke or rotate the suspected credential at its provider first.
