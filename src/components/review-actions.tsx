@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Check, MessageSquareWarning, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export function ReviewActions({
   artifactId,
@@ -53,6 +54,8 @@ export function ReviewActions({
       setMessage("We could not record that decision.");
       return;
     }
+
+    trackAnalyticsEvent("review_decision_recorded", { decision, environment: pathname.startsWith("/demo") ? "demo" : "live" });
 
     if (decision === "published") {
       router.push(pathname.startsWith("/demo") ? "/demo/artifacts" : "/app/artifacts");

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export function PrivateDraftActions({ artifactId }: { artifactId: string }) {
   const router = useRouter();
@@ -17,6 +18,7 @@ export function PrivateDraftActions({ artifactId }: { artifactId: string }) {
       const response = await fetch(`/api/artifacts/${artifactId}/submit-for-review`, { method: "POST" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "We could not submit this draft for review.");
+      trackAnalyticsEvent("skill_submission_succeeded", { submission_kind: "private_draft", environment: "live", visibility: "workspace" });
       router.refresh();
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "We could not submit this draft for review.");

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ArtifactDetail } from "@/lib/types";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export function ShareSkillPanel({
   artifact,
@@ -40,7 +41,10 @@ export function ShareSkillPanel({
     const payload = await response.json();
     setPending(false);
     setMessage(response.ok ? "Share created. Access begins after acceptance unless the workspace is already active." : payload.error ?? "We could not share that skill.");
-    if (response.ok) router.refresh();
+    if (response.ok) {
+      trackAnalyticsEvent("skill_share_created", { target_type: targetType, permission: sharePermission });
+      router.refresh();
+    }
   }
 
   return (
@@ -143,6 +147,9 @@ export function ShareSkillPanel({
     const payload = await response.json();
     setPending(false);
     setMessage(response.ok ? "Access revoked." : payload.error ?? "We could not revoke that share.");
-    if (response.ok) router.refresh();
+    if (response.ok) {
+      trackAnalyticsEvent("skill_share_revoked");
+      router.refresh();
+    }
   }
 }

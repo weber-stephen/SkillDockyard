@@ -91,13 +91,13 @@ export default function MarketingPage() {
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild className="min-h-11 w-full sm:w-auto">
-                <a href="#how-it-works">
+                <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="how_it_works">
                   See how it works
                   <ArrowDown className="h-4 w-4" aria-hidden="true" />
                 </a>
               </Button>
               <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
-                <Link href="/demo">
+                <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
                   Explore the demo
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
@@ -309,13 +309,13 @@ function ClosingCallToAction() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
           <Button asChild className="min-h-11 w-full sm:w-auto">
-            <Link href="/demo">
+            <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="explore_demo">
               Explore the demo
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </Button>
           <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
-            <Link href="/signup">Create account</Link>
+            <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="create_account">Create account</Link>
           </Button>
         </div>
       </div>

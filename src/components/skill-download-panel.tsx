@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProductLink } from "@/components/product-link";
 import { usePathname } from "next/navigation";
 import { getInstallDirectory, type DownloadOs, type DownloadTarget } from "@/lib/skill-download";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 const historyKey = "skill-dockyard.skill-downloads.v1";
 
@@ -48,6 +49,7 @@ export function SkillDownloadPanel({ artifactId, approvedHash, skillName, eligib
     const next = [...records.filter((record) => !(record.artifactId === artifactId && record.target === target)), { artifactId, target, contentHash: approvedHash, downloadedAt: new Date().toISOString() }];
     setRecords(next);
     window.localStorage.setItem(historyKey, JSON.stringify(next));
+    trackAnalyticsEvent("skill_download_started", { target, operating_system: os, is_update: isUpdate, environment: pathname.startsWith("/demo") ? "demo" : "live" });
   }
 
   if (!eligible) {
