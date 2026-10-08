@@ -1,5 +1,5 @@
 import { ProductLink as Link } from "@/components/product-link";
-import { ArrowRight, Library, Send } from "lucide-react";
+import { ArrowRight, FolderOpen, Library, Send } from "lucide-react";
 import { SubmissionForm } from "@/components/submission-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,12 @@ export default async function SubmitPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/import">
+                <FolderOpen className="h-4 w-4" />
+                Import skills from your computer
+              </Link>
+            </Button>
             <Button asChild variant="outline">
               <Link href="/artifacts">
                 Browse Skills

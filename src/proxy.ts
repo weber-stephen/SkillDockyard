@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const productPrefixes = ["/artifacts", "/invites", "/submit", "/exports", "/getting-started", "/settings"];
+const productPrefixes = ["/artifacts", "/invites", "/submit", "/import", "/exports", "/getting-started", "/settings"];
 const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function contentSecurityPolicy(nonce: string) {
