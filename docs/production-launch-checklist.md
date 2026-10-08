@@ -213,6 +213,10 @@ npm pack --dry-run
 - [x] **PLAT-009 — P1 — Codex:** Add canonical metadata, sitemap/robots behavior, and social metadata appropriate to the selected rollout mode.
   - Evidence: Public metadata, Open Graph image route, sitemap, and robots directives are included in the passing production build.
 - [ ] **PLAT-010 — P1 — Joint:** Remove or redirect obsolete deployment aliases after the canonical domain is stable.
+- [x] **PLAT-011 — P1 — Codex:** Deploy consent-gated Google Tag Manager support for anonymous landing-page, campaign, and product-use measurement.
+  - Evidence: `GTM-KPDZ7DCL` is configured only in the Vercel Production environment. The consent prompt, conditional GTM injection, and anonymous event data layer were deployed in [PR #18](https://github.com/weber-stephen/SkillDockyard/pull/18); the CSP hydration repair was deployed in [PR #19](https://github.com/weber-stephen/SkillDockyard/pull/19). On October 6, 2026, a fresh production-browser check confirmed the prompt appeared and, after consent, loaded `https://www.googletagmanager.com/gtm.js?id=GTM-KPDZ7DCL`.
+- [ ] **PLAT-012 — P1 — Joint:** Configure the GA4 destination and anonymous event forwarding in GTM, then verify it in GTM Preview and GA4 DebugView.
+  - Required evidence: Published GTM version; one consented `page_view` per client-side navigation; expected anonymous custom events and approved parameters visible in GA4 DebugView; no account, workspace, skill, invitation, token, or full-URL data sent.
 
 ## 8. Monitoring, backups, support, and legal readiness
 
