@@ -18,6 +18,16 @@ test.describe("demo navigation and skill browsing", () => {
     await expect(page.locator(".brand-mark .brand-symbol svg")).toHaveCount(1);
   });
 
+  test("promotes the free beta signup path while keeping the demo available", async ({ page }) => {
+    await page.goto("/");
+
+    const hero = page.locator("main > section").first();
+    await expect(hero.getByText("Free during beta", { exact: true })).toBeVisible();
+    await expect(hero.getByRole("link", { name: "Create free account", exact: true })).toHaveAttribute("href", "/signup");
+    await expect(hero.getByRole("link", { name: "Explore the demo", exact: true })).toHaveAttribute("href", "/demo");
+    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Create free account", exact: true })).toHaveAttribute("href", "/signup");
+  });
+
   test("shows standard Codex and Claude Code skill locations on the import page", async ({ page }) => {
     await page.goto("/demo/import");
 
@@ -66,6 +76,14 @@ test.describe("demo navigation and skill browsing", () => {
 
 test.describe("demo navigation on a phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true });
+
+  test("keeps the free beta signup action visible", async ({ page }) => {
+    await page.goto("/");
+
+    const header = page.locator("header");
+    await expect(header.getByRole("link", { name: "Create free account", exact: true })).toBeVisible();
+    await expect(page.locator("main > section").first().getByText("Free during beta", { exact: true })).toBeVisible();
+  });
 
   test("opens the menu and navigates to Skills", async ({ page }) => {
     await page.goto("/demo");
