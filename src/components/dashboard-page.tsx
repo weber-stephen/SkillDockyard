@@ -19,12 +19,12 @@ export async function DashboardPage() {
 
   return <div className="dashboard-page space-y-8">
     {productMode !== "demo" ? <SetupHub initialState={onboarding} hasArtifacts={artifacts.length > 0} compact /> : null}
-    <header className="dashboard-hero grid gap-6 border-b border-border pb-8 lg:grid-cols-[1.1fr_0.9fr]">
+    <header className="dashboard-hero grid gap-7 border-b border-border pb-9 lg:grid-cols-[1.08fr_0.92fr]">
       <div className="space-y-5">
         <div className="inline-flex items-center gap-2 rounded-sm border border-border bg-panel px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"><Library className="h-3.5 w-3.5" />{mode}</div>
         <div className="space-y-3">
-          <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-normal sm:text-6xl">Keep every shared skill reviewed, current, and ready to use.</h1>
-          <p className="max-w-2xl text-base leading-7 text-muted-foreground">Compare submitted changes with the published version, then make the right update available to your workspace.</p>
+          <h1 className="app-page-title max-w-[16ch] sm:text-[clamp(2.4rem,4vw,3.5rem)]">Keep every shared skill reviewed, current, and ready to use.</h1>
+          <p className="app-copy max-w-2xl text-base text-muted-foreground">Compare submitted changes with the published version, then make the right update available to your workspace.</p>
         </div>
         <div className="dashboard-actions flex flex-wrap gap-3">
           <Button asChild><Link href="/submit">Add skill<Send className="h-4 w-4" /></Link></Button>
@@ -33,7 +33,7 @@ export async function DashboardPage() {
           <Button asChild variant="outline"><Link href="/artifacts">Browse skills</Link></Button>
         </div>
       </div>
-      <div className="metric-grid grid content-end gap-3 sm:grid-cols-2">
+      <div className="metric-grid grid content-end gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
         <Metric icon={Library} label="Workspace skills" value={metrics.sharedSkills.toString()} />
         <Metric icon={Sparkles} label="Updates to review" value={metrics.improvementsAvailable.toString()} />
         <Metric icon={CheckCircle2} label="Published" value={metrics.inSync.toString()} />
@@ -55,7 +55,7 @@ export async function DashboardPage() {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
-  return <div className="metric-card rounded-md border border-border bg-panel p-4"><div className="mb-5 flex items-center justify-between text-muted-foreground"><span className="text-xs font-bold uppercase tracking-[0.16em]">{label}</span><Icon className="h-4 w-4" /></div><div className="text-4xl font-black">{value}</div></div>;
+  return <div className="metric-card bg-panel p-4"><div className="mb-5 flex items-center justify-between text-muted-foreground"><span className="eyebrow">{label}</span><Icon className="h-4 w-4" /></div><div className="text-3xl font-bold tabular-nums">{value}</div></div>;
 }
 
 function Summary({ title, body }: { title: string; body: string }) {

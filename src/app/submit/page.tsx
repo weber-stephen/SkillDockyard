@@ -14,10 +14,10 @@ export default async function SubmitPage() {
         <div className="space-y-4">
           <Badge variant={isDemo ? "muted" : "success"}>{isDemo ? "Demo mode: try a submission" : "New skill submission"}</Badge>
           <div className="space-y-3">
-            <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-normal sm:text-5xl">
+            <h1 className="app-page-title max-w-[15ch] sm:text-[clamp(2.2rem,3.5vw,3.1rem)]">
               Add a new skill to the library.
             </h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+            <p className="app-copy max-w-2xl text-base text-muted-foreground">
               Capture a reusable workflow, keep it private while it takes shape, or send it to your workspace review queue when it is ready.
             </p>
           </div>

@@ -56,7 +56,7 @@ pre {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-/* Exploration 01: Precision Yard */
+/* Operational Cobalt */
 :root {
   --background: oklch(0.97 0.012 258);
   --foreground: oklch(0.20 0.045 264);
@@ -119,12 +119,35 @@ a:active { transform: translateY(1px); }
   outline-offset: 3px;
 }
 
-main header h1 {
-  max-width: 18ch;
+/* App headings are compact, but never compressed. Display type stays opt-in. */
+.app-page-title {
+  max-width: 22ch;
   font-family: "Avenir Next Condensed", "Avenir Next", sans-serif;
-  letter-spacing: -0.045em !important;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.022em;
   text-wrap: balance;
-  color: var(--primary);
+  color: var(--foreground);
+}
+
+.app-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.app-copy {
+  line-height: 1.55;
 }
 
 .review-spotlight {
@@ -139,20 +162,6 @@ main header h1 {
 
 .metric-card:first-child .text-muted-foreground {
   color: color-mix(in oklch, var(--primary-foreground), transparent 22%) !important;
-}
-
-main header {
-  position: relative;
-}
-
-main header::before {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 5rem;
-  height: 2px;
-  background: var(--primary);
 }
 
 table {
@@ -190,7 +199,7 @@ select {
     width: 100% !important;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
     overflow: visible !important;
     padding: 0.75rem clamp(1.5rem, 4vw, 4rem) !important;
     border-right: 0 !important;
@@ -206,30 +215,39 @@ select {
   .app-sidebar nav a:not([aria-current="page"]),
   .app-sidebar nav h2 { color: color-mix(in oklch, var(--primary-foreground), transparent 18%) !important; }
   .app-sidebar .brand-symbol { width: 2.25rem; height: 2.25rem; }
-  .app-sidebar .sidebar-content { display: flex; flex-direction: row-reverse; align-items: center; gap: 1rem; }
+  .app-sidebar .sidebar-content { display: flex; flex-direction: row-reverse; align-items: center; gap: 0.75rem; min-width: 0; }
   .app-sidebar .sidebar-primary-action { flex: 0 0 auto; }
   .app-sidebar .primary-navigation,
   .app-sidebar .nav-items { display: flex; align-items: center; gap: 0.125rem; }
-  .app-sidebar .primary-navigation { justify-content: flex-end; margin: 0; }
+  .app-sidebar .primary-navigation { justify-content: flex-end; margin: 0; min-width: 0; }
   .app-sidebar .nav-section { margin: 0; }
   .app-sidebar .nav-section h2 { display: none; }
   .app-sidebar .nav-items > a { min-height: 2.5rem; padding-inline: 0.7rem; }
   .app-sidebar .nav-items > a svg { display: none; }
   .app-main { padding-left: 0 !important; }
-  .app-main > div:first-child { min-height: 3rem; padding-block: 0.35rem; }
+  .app-main > div:first-child { min-height: 2.75rem; padding-block: 0.3rem; }
 }
 
 @media (max-width: 720px) {
   .app-content { padding-inline: 1rem; }
-  main header h1 { font-size: clamp(2.25rem, 12vw, 3.5rem) !important; line-height: 0.98 !important; }
-  table thead { display: none; }
-  table, tbody, tr, td { display: block; width: 100%; }
-  tbody tr { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); }
-  tbody td { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.75rem; padding: 0.45rem 0 !important; }
-  tbody td::before { color: var(--muted-foreground); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-  tbody td:nth-child(1)::before { content: "Skill"; }
-  tbody td:nth-child(2)::before { content: "Access"; }
-  tbody td:nth-child(3)::before { content: "Status"; }
-  tbody td:nth-child(4)::before { content: "Change"; }
-  tbody td:nth-child(5)::before { content: "Updated"; }
+  .app-page-title { font-size: clamp(2rem, 10vw, 2.75rem); line-height: 1.04; }
+
+  .skill-record-table thead { display: none; }
+  .skill-record-table, .skill-record-table tbody, .skill-record-table tr, .skill-record-table td { display: block; width: 100%; }
+  .skill-record-table tbody tr { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); }
+  .skill-record-table tbody td {
+    display: grid;
+    grid-template-columns: 6.4rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.4rem 0 !important;
+  }
+  .skill-record-table tbody td::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
 }
