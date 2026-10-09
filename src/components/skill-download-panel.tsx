@@ -69,7 +69,7 @@ export function SkillDownloadPanel({ artifactId, approvedHash, skillName, eligib
         <Choice label="Use it in" value={target} onChange={(value) => setTarget(value as DownloadTarget)} options={[{ value: "codex", label: "Codex" }, { value: "claude-code", label: "Claude Code" }]} />
         <Choice label="My computer" value={os} onChange={(value) => setOs(value as DownloadOs)} options={[{ value: "mac", label: "Mac" }, { value: "windows", label: "Windows" }]} />
       </div>
-      {hasPendingChange ? <p className="mt-4 rounded-sm bg-amber-500/10 p-3 text-sm leading-6 text-amber-950">A newer change is waiting for review. This download contains the last published version.</p> : null}
+      {hasPendingChange ? <p className="mt-4 rounded-sm border border-attention/40 bg-attention/10 p-3 text-sm leading-6 text-foreground">A newer change is waiting for review. This download contains the last published version.</p> : null}
       <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-muted-foreground">
         <li>Download and double-click the ZIP file.</li>
         <li>Open <code className="rounded bg-muted px-1 py-0.5 text-foreground">{destination}</code>.</li>

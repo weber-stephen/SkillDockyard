@@ -1,5 +1,6 @@
 import { ProductLink as Link } from "@/components/product-link";
-import { Anchor, ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { Button } from "@/components/ui/button";
 
 const workflowSteps = [
@@ -83,7 +84,7 @@ export default function MarketingPage() {
             <p className="max-w-xl text-xs font-bold uppercase tracking-[0.18em] text-primary">
               A shared home for your team’s AI workflows
             </p>
-            <h1 className="mt-6 max-w-[12ch] text-balance font-display text-[clamp(2.25rem,7vw,4.75rem)] font-bold leading-[0.94] tracking-[-0.035em]">
+            <h1 className="mt-6 max-w-[12ch] text-balance font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.94] tracking-[-0.035em]">
               Keep your team’s best AI instructions current and easy to reuse.
             </h1>
             <p className="mt-7 max-w-[62ch] text-pretty text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">
@@ -124,12 +125,7 @@ function SiteHeader() {
     <header className="border-b border-border/80 bg-background/85">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8">
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <Link href="/" className="flex min-h-11 min-w-0 items-center gap-2 font-bold tracking-[-0.01em] sm:gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
-              <Anchor className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="truncate text-[13px] sm:text-lg">Skill Dockyard</span>
-          </Link>
+          <BrandMark compact className="sm:gap-3" />
           <Button asChild className="min-h-11 shrink-0 px-3 text-[13px] sm:hidden">
             <Link href="/signup">Create account</Link>
           </Button>
@@ -164,7 +160,7 @@ function RevisionSheet() {
             Campaign Brief Builder
           </h2>
         </div>
-        <span className="w-fit border border-primary/30 bg-primary/[0.06] px-3 py-1.5 text-xs font-bold text-primary">
+        <span className="w-fit border border-attention/40 bg-attention/10 px-3 py-1.5 text-xs font-bold text-foreground">
           Waiting for review
         </span>
       </div>

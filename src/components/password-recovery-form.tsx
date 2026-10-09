@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anchor } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { ProductLink as Link } from "@/components/product-link";
 import { TurnstileField } from "@/components/turnstile-field";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
 function Shell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return <main className="mx-auto flex min-h-screen max-w-md items-center px-5 py-12"><section className="w-full rounded-md border border-border bg-panel p-6 shadow-sm"><Link href="/" className="mb-8 flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-md bg-primary text-white"><Anchor className="h-5 w-5" /></span><span className="text-lg font-black">Skill Dockyard</span></Link><h1 className="text-3xl font-black">{title}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>{children}</section></main>;
+  return <main className="mx-auto flex min-h-screen max-w-md items-center px-5 py-12"><section className="w-full rounded-md border border-border bg-panel p-6 shadow-sm"><BrandMark compact className="mb-8" /><h1 className="text-3xl font-black">{title}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>{children}</section></main>;
 }
 
 export function ForgotPasswordForm() {

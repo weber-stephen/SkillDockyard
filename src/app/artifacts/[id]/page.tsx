@@ -80,7 +80,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             </div>
           ) : null}
           <div className="rounded-md border border-border bg-panel p-5">
-            {artifact.current_proposal ? <div className="mb-4 rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-6"><div className="font-bold">Pending submission</div><p className="mt-1 text-muted-foreground">This change is not published yet. Teammates will continue receiving the published version until an owner or reviewer publishes it.</p></div> : null}
+            {artifact.current_proposal ? <div className="mb-4 rounded-sm border border-attention/40 bg-attention/10 p-3 text-sm leading-6"><div className="font-bold">Pending submission</div><p className="mt-1 text-muted-foreground">This change is not published yet. Teammates will continue receiving the published version until an owner or reviewer publishes it.</p></div> : null}
             <h2 className="font-black">Published Version</h2>
             {artifact.approved_version ? (
               <div className="mt-3 space-y-3">
@@ -103,7 +103,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             <div className="space-y-3">
               {artifact.risks.length ? (
                 artifact.risks.map((risk) => (
-                  <div key={risk.id} className="rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+                  <div key={risk.id} className="rounded-sm border border-attention/40 bg-attention/10 p-3 text-sm">
                     <div className="font-bold">{risk.kind.replaceAll("_", " ")}</div>
                     <p className="mt-1 text-muted-foreground">{risk.message}</p>
                   </div>

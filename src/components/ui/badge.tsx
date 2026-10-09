@@ -8,8 +8,8 @@ const badgeVariants = cva("inline-flex items-center rounded-sm border px-2 py-0.
       default: "border-transparent bg-primary text-white",
       secondary: "border-transparent bg-secondary text-secondary-foreground",
       outline: "border-border text-foreground",
-      risk: "border-amber-500/30 bg-amber-500/10 text-amber-900",
-      success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-900",
+      risk: "border-attention/40 bg-attention/10 text-foreground",
+      success: "border-success/40 bg-success/10 text-foreground",
       muted: "border-transparent bg-muted text-muted-foreground"
     }
   },

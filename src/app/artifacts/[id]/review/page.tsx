@@ -68,10 +68,10 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
         </div>
         <aside className="min-w-0 space-y-4">
           <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Compatibility and Trust Signals</h2>
+            <h2 className="font-black">Compatibility and safety</h2>
             <div className="mt-4 space-y-3">
               {artifact.risks.map((risk) => (
-                <div key={risk.id} className="rounded-sm border border-amber-500/30 bg-amber-500/10 p-3">
+                <div key={risk.id} className="rounded-sm border border-attention/40 bg-attention/10 p-3">
                   <div className="text-sm font-bold">{risk.kind.replaceAll("_", " ")}</div>
                   <p className="mt-1 text-sm text-muted-foreground">{risk.message}</p>
                   {risk.evidence ? <code className="mt-2 block text-xs">{risk.evidence}</code> : null}

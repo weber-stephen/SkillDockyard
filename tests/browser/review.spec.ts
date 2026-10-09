@@ -6,7 +6,7 @@ test.describe("demo review workflow", () => {
 
     await expect(page.getByRole("heading", { name: "Review Campaign Brief Builder", level: 1 })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Line Diff" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Compatibility and Trust Signals" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Compatibility and safety" })).toBeVisible();
 
     await page.getByRole("button", { name: "Request changes" }).click();
     await expect(page.getByText("Add a note before requesting changes or rejecting this submission.")).toBeVisible();
