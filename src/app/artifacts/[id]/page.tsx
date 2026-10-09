@@ -27,8 +27,8 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
   const adoption = (await getProductMode()) === "demo" ? { personal: [], aggregate: null } : await getSkillAdoption(artifact.id, artifact.approved_version_id, Boolean(artifact.can_publish));
 
   return (
-    <div className="space-y-6">
-      <header className="grid gap-4 border-b border-border pb-6 lg:grid-cols-[1fr_auto]">
+    <div className="space-y-8">
+      <header className="grid gap-4 border-b border-border pb-7 lg:grid-cols-[1fr_auto]">
         <div>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <StatusBadge artifact={artifact} />
@@ -38,8 +38,8 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             {artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : null}
             {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : null}
           </div>
-          <h1 className="text-3xl font-black">{artifact.name}</h1>
-          <p className="mt-2 max-w-3xl text-muted-foreground">
+          <h1 className="app-page-title">{artifact.name}</h1>
+          <p className="app-copy mt-3 max-w-2xl text-muted-foreground">
             {sharing.description} {artifact.description ?? "No description extracted yet."}
           </p>
         </div>
@@ -51,7 +51,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
         </Button>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-x-6 border-y border-border md:grid-cols-2 xl:grid-cols-5">
         <Info label="Relationship" value={artifact.visibility === "private" ? "Owned by you" : artifact.access_scope?.startsWith("shared_") ? "Shared with you" : artifact.created_by_viewer ? "Created by you" : "Workspace skill"} />
         <Info label="Maintained by" value={artifact.owner ?? "Not listed"} />
         <Info label="Managed by" value={artifact.source_workspace_name ?? "Your workspace"} />
@@ -59,7 +59,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
         <Info label="Review notes" value={artifact.risk_count.toString()} />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
         <div className="min-w-0 rounded-md border border-border bg-panel p-5">
           <div className="mb-4 flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -68,10 +68,10 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           {artifact.current_version?.summary ? <p className="mb-4 text-sm leading-6 text-muted-foreground">{artifact.current_version.summary}</p> : null}
           <pre className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
-        <aside className="min-w-0 space-y-4">
+        <aside className="min-w-0 space-y-4 xl:sticky xl:top-5">
           {(adoption.aggregate || adoption.personal.length) ? <section className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Downloads and updates</h2>{adoption.aggregate ? <div className="mt-3 grid grid-cols-3 gap-3 text-center"><Metric label="Downloads" value={adoption.aggregate.downloads} /><Metric label="Connected installs" value={adoption.aggregate.managedInstalls} /><Metric label="Need update" value={adoption.aggregate.outdatedInstalls} /></div> : null}{adoption.personal.length ? <div className="mt-4 space-y-2">{adoption.personal.map((item, index) => <p key={`${item.target}-${index}`} className="text-sm text-muted-foreground"><strong className="text-foreground">Your {item.target === "codex" ? "Codex" : "Claude Code"} install:</strong> {item.updateAvailable ? "Update available" : "Up to date"}</p>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Installs from connected computers will show their update status here.</p>}</section> : null}
-          <SkillDownloadPanel artifactId={artifact.id} approvedHash={(artifact.visibility === "private" ? artifact.current_version?.content_hash : artifact.approved_version?.content_hash) ?? null} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} />
           {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
+          {artifact.visibility !== "private" && artifact.approved_version ? <SkillDownloadPanel artifactId={artifact.id} approvedHash={artifact.approved_version.content_hash} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} /> : null}
           {artifact.can_manage_shares ? <ShareSkillPanel artifact={artifact} workspaces={sharableWorkspaces} /> : null}
           {artifact.can_propose_update ? <div className="rounded-md border border-border bg-panel p-5 text-sm leading-6 text-muted-foreground"><p>You can submit an update to this skill. The published version stays active until the workspace owner or a reviewer publishes the submission.</p><Button asChild variant="outline" size="sm" className="mt-4"><Link href={`/artifacts/${artifact.id}/update`}>Submit an update<ArrowRight className="h-3.5 w-3.5" /></Link></Button></div> : null}
           {!artifact.can_manage_shares && !artifact.can_propose_update && artifact.access_scope?.startsWith("shared_") ? (
@@ -121,9 +121,9 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-panel p-4">
-      <div className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
-      <div className="mt-3 truncate text-lg font-black">{value}</div>
+    <div className="min-w-0 border-b border-border py-4 xl:border-b-0">
+      <div className="eyebrow text-muted-foreground">{label}</div>
+      <div className="mt-2 truncate text-base font-bold">{value}</div>
     </div>
   );
 }

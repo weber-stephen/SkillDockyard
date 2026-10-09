@@ -68,7 +68,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
         </div>
       </div>
       <div className="rounded-md border border-border bg-panel">
-        <Table>
+        <Table className="skill-record-table">
           <TableHeader>
             <TableRow>
               <TableHead>Skill</TableHead>
@@ -84,7 +84,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
               const localDraft = isLocalDraftArtifact(artifact);
               return (
                 <TableRow key={artifact.id}>
-                  <TableCell>
+                  <TableCell data-label="Skill">
                     {localDraft ? (
                       <div>
                         <span className="block font-bold">{artifact.name}</span>
@@ -101,11 +101,11 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       </Link>
                     )}
                   </TableCell>
-                  <TableCell><div className="space-y-2">
+                  <TableCell data-label="Relationship"><div className="space-y-2">
                     {artifact.created_by_viewer ? <Badge variant="secondary">Created by you</Badge> : artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : artifact.access_scope === "shared_user" ? <Badge variant="outline">Shared with you</Badge> : artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with your workspace</Badge> : <Badge variant="outline">Workspace skill</Badge>}
                     {!localDraft && artifact.source_workspace_name ? <span className="block text-xs text-muted-foreground">Managed by {artifact.source_workspace_name}</span> : null}
                   </div></TableCell>
-                  <TableCell>
+                  <TableCell data-label="Status">
                     <div className="space-y-2">
                       {localDraft ? <Badge variant="muted">Private draft</Badge> : <StatusBadge artifact={artifact} />}
                       {!localDraft && artifact.visibility === "private" ? <Badge variant="secondary">Private draft</Badge> : null}
@@ -119,14 +119,14 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       ) : null}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-sm text-sm text-muted-foreground">
+                  <TableCell data-label="Current change" className="max-w-sm text-sm text-muted-foreground">
                     {localDraft
                       ? "Saved in this browser. Sign in before sharing it with teammates."
                       : artifact.visibility === "private"
                         ? "Private to you. Submit it for workspace review when it is ready."
                         : `${sharing.description}${artifact.can_publish ? " You can publish this skill." : artifact.can_propose_update ? " You can submit updates." : ""}`}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(artifact.updated_at)}</TableCell>
+                  <TableCell data-label="Updated" className="text-muted-foreground">{formatDate(artifact.updated_at)}</TableCell>
                 </TableRow>
               );
             })}

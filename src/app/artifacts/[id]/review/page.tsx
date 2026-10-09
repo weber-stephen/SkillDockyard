@@ -20,30 +20,23 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
   const sharing = getSharingStatusView(artifact);
 
   return (
-    <div className="space-y-6">
-      <header className="border-b border-border pb-6">
+    <div className="space-y-8">
+      <header className="border-b border-border pb-7">
         <div className="mb-3 flex flex-wrap gap-2">
           <Badge variant="outline">{artifact.repo_name}</Badge>
           <Badge variant="outline">{artifact.path}</Badge>
         </div>
-        <h1 className="text-3xl font-black">Review {artifact.name}</h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">Compare the submitted version with the published version, check the review notes, and decide whether teammates should receive it.</p>
+        <h1 className="app-page-title">Review {artifact.name}</h1>
+        <p className="app-copy mt-3 max-w-2xl text-muted-foreground">Compare the submitted version with the published version, check the review notes, and decide whether teammates should receive it.</p>
         {proposal ? <div className="mt-4 flex flex-wrap gap-2"><Badge variant="risk">{proposal.kind === "update" ? "Pending update" : "New skill submission"}</Badge><Badge variant="outline">Submitted {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(proposal.created_at))}</Badge>{proposal.submitter_email ? <Badge variant="outline">{proposal.submitter_email}</Badge> : null}</div> : <div className="mt-4 rounded-md border border-border bg-panel p-3 text-sm text-muted-foreground">No pending submission is attached to this version. This may be older or demo data.</div>}
       </header>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.88fr)]">
-        <div className="min-w-0 space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            <Interpretation title="What changed?" body={reviewVersion.summary ?? "The proposed copy differs from the published shared version."} />
-            <Interpretation title="Why preserve it?" body="Publishing keeps this workspace improvement from being lost in local copies or tool-specific edits." />
-            <Interpretation title="Publish recommendation" body={getPublishRecommendation(artifact)} />
-          </div>
-          <div className="rounded-md border border-border bg-panel p-5">
-            <h2 className="font-black">Current Change</h2>
-            <p className="mt-3 leading-7 text-muted-foreground">
-              {reviewVersion.summary ?? sharing.description}
-            </p>
-          </div>
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        <div className="min-w-0 space-y-5">
+          <DecisionBrief
+            change={reviewVersion.summary ?? sharing.description}
+            recommendation={getPublishRecommendation(artifact)}
+          />
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Version Integrity</h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -66,7 +59,7 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
           </div>
           {proposal?.reviews?.length ? <div className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Review history</h2><div className="mt-4 space-y-3">{proposal.reviews.map((review) => <div key={review.id} className="rounded-sm border border-border bg-background p-3"><div className="flex flex-wrap justify-between gap-2 text-sm font-bold"><span>{review.decision === "published" ? "Published" : review.decision === "changes_requested" ? "Changes requested" : "Rejected"}</span><span className="text-xs font-normal text-muted-foreground">{review.reviewer_name} · {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(review.created_at))}</span></div>{review.note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.note}</p> : null}</div>)}</div></div> : null}
         </div>
-        <aside className="min-w-0 space-y-4">
+        <aside className="min-w-0 space-y-4 xl:sticky xl:top-5">
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Compatibility and safety</h2>
             <div className="mt-4 space-y-3">
@@ -87,12 +80,19 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
   );
 }
 
-function Interpretation({ title, body }: { title: string; body: string }) {
+function DecisionBrief({ change, recommendation }: { change: string; recommendation: string }) {
   return (
-    <div className="rounded-md border border-border bg-panel p-4">
-      <div className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{title}</div>
-      <p className="mt-3 text-sm leading-6">{body}</p>
-    </div>
+    <section className="border-y border-border py-5 sm:grid sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.65fr)] sm:gap-8">
+      <div>
+        <p className="eyebrow text-primary">Decision brief</p>
+        <h2 className="app-section-title mt-2">What changed</h2>
+        <p className="app-copy mt-2 text-sm text-muted-foreground">{change}</p>
+      </div>
+      <div className="mt-4 border-t border-border pt-4 sm:mt-0 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+        <p className="eyebrow text-muted-foreground">Recommendation</p>
+        <p className="app-copy mt-2 text-sm font-semibold">{recommendation}</p>
+      </div>
+    </section>
   );
 }
 

@@ -67,10 +67,11 @@ export function ReviewActions({
   }
 
   return (
-    <div className="space-y-3 rounded-md border border-border bg-panel p-4">
+    <div className="space-y-4 rounded-md border border-border bg-panel p-5">
       <div>
-        <h2 className="font-black">Review and publish</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="eyebrow text-primary">Decision</p>
+        <h2 className="app-section-title mt-2">Review and publish</h2>
+        <p className="app-copy mt-2 text-sm text-muted-foreground">
           This is the owner or reviewer step. Compare the change and review notes, then publish only if teammates should receive this version.
         </p>
       </div>
