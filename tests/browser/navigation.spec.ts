@@ -1,6 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("demo navigation and skill browsing", () => {
+  test("shows standard Codex and Claude Code skill locations on the import page", async ({ page }) => {
+    await page.goto("/demo/import");
+
+    await expect(page.getByRole("heading", { name: "Where to find installed skills" })).toBeVisible();
+    await expect(page.getByText("~/.codex/skills/", { exact: true })).toBeVisible();
+    await expect(page.getByText("%USERPROFILE%\\.codex\\skills\\", { exact: true })).toBeVisible();
+    await expect(page.getByText("~/.claude/skills/", { exact: true })).toBeVisible();
+    await expect(page.getByText("%USERPROFILE%\\.claude\\skills\\", { exact: true })).toBeVisible();
+  });
+
   test("filters skills and keeps product links in the demo", async ({ page }) => {
     await page.goto("/demo/artifacts");
 
