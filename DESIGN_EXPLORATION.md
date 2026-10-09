@@ -19,7 +19,7 @@ Precise, deliberate, trustworthy, composed, enterprise-ready, and quietly techni
 
 ## Design System
 
-- Typography: compact neo-grotesk hierarchy using Avenir Next Condensed where available and Avenir Next for body copy; tabular figures for data.
+- Typography: compact neo-grotesk hierarchy using Figtree for display and body copy; tabular figures for data.
 - Color: ice-blue canvas, cobalt navigation and actions, graphite-blue text, pale periwinkle selection, and tangerine reserved for review attention.
 - Spacing: broad page gutters with compact component interiors and clear sectional breaks.
 - Surfaces: nearly flat panels, hairline borders, subtle alternating table rows, no decorative shadows.

@@ -60,8 +60,8 @@ Use color with restraint so information hierarchy remains clear:
 ## Typography
 
 - Use a compact neo-grotesk hierarchy that feels precise and operational.
-- The interface uses `Avenir Next Condensed`, then `Avenir Next` and system sans-serif fallbacks, for prominent display headings; use `Avenir Next` and the same fallbacks for interface and body copy.
-- Keep body copy highly legible and avoid condensed faces for paragraphs, form help, or dense tables.
+- The interface uses the Figtree variable font for prominent display headings, interface, and body copy, with system sans-serif fallbacks. It is self-hosted with Next.js from the SIL Open Font License family.
+- Keep body copy highly legible; reserve the display treatment for concise headings rather than dense tables, form help, or paragraphs.
 - Do not use serif display typography in the product or public website.
 - Use tabular figures for metrics and table data.
 - Marketing pages may use greater scale, but the application should remain compact and task-focused.
