@@ -216,12 +216,13 @@ select {
   .app-sidebar nav h2 { color: color-mix(in oklch, var(--primary-foreground), transparent 18%) !important; }
   .app-sidebar .brand-symbol { width: 2.25rem; height: 2.25rem; }
   .app-sidebar .sidebar-content { display: flex; flex-direction: row-reverse; align-items: center; gap: 0.75rem; min-width: 0; }
-  .app-sidebar .sidebar-content > * { margin-top: 0 !important; }
+  .app-sidebar .sidebar-content > * { margin-block: 0 !important; }
   .app-sidebar .sidebar-primary-action { flex: 0 0 auto; }
   .app-sidebar .primary-navigation,
   .app-sidebar .nav-items { display: flex; align-items: center; gap: 0.125rem; }
   .app-sidebar .primary-navigation { justify-content: flex-end; margin: 0; min-width: 0; }
   .app-sidebar .nav-section { margin: 0; }
+  .app-sidebar .nav-items > * { margin-block: 0 !important; }
   .app-sidebar .nav-section h2 { display: none; }
   .app-sidebar .nav-items > a { min-height: 2.5rem; padding-inline: 0.7rem; }
   .app-sidebar .nav-items > a svg { display: none; }
