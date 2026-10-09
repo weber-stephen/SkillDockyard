@@ -84,7 +84,12 @@ export default function MarketingPage() {
       <main id="main-content">
         <section className="mx-auto grid max-w-7xl gap-12 px-5 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-20 lg:grid-cols-[minmax(0,1.04fr)_minmax(22rem,0.96fr)] lg:items-end lg:gap-16 lg:pb-36 lg:pt-28">
           <div className="min-w-0">
-            <p className="max-w-xl text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            {signupEnabled ? (
+              <p className="w-fit border border-primary/35 bg-primary/[0.06] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-primary">
+                Free during beta
+              </p>
+            ) : null}
+            <p className={`${signupEnabled ? "mt-4" : ""} max-w-xl text-xs font-bold uppercase tracking-[0.18em] text-primary`}>
               A shared workspace for AI skills
             </p>
             <h1 className="mt-6 max-w-[14ch] text-balance font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.94] tracking-[-0.035em]">
@@ -94,18 +99,36 @@ export default function MarketingPage() {
               Skills passed around in messages are easy to miss and hard to keep current. Skill Dockyard gives your team one place to find skills, review improvements, and install the latest published version.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Button asChild className="min-h-11 w-full sm:w-auto">
-                <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
-                  Explore the demo
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
-                <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="how_it_works">
-                  See how it works
-                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                </a>
-              </Button>
+              {signupEnabled ? (
+                <>
+                  <Button asChild className="min-h-11 w-full sm:w-auto">
+                    <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="create_free_account">
+                      Create free account
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
+                    <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
+                      Explore the demo
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild className="min-h-11 w-full sm:w-auto">
+                    <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
+                      Explore the demo
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
+                    <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="how_it_works">
+                      See how it works
+                      <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -131,7 +154,7 @@ function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
           <BrandMark compact className="sm:gap-3" />
           {signupEnabled ? (
             <Button asChild className="min-h-11 shrink-0 px-3 text-[13px] sm:hidden">
-              <Link href="/signup">Create account</Link>
+              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
             </Button>
           ) : null}
         </div>
@@ -148,7 +171,7 @@ function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
           </Link>
           {signupEnabled ? (
             <Button asChild className="ml-2 hidden min-h-11 sm:inline-flex">
-              <Link href="/signup">Create account</Link>
+              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
             </Button>
           ) : null}
         </nav>
@@ -305,29 +328,41 @@ function ClosingCallToAction({ signupEnabled }: { signupEnabled: boolean }) {
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
       <div className="grid gap-8 border border-primary/25 bg-primary/[0.055] p-6 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Start with the demo</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{signupEnabled ? "Free during beta" : "Start with the demo"}</p>
           <h2 className="mt-4 max-w-[17ch] text-balance font-display text-4xl font-bold leading-[1] tracking-[-0.025em] sm:text-5xl">
-            Let useful AI skill improvements reach the whole team.
+            {signupEnabled ? "Give your team one trusted version to build from." : "Let useful AI skill improvements reach the whole team."}
           </h2>
           <p className="mt-5 max-w-[58ch] text-pretty text-lg leading-8 text-muted-foreground">
-            Explore a sample skill, review an update, and see how teammates can install the published version.
+            {signupEnabled ? "Create your workspace at no cost during beta, or explore the product with sample data first." : "Explore a sample skill, review an update, and see how teammates can install the published version."}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-          <Button asChild className="min-h-11 w-full sm:w-auto">
-            <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="explore_demo">
-              Explore the demo
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </Button>
           {signupEnabled ? (
-            <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
-              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="create_account">Create account</Link>
-            </Button>
+            <>
+              <Button asChild className="min-h-11 w-full sm:w-auto">
+                <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="create_free_account">
+                  Create free account
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
+                <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="explore_demo">
+                  Explore the demo
+                </Link>
+              </Button>
+            </>
           ) : (
-            <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
-              <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="how_it_works">See how it works</a>
-            </Button>
+            <>
+              <Button asChild className="min-h-11 w-full sm:w-auto">
+                <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="explore_demo">
+                  Explore the demo
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
+                <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="how_it_works">See how it works</a>
+              </Button>
+            </>
           )}
         </div>
       </div>

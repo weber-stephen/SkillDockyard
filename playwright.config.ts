@@ -33,7 +33,8 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_URL: "",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
-      SUPABASE_SERVICE_ROLE_KEY: ""
+      SUPABASE_SERVICE_ROLE_KEY: "",
+      SELF_SERVICE_SIGNUP_ENABLED: "true"
     }
   }
 });
