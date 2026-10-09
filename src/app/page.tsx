@@ -2,6 +2,7 @@ import { ProductLink as Link } from "@/components/product-link";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { Button } from "@/components/ui/button";
+import { isSelfServiceSignupEnabled } from "@/lib/legal-documents";
 
 const workflowSteps = [
   {
@@ -67,6 +68,8 @@ const trustPoints = [
 ] as const;
 
 export default function MarketingPage() {
+  const signupEnabled = isSelfServiceSignupEnabled();
+
   return (
     <div className="min-h-screen overflow-x-hidden">
       <a
@@ -76,32 +79,32 @@ export default function MarketingPage() {
         Skip to content
       </a>
 
-      <SiteHeader />
+      <SiteHeader signupEnabled={signupEnabled} />
 
       <main id="main-content">
         <section className="mx-auto grid max-w-7xl gap-12 px-5 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-20 lg:grid-cols-[minmax(0,1.04fr)_minmax(22rem,0.96fr)] lg:items-end lg:gap-16 lg:pb-36 lg:pt-28">
           <div className="min-w-0">
             <p className="max-w-xl text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              A shared home for your team’s AI workflows
+              A shared workspace for AI skills
             </p>
-            <h1 className="mt-6 max-w-[12ch] text-balance font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.94] tracking-[-0.035em]">
-              Keep your team’s best AI instructions current and easy to reuse.
+            <h1 className="mt-6 max-w-[14ch] text-balance font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.94] tracking-[-0.035em]">
+              Turn one person’s AI skill into a team resource.
             </h1>
             <p className="mt-7 max-w-[62ch] text-pretty text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">
-              When someone improves an AI workflow, Skill Dockyard gives your organization one private place to review the change, publish it, and share the trusted version.
+              Skills passed around in messages are easy to miss and hard to keep current. Skill Dockyard gives your team one place to find skills, review improvements, and install the latest published version.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild className="min-h-11 w-full sm:w-auto">
-                <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="how_it_works">
-                  See how it works
-                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
                 <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
                   Explore the demo
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
+              </Button>
+              <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
+                <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="how_it_works">
+                  See how it works
+                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                </a>
               </Button>
             </div>
           </div>
@@ -112,23 +115,25 @@ export default function MarketingPage() {
         <WorkflowSection />
         <AudienceSection />
         <TrustSection />
-        <ClosingCallToAction />
+        <ClosingCallToAction signupEnabled={signupEnabled} />
       </main>
 
-      <SiteFooter />
+      <SiteFooter signupEnabled={signupEnabled} />
     </div>
   );
 }
 
-function SiteHeader() {
+function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
   return (
     <header className="border-b border-border/80 bg-background/85">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8">
         <div className="flex min-w-0 items-center justify-between gap-3">
           <BrandMark compact className="sm:gap-3" />
-          <Button asChild className="min-h-11 shrink-0 px-3 text-[13px] sm:hidden">
-            <Link href="/signup">Create account</Link>
-          </Button>
+          {signupEnabled ? (
+            <Button asChild className="min-h-11 shrink-0 px-3 text-[13px] sm:hidden">
+              <Link href="/signup">Create account</Link>
+            </Button>
+          ) : null}
         </div>
 
         <nav aria-label="Primary" className="grid w-full grid-cols-3 gap-1 border-t border-border/70 pt-2 sm:flex sm:w-auto sm:items-center sm:gap-1 sm:border-0 sm:pt-0">
@@ -141,9 +146,11 @@ function SiteHeader() {
           <Link className="inline-flex min-h-11 items-center justify-center px-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:text-sm" href="/login">
             Log in
           </Link>
-          <Button asChild className="ml-2 hidden min-h-11 sm:inline-flex">
-            <Link href="/signup">Create account</Link>
-          </Button>
+          {signupEnabled ? (
+            <Button asChild className="ml-2 hidden min-h-11 sm:inline-flex">
+              <Link href="/signup">Create account</Link>
+            </Button>
+          ) : null}
         </nav>
       </div>
     </header>
@@ -161,7 +168,7 @@ function RevisionSheet() {
           </h2>
         </div>
         <span className="w-fit border border-attention/40 bg-attention/10 px-3 py-1.5 text-xs font-bold text-foreground">
-          Waiting for review
+          Awaiting review
         </span>
       </div>
 
@@ -172,12 +179,15 @@ function RevisionSheet() {
         </div>
         <div className="p-5 sm:p-6">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Submitted update</p>
-          <p className="mt-4 text-base font-semibold leading-7">Adds customer language, message variations, and a sales handoff.</p>
+          <p className="mt-4 text-base font-semibold leading-7">A teammate adds customer language, message variations, and a sales handoff.</p>
         </div>
       </div>
 
       <p className="border-t border-border bg-secondary/45 p-5 text-sm leading-6 text-secondary-foreground sm:px-6">
         The published version stays in use until a reviewer publishes the update.
+      </p>
+      <p className="border-t border-border px-5 py-4 text-sm font-semibold leading-6 text-foreground sm:px-6">
+        Once published, teammates can install the updated skill.
       </p>
     </article>
   );
@@ -290,17 +300,17 @@ function TrustSection() {
   );
 }
 
-function ClosingCallToAction() {
+function ClosingCallToAction({ signupEnabled }: { signupEnabled: boolean }) {
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
       <div className="grid gap-8 border border-primary/25 bg-primary/[0.055] p-6 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Start with the product</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Start with the demo</p>
           <h2 className="mt-4 max-w-[17ch] text-balance font-display text-4xl font-bold leading-[1] tracking-[-0.025em] sm:text-5xl">
-            Give your team one trusted version to build from.
+            Let useful AI skill improvements reach the whole team.
           </h2>
           <p className="mt-5 max-w-[58ch] text-pretty text-lg leading-8 text-muted-foreground">
-            Explore the product with sample data, or create a private workspace when you are ready.
+            Explore a sample skill, review an update, and see how teammates can install the published version.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
@@ -310,27 +320,33 @@ function ClosingCallToAction() {
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </Button>
-          <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
-            <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="create_account">Create account</Link>
-          </Button>
+          {signupEnabled ? (
+            <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
+              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="create_account">Create account</Link>
+            </Button>
+          ) : (
+            <Button asChild variant="outline" className="min-h-11 w-full bg-background/70 sm:w-auto">
+              <a href="#how-it-works" data-analytics-event="cta_clicked" data-analytics-location="landing_closing" data-analytics-label="how_it_works">See how it works</a>
+            </Button>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
-function SiteFooter() {
+function SiteFooter({ signupEnabled }: { signupEnabled: boolean }) {
   return (
     <footer className="border-t border-border bg-panel/75">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <div className="max-w-md">
           <p className="font-display text-lg font-bold">Skill Dockyard</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">A shared home for the AI workflows your team wants to trust and reuse.</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">A shared workspace for your team’s AI skills, reviewed and ready to use.</p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/demo">Demo</Link>
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/login">Log in</Link>
-          <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/signup">Create account</Link>
+          {signupEnabled ? <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/signup">Create account</Link> : null}
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/privacy">Privacy</Link>
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/terms">Terms</Link>
           <Link className="inline-flex min-h-11 items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/support">Support</Link>
