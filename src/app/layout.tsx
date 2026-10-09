@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { Figtree } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics-provider";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree"
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -26,7 +33,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   await headers();
 
   return (
-    <html lang="en">
+    <html lang="en" className={figtree.variable}>
       <body className="font-sans">
         {children}
         <AnalyticsProvider containerId={process.env.NEXT_PUBLIC_GTM_CONTAINER_ID} />
