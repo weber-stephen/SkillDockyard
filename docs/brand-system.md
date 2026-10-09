@@ -37,6 +37,7 @@ The implemented OKLCH values are the source of truth. Keep them as shared tokens
 | Input border | `--input` | `oklch(0.73 0.06 258)` | Form control boundaries |
 | Focus ring | `--ring` | `oklch(0.55 0.21 264)` | Keyboard focus indication |
 | Tangerine attention | `--attention` | `oklch(0.72 0.17 48)` | Items awaiting review and other attention states |
+| Success | `--success` | `oklch(0.63 0.13 155)` | Confirmed success states only; never a primary action color |
 | Destructive | `--destructive` | `oklch(0.55 0.17 28)` | Destructive actions and confirmed errors only |
 
 The corresponding implementation lives in `src/app/globals.css`.
@@ -50,6 +51,7 @@ Use color with restraint so information hierarchy remains clear:
 - No more than 5% attention or semantic color on a typical screen
 - Reserve filled cobalt for the most important action or structural element in a region
 - Reserve tangerine for information that genuinely needs review or attention
+- Use the shared success token only for confirmed success states; it is not a primary brand or action color
 - Reserve destructive red for destructive actions and confirmed errors
 - Never rely on color alone to communicate a status; pair it with text and, where useful, an icon
 - Do not introduce green as a primary brand or action color
@@ -58,8 +60,9 @@ Use color with restraint so information hierarchy remains clear:
 ## Typography
 
 - Use a compact neo-grotesk hierarchy that feels precise and operational.
-- The current interface stack uses `Avenir Next Condensed` for prominent display headings where available and `Avenir Next` for interface and body copy.
+- The interface uses `Avenir Next Condensed`, then `Avenir Next` and system sans-serif fallbacks, for prominent display headings; use `Avenir Next` and the same fallbacks for interface and body copy.
 - Keep body copy highly legible and avoid condensed faces for paragraphs, form help, or dense tables.
+- Do not use serif display typography in the product or public website.
 - Use tabular figures for metrics and table data.
 - Marketing pages may use greater scale, but the application should remain compact and task-focused.
 - Avoid futuristic display faces, code typography as decoration, and playful type treatments.
@@ -94,7 +97,7 @@ Use color with restraint so information hierarchy remains clear:
 
 - Use the full name **Skill Dockyard** in public-facing contexts.
 - Keep the maritime idea strategic and restrained; do not use ships, anchors, waves, or nautical product language as decoration.
-- The current version-convergence symbol is preferred over a literal anchor.
+- Use the restrained anchor symbol in the shared `BrandMark` component; do not create page-specific logo treatments.
 - Favor real product evidence, version comparisons, workflow diagrams, and status views over abstract AI imagery.
 - Avoid generic AI gradients, sparkles, robot imagery, and decorative futuristic effects.
 

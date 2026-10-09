@@ -113,7 +113,7 @@ export function ArtifactTable({ artifacts }: { artifacts: Artifact[] }) {
                       {!localDraft && artifact.access_scope === "shared_workspace" ? <Badge variant="outline">Shared with workspace</Badge> : null}
                       {artifact.risk_count > 0 ? (
                         <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-700" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-attention" />
                           {artifact.risk_count} review note{artifact.risk_count === 1 ? "" : "s"}
                         </span>
                       ) : null}
