@@ -34,19 +34,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   });
 
   if (hasSupabaseConfig() && !demo) {
-    try {
-      const supabase = createServerSupabase();
-      await supabase.from("audit_events").insert({
-        workspace_id: artifact.workspace_id,
-        artifact_id: artifact.id,
-        event_type: "skill_downloaded",
-        metadata: { artifact_version_id: downloadVersion.id, target, os }
-      });
-      const userId = cliIdentity?.userId ?? (await getCurrentUser())?.id ?? null;
-      await supabase.from("skill_downloads").insert({ artifact_id: artifact.id, artifact_version_id: downloadVersion.id, user_id: userId, target, source: cliIdentity ? "cli" : "browser" });
-    } catch {
-      // An audit failure should never prevent an approved skill download.
-    }
+    const userId = cliIdentity?.userId ?? (await getCurrentUser())?.id ?? null;
+    const { error } = await createServerSupabase().rpc("record_skill_download", {
+      p_workspace_id: artifact.workspace_id,
+      p_artifact_id: artifact.id,
+      p_artifact_version_id: downloadVersion.id,
+      p_user_id: userId,
+      p_target: target,
+      p_source: cliIdentity ? "cli" : "browser",
+      p_os: os
+    });
+    if (error) return NextResponse.json({ error: "The download could not be recorded. Please try again." }, { status: 500 });
   }
 
   return new Response(download.content, {

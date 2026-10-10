@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         proposal_id: proposalIds[0] ?? null,
         type: "proposal_submitted",
         title: `${result.artifacts.length} skill${result.artifacts.length === 1 ? "" : "s"} submitted for review`,
-        body: typeof input.summary === "string" ? input.summary.trim() : "Skills imported from a connected computer are ready for review."
+        body: typeof input.summary === "string" ? input.summary.trim() : "Imported skills are ready for review."
       })));
     }
     await recordOnboardingMilestone(result.workspaceId, "scan");

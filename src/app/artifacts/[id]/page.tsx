@@ -13,8 +13,6 @@ import { SkillDownloadPanel } from "@/components/skill-download-panel";
 import { listSharableWorkspaces } from "@/lib/shares";
 import { ShareSkillPanel } from "@/components/share-skill-panel";
 import { PrivateDraftActions } from "@/components/private-draft-actions";
-import { getSkillAdoption } from "@/lib/adoption";
-import { getProductMode } from "@/lib/product-mode";
 
 export default async function ArtifactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,7 +22,6 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
   const sharing = getSharingStatusView(artifact);
   const portable = getPortableSkillStatus(artifact);
   const hasPendingChange = Boolean(artifact.current_version_id && artifact.current_version_id !== artifact.approved_version_id);
-  const adoption = (await getProductMode()) === "demo" ? { personal: [], aggregate: null } : await getSkillAdoption(artifact.id, artifact.approved_version_id, Boolean(artifact.can_publish));
 
   return (
     <div className="space-y-8">
@@ -69,7 +66,6 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           <pre className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
         <aside className="min-w-0 space-y-4 xl:sticky xl:top-5">
-          {(adoption.aggregate || adoption.personal.length) ? <section className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Downloads and updates</h2>{adoption.aggregate ? <div className="mt-3 grid grid-cols-3 gap-3 text-center"><Metric label="Downloads" value={adoption.aggregate.downloads} /><Metric label="Connected installs" value={adoption.aggregate.managedInstalls} /><Metric label="Need update" value={adoption.aggregate.outdatedInstalls} /></div> : null}{adoption.personal.length ? <div className="mt-4 space-y-2">{adoption.personal.map((item, index) => <p key={`${item.target}-${index}`} className="text-sm text-muted-foreground"><strong className="text-foreground">Your {item.target === "codex" ? "Codex" : "Claude Code"} install:</strong> {item.updateAvailable ? "Update available" : "Up to date"}</p>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Installs from connected computers will show their update status here.</p>}</section> : null}
           {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
           {artifact.visibility !== "private" && artifact.approved_version ? <SkillDownloadPanel artifactId={artifact.id} approvedHash={artifact.approved_version.content_hash} skillName={artifact.slug} eligible={portable.eligible} reason={portable.reason} hasPendingChange={hasPendingChange} /> : null}
           {artifact.can_manage_shares ? <ShareSkillPanel artifact={artifact} workspaces={sharableWorkspaces} /> : null}
@@ -118,7 +114,6 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
     </div>
   );
 }
-
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 border-b border-border py-4 xl:border-b-0">
@@ -127,7 +122,6 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
 function Panel({ title, items, empty }: { title: string; items: string[]; empty: string }) {
   return (
     <div>
@@ -137,8 +131,4 @@ function Panel({ title, items, empty }: { title: string; items: string[]; empty:
       </div>
     </div>
   );
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return <div className="rounded-sm bg-muted p-3"><div className="text-xl font-black">{value}</div><div className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</div></div>;
 }

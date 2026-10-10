@@ -48,7 +48,7 @@ export async function listCliTokens(userId: string) {
 }
 
 export async function revokeCliToken(userId: string, tokenId: string) {
-  const { error } = await createServerSupabase().from("cli_tokens").update({ revoked_at: new Date().toISOString() }).eq("id", tokenId).eq("user_id", userId).is("revoked_at", null);
+  const { error } = await createServerSupabase().rpc("revoke_cli_token", { p_token_id: tokenId, p_user_id: userId });
   if (error) throw error;
 }
 
