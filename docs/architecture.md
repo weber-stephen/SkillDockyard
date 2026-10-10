@@ -1,6 +1,6 @@
 # Skill Dockyard architecture
 
-This document is the repository map for humans and coding agents. Read it before changing authentication, permissions, database migrations, API routes, deployment configuration, or the CLI. Product terminology and authorization rules remain defined by [AGENTS.md](../AGENTS.md) and [permissions.md](permissions.md).
+This document is the repository map for humans and coding agents. Read it before changing authentication, permissions, database migrations, API routes, or deployment configuration. Product terminology and authorization rules remain defined by [AGENTS.md](../AGENTS.md) and [permissions.md](permissions.md).
 
 ## System shape
 
@@ -8,13 +8,12 @@ Skill Dockyard is a Next.js App Router application with three user-facing surfac
 
 1. Public marketing, legal, support, login, signup, recovery, and demo pages.
 2. The authenticated workspace application under `/app`, backed by Supabase Auth and Postgres.
-3. The connected-computer command package, published as `skill-dockyard`, which calls authenticated API routes with short-lived pairing codes and hashed bearer tokens.
-4. The browser import flow, which reads user-selected folders or ZIP files locally, previews only `SKILL.md` instructions, and sends only user-confirmed selections to a cookie-authenticated import route.
+3. The browser import flow, which reads user-selected folders or ZIP files locally, previews only `SKILL.md` instructions, and sends only user-confirmed selections to a cookie-authenticated import route.
 
 Vercel runs the web application. Supabase provides authentication and Postgres. Upstash Redis provides shared production rate limiting. Cloudflare Turnstile protects signup, login, and password recovery. Sentry receives scrubbed errors and source-map-enhanced stack traces. Resend delivers Supabase Auth email through SMTP.
 
 ```text
-Browser / connected computer
+Browser
         |
         v
 Next.js App Router + proxy headers/CSRF checks
@@ -37,9 +36,8 @@ Next.js App Router + proxy headers/CSRF checks
 - Public pages may use demo fixtures, but demo data must never be confused with production workspace data.
 - Browser requests use the publishable Supabase key and authenticated cookies. Server routes enforce authorization; hidden or disabled UI controls are not security boundaries.
 - The service-role key is server-only. It is used by server routes and provisioning functions and must never enter client bundles, logs, or error responses.
-- Connected computers use pairing codes once, then hashed bearer tokens. They can import, download, check, and install skills, but cannot publish or manage access.
 - Browser imports never receive an absolute local path, browser file-system handle, or unselected file. The server recomputes metadata, hashes, and review notes from selected instructions before ingestion.
-- Cookie-authenticated state-changing API requests require same-origin request metadata. Bearer-token CLI requests are separately authenticated.
+- Cookie-authenticated state-changing API requests require same-origin request metadata.
 - Expensive or abuse-sensitive routes use the shared Upstash limiter in production. Missing production limiter configuration fails closed.
 
 ## Authentication flow
@@ -85,7 +83,7 @@ Core relations include:
 - `repos`, `artifacts`, `artifact_versions`
 - `proposals`, `proposal_reviews`, `approvals`, `audit_events`
 - `artifact_shares`, `notifications`
-- `cli_pairing_codes`, `cli_tokens`, `skill_downloads`, `skill_installations`
+- `skill_downloads`
 - `user_accounts`, `workspace_onboarding`, and workspace settings/risk rules
 - `legal_acceptances`, an append-only server-managed record of active public-document acknowledgements
 
@@ -97,13 +95,12 @@ All public tables must have deliberate RLS or be deliberately inaccessible throu
 | --- | --- |
 | `src/app` | Next.js pages, layouts, API routes, auth callback, metadata, sitemap, and robots. |
 | `src/components` | UI and client interaction components. |
-| `src/lib` | Access checks, Supabase clients, ingestion, CLI auth, rate limits, redirects, parsing, and domain logic. |
+| `src/lib` | Access checks, Supabase clients, browser ingestion, rate limits, redirects, parsing, and domain logic. |
 | `supabase/migrations` | Ordered database schema, RLS, grants, and transactional functions. |
-| `src/cli` | Oclif command implementation compiled for Node 22. |
 | `tests` | Unit, migration-invariant, security, permissions, and workflow regression tests. |
 | `scripts/smoke-pages.ts` | Production route and internal-link smoke checks. |
 | `scripts/supabase-backup.sh` | Creates encrypted local Supabase logical backups outside the repository. |
-| `.github/workflows` | CI verification and tagged CLI publishing. |
+| `.github/workflows` | CI verification and release automation. |
 | `docs` | Brand, permissions, architecture, launch, security, operations, and release documentation. |
 
 ## Environment contract
@@ -116,7 +113,6 @@ Browser-safe values use `NEXT_PUBLIC_`. Everything else is server-only:
 - CAPTCHA: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`; the corresponding secret is configured in Supabase Auth CAPTCHA settings
 - Monitoring: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
 - Optional analytics: `NEXT_PUBLIC_GTM_CONTAINER_ID` is browser-safe and is set only in Vercel Production. The client loads GTM only after explicit analytics consent.
-- Optional direct scanner connector: `SKILL_DOCKYARD_INGEST_TOKEN`, `SKILL_DOCKYARD_INGEST_WORKSPACE_ID`
 - Self-service signup gate: `SELF_SERVICE_SIGNUP_ENABLED=true` only after the public-beta release gates are complete; it is not a browser-safe value.
 
 Local values belong in `.env.local`. Production values belong in Vercel. Never commit populated environment files or copy secrets into documentation.
@@ -129,7 +125,7 @@ Before changing a feature:
 2. Read `docs/brand-strategy.md` and `docs/brand-system.md` when public copy or visual behavior changes.
 3. Trace the server route, access helper, database policy/function, and audit event together.
 4. Add or update regression tests before changing authorization-sensitive behavior.
-5. Run typecheck, lint, tests, production build, page smoke, production dependency audit, CLI build, and package dry run as applicable.
+5. Run typecheck, lint, tests, production build, page smoke, and production dependency audit as applicable.
 6. For migration changes, run Supabase dry-run, apply in order, compare migration history, run advisors, and execute aggregate-only integrity checks.
 7. Push visual changes to the launch branch so Vercel creates a preview. Never mark a provider or acceptance checklist item complete without evidence from that provider or environment.
 
