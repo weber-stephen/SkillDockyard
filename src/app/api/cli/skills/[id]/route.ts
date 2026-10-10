@@ -13,6 +13,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!status.eligible || !version) return NextResponse.json({ error: status.reason ?? "This skill cannot be installed." }, { status: 409 });
   const target = new URL(request.url).searchParams.get("target");
   if (target !== "codex" && target !== "claude-code") return NextResponse.json({ error: "Choose codex or claude-code." }, { status: 400 });
-  await createServerSupabase().from("skill_downloads").insert({ artifact_id: artifact.id, artifact_version_id: version.id, user_id: identity.userId, target, source: "cli" });
+  const { error } = await createServerSupabase().rpc("record_skill_download", {
+    p_workspace_id: artifact.workspace_id,
+    p_artifact_id: artifact.id,
+    p_artifact_version_id: version.id,
+    p_user_id: identity.userId,
+    p_target: target,
+    p_source: "cli",
+    p_os: null
+  });
+  if (error) return NextResponse.json({ error: "The download could not be recorded. Please try again." }, { status: 500 });
   return NextResponse.json({ artifactId: artifact.id, versionId: version.id, name: artifact.name, slug: artifact.slug, contentHash: version.content_hash, content: getPortableSkillContent(artifact) ?? version.content_snapshot });
 }

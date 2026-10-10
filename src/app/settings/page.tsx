@@ -3,7 +3,6 @@ import { ProductLink as Link } from "@/components/product-link";
 import { Badge } from "@/components/ui/badge";
 import { getWorkspaceAdminData } from "@/lib/workspace-admin";
 import { WorkspaceAdminPanel } from "@/components/workspace-admin-panel";
-import { ConnectedCliPanel } from "@/components/connected-cli-panel";
 
 export default async function SettingsPage() {
   const admin = await getWorkspaceAdminData();
@@ -15,9 +14,8 @@ export default async function SettingsPage() {
         <p className="mt-2 max-w-2xl text-muted-foreground">Configure how Skill Dockyard scans, evaluates, and prepares skills for review.</p>
       </header>
       {admin ? <WorkspaceAdminPanel workspace={admin.workspace} members={admin.members} invites={admin.invites} isOwner={admin.isOwner} consistent={admin.consistent} /> : null}
-      <ConnectedCliPanel />
       <section className="grid gap-4 md:grid-cols-2" aria-label="Workspace settings areas">
-        <SettingsCard href="/settings/repos" icon={FileSearch} title="Import settings" body="Choose where Skill Dockyard looks for installed skills and local improvements." />
+        <SettingsCard href="/settings/repos" icon={FileSearch} title="Import settings" body="Review the skill folders and ZIP files your workspace can import." />
         <SettingsCard href="/settings/risk-rules" icon={ShieldCheck} title="Trust rules" body="Review allowed connectors and high-impact tools used during compatibility checks." />
       </section>
     </div>

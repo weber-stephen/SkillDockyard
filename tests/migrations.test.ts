@@ -104,6 +104,17 @@ describe("Supabase migration coverage", () => {
     expect(sql).toContain("role in ('owner', 'reviewer')");
   });
 
+  it("keeps private submission, download records, and connection revocation atomic with their audit events", () => {
+    const sql = fs.readFileSync(path.resolve("supabase/migrations/20261010030857_atomic_audit_records.sql"), "utf8");
+    for (const fn of ["promote_private_artifact", "record_skill_download", "revoke_cli_token"]) {
+      expect(sql).toContain(`function public.${fn}`);
+      expect(sql).toContain(`revoke all on function public.${fn}`);
+    }
+    expect(sql).toContain("insert into public.skill_downloads");
+    expect(sql).toContain("insert into public.audit_events");
+    expect(sql).toContain("update public.cli_tokens set revoked_at = now()");
+  });
+
   it("makes legacy workflow function security and execute grants explicit", () => {
     const sql = fs.readFileSync(path.resolve("supabase/migrations/20261003153210_harden_function_execution.sql"), "utf8");
     expect(sql).toContain("alter function public.promote_private_artifact(uuid, uuid, text) security invoker");
