@@ -49,6 +49,12 @@ export async function POST(request: Request) {
     }
 
     const viewer = await getViewerContext();
+    if (visibility === "workspace" && body.mode === "new") {
+      const workspaceMembership = viewer.memberships.find((membership) => membership.workspace_id === settings.workspaceId) ?? null;
+      if (!workspaceMembership || workspaceMembership.role === "viewer") {
+        return NextResponse.json({ error: "You can view this workspace, but you cannot submit skills for review." }, { status: 403 });
+      }
+    }
     const userRate = await consumeRateLimit(`submission-user:${viewer.user.id}`, 20, 60_000);
     const workspaceIds = new Set((viewer.memberships ?? []).map((membership) => membership.workspace_id));
     if (existingArtifact?.workspace_id) workspaceIds.add(existingArtifact.workspace_id);

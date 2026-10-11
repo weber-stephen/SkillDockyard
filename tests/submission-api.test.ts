@@ -67,7 +67,7 @@ describe("submission API persistence modes", () => {
     expect(mocks.ingestArtifacts).not.toHaveBeenCalled();
   });
 
-  it("persists a configured live submission as a pending proposal", async () => {
+  it("allows an Editor to submit a new workspace skill as an awaiting-review proposal", async () => {
     const builder = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -80,14 +80,14 @@ describe("submission API persistence modes", () => {
 
     mocks.hasSupabaseConfig.mockReturnValue(true);
     mocks.getArtifactDetail.mockResolvedValue(null);
-    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [] });
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [], workspaceId: "workspace-1" });
     mocks.buildManualSubmission.mockReturnValue({
       targetArtifactId: null,
       compareHref: "/artifacts/artifact-1/review",
       successMessage: "Submitted.",
       artifact: { artifact: { name: "Support Triage" }, version: { content_hash: "hash-1" }, risks: [] }
     });
-    mocks.getViewerContext.mockResolvedValue({ user: { id: "user-1", email: "user@example.com" } });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "user-1", email: "user@example.com" }, memberships: [{ workspace_id: "workspace-1", role: "editor" }] });
     mocks.ingestArtifacts.mockResolvedValue({ workspaceId: "workspace-1", artifacts: [{ artifactId: "artifact-1", versionId: "version-1" }] });
     mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
 
@@ -97,6 +97,74 @@ describe("submission API persistence modes", () => {
     expect(await response.json()).toMatchObject({ mode: "supabase", saved: true, proposalId: "proposal-1", proposalStatus: "pending_review" });
     expect(mocks.ingestArtifacts).toHaveBeenCalledOnce();
     expect(builder.insert).toHaveBeenCalled();
+  });
+
+  it("denies a viewer before a new workspace skill can be ingested or submitted", async () => {
+    mocks.hasSupabaseConfig.mockReturnValue(true);
+    mocks.getArtifactDetail.mockResolvedValue(null);
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [], workspaceId: "workspace-1" });
+    mocks.buildManualSubmission.mockReturnValue({
+      targetArtifactId: null,
+      compareHref: "/artifacts/artifact-1/review",
+      successMessage: "Submitted.",
+      artifact: { artifact: { name: "Viewer must not submit" }, version: { content_hash: "hash-viewer" }, risks: [] }
+    });
+    mocks.getViewerContext.mockResolvedValue({
+      user: { id: "viewer-1", email: "viewer@example.com" },
+      memberships: [{ workspace_id: "workspace-1", role: "viewer" }]
+    });
+
+    const response = await POST(request({ mode: "new" }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "You can view this workspace, but you cannot submit skills for review." });
+    expect(mocks.ingestArtifacts).not.toHaveBeenCalled();
+    expect(mocks.createServerSupabase).not.toHaveBeenCalled();
+  });
+
+  it("replaces an older awaiting-review update without publishing either candidate", async () => {
+    const builder = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: { id: "proposal-old", candidate_version_id: "version-old", status: "pending_review" }, error: null }),
+      single: vi.fn().mockResolvedValue({ data: { id: "proposal-new" }, error: null }),
+      then: (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null })
+    };
+    const existing = {
+      id: "artifact-1",
+      workspace_id: "workspace-source-1",
+      can_propose_update: true,
+      approved_version_id: "version-published-1",
+      approved_version: { content_hash: "hash-published" },
+      current_proposal: { id: "proposal-old" },
+      source_share_id: "share-1"
+    };
+    mocks.hasSupabaseConfig.mockReturnValue(true);
+    mocks.getArtifactDetail.mockResolvedValue(existing);
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [], workspaceId: "workspace-recipient-1" });
+    mocks.buildManualSubmission.mockReturnValue({
+      targetArtifactId: existing.id,
+      compareHref: "/artifacts/artifact-1/review",
+      successMessage: "Submitted.",
+      artifact: { artifact: { name: "Support Triage" }, version: { content_hash: "hash-new" }, risks: [] }
+    });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "recipient-1", email: "recipient@example.com" }, memberships: [] });
+    mocks.ingestArtifacts.mockResolvedValue({ workspaceId: existing.workspace_id, artifacts: [{ artifactId: existing.id, versionId: "version-new" }] });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+
+    const response = await POST(request({ mode: "update", artifactId: existing.id }));
+
+    expect(response.status).toBe(200);
+    expect(builder.update).toHaveBeenCalledWith(expect.objectContaining({ status: "superseded", resolution_note: "Superseded by a newer submission." }));
+    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({
+      candidate_version_id: "version-new",
+      base_version_id: "version-published-1",
+      supersedes_proposal_id: "proposal-old",
+      status: "pending_review"
+    }));
   });
 
   it("persists private submissions without creating a proposal", async () => {
