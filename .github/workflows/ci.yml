@@ -35,7 +35,7 @@ jobs:
           export NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$PUBLISHABLE_KEY"
           export SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
           for attempt in {1..20}; do
-            if curl --fail --silent --show-error -H "apikey: $SERVICE_ROLE_KEY" "$API_URL/rest/v1/workspaces?select=id&limit=1" > /dev/null; then
+            if curl --fail --silent --show-error -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY" "$API_URL/rest/v1/workspaces?select=id&limit=1" > /dev/null; then
               break
             fi
             if [ "$attempt" -eq 20 ]; then
