@@ -125,6 +125,29 @@ beforeAll(async () => {
 });
 
 describe("local Supabase skill sharing and update lifecycle", () => {
+  /** Scenario: APP-001; a verified user is provisioned exactly one personal workspace. */
+  it("keeps personal-workspace provisioning idempotent with one owner membership and audit event", async () => {
+    const user = await createUser("personal-workspace", suffix());
+    const first = await must<string>(await supabase.rpc("ensure_personal_workspace", {
+      p_user_id: user.id,
+      p_user_email: user.email,
+      p_workspace_name: "Personal acceptance workspace"
+    }));
+    const second = await must<string>(await supabase.rpc("ensure_personal_workspace", {
+      p_user_id: user.id,
+      p_user_email: user.email,
+      p_workspace_name: "A later name must not create another workspace"
+    }));
+    const workspaces = await must<Array<{ id: string }>>(await supabase.from("workspaces").select("id").eq("owner_user_id", user.id));
+    const memberships = await must<Array<{ role: string }>>(await supabase.from("workspace_members").select("role").eq("workspace_id", first).eq("user_id", user.id));
+    const audits = await must<Array<{ event_type: string }>>(await supabase.from("audit_events").select("event_type").eq("workspace_id", first).eq("event_type", "personal_workspace_created"));
+
+    expect(second).toBe(first);
+    expect(workspaces).toEqual([{ id: first }]);
+    expect(memberships).toEqual([{ role: "owner" }]);
+    expect(audits).toHaveLength(1);
+  });
+
   /** Scenario: SC-001; Requirement: REQ-1 individual sharing and access. */
   it("activates an individual share only after the named verified recipient accepts it", async () => {
     const fixture = await createFixture();
@@ -173,10 +196,107 @@ describe("local Supabase skill sharing and update lifecycle", () => {
     expect(sourceMembership).toBeNull();
   });
 
+  /** Scenario: APP-008 / APP-009; revocation removes access but retains canonical records. */
+  it("revokes an accepted individual share without changing ownership or deleting its audit history", async () => {
+    const fixture = await createFixture();
+    const created = await must<ArtifactShare>(await supabase.rpc("create_artifact_share", {
+      p_artifact_id: fixture.artifact.id,
+      p_actor_user_id: fixture.sourceOwner.id,
+      p_actor_email: fixture.sourceOwner.email,
+      p_target_type: "user",
+      p_target_email: fixture.individualRecipient.email,
+      p_target_workspace_id: null,
+      p_target_workspace_name: null,
+      p_permission: "view",
+      p_activate: false
+    }));
+    const active = await must<ArtifactShare>(await supabase.rpc("respond_to_artifact_share", {
+      p_share_id: created.id,
+      p_actor_user_id: fixture.individualRecipient.id,
+      p_actor_email: fixture.individualRecipient.email,
+      p_accept: true
+    }));
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships: [], workspaces: [], shares: [active], userId: fixture.individualRecipient.id })).not.toBeNull();
+
+    const revoked = await must<ArtifactShare>(await supabase.rpc("revoke_artifact_share", {
+      p_share_id: created.id,
+      p_actor_user_id: fixture.sourceOwner.id,
+      p_actor_email: fixture.sourceOwner.email
+    }));
+    const artifact = await must<Pick<Artifact, "workspace_id" | "created_by_user_id" | "approved_version_id">>(await supabase.from("artifacts").select("workspace_id, created_by_user_id, approved_version_id").eq("id", fixture.artifact.id).single());
+    const audits = await must<Array<{ event_type: string }>>(await supabase.from("audit_events").select("event_type").eq("artifact_id", fixture.artifact.id));
+
+    expect(revoked).toMatchObject({ status: "revoked" });
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships: [], workspaces: [], shares: [revoked], userId: fixture.individualRecipient.id })).toBeNull();
+    expect(artifact).toMatchObject({ workspace_id: fixture.sourceWorkspaceId, created_by_user_id: fixture.sourceOwner.id, approved_version_id: fixture.publishedVersionId });
+    expect(audits.map((audit) => audit.event_type)).toEqual(expect.arrayContaining(["skill_shared", "share_accepted", "share_revoked"]));
+  });
+
+  /** Scenario: APP-004; a reviewer can publish but cannot perform owner-only administration. */
+  it("rejects owner-only workspace administration by a reviewer without side effects", async () => {
+    const fixture = await createFixture();
+    const [inviteResult, renameResult] = await Promise.all([
+      supabase.rpc("invite_workspace_member", {
+        p_workspace_id: fixture.sourceWorkspaceId,
+        p_actor_user_id: fixture.reviewer.id,
+        p_actor_email: fixture.reviewer.email,
+        p_email: `candidate-${suffix()}@example.com`,
+        p_role: "viewer",
+        p_token_hash: crypto.randomUUID().replaceAll("-", ""),
+        p_expires_at: new Date(Date.now() + 60_000).toISOString()
+      }),
+      supabase.rpc("rename_workspace", {
+        p_workspace_id: fixture.sourceWorkspaceId,
+        p_actor_user_id: fixture.reviewer.id,
+        p_actor_email: fixture.reviewer.email,
+        p_name: "Reviewer must not rename this"
+      })
+    ]);
+    const workspace = await must<{ name: string }>(await supabase.from("workspaces").select("name").eq("id", fixture.sourceWorkspaceId).single());
+    const invites = await must<Array<{ id: string }>>(await supabase.from("workspace_invites").select("id").eq("workspace_id", fixture.sourceWorkspaceId));
+    const audits = await must<Array<{ event_type: string }>>(await supabase.from("audit_events").select("event_type").eq("workspace_id", fixture.sourceWorkspaceId));
+
+    expect(inviteResult.error?.message).toContain("owner");
+    expect(renameResult.error?.message).toContain("owner");
+    expect(workspace.name).toMatch(/^Source /);
+    expect(invites).toEqual([]);
+    expect(audits.map((audit) => audit.event_type)).not.toContain("workspace_invite_created");
+    expect(audits.map((audit) => audit.event_type)).not.toContain("workspace_renamed");
+  });
+
   /** Scenario: SC-003; Requirement: REQ-3 unshared skills deny access. */
   it("does not grant an unshared user skill access or update permission", async () => {
     const fixture = await createFixture();
     expect(computeArtifactPermission({ artifact: fixture.artifact, memberships: [], workspaces: [], shares: [], userId: fixture.outsider.id })).toBeNull();
+  });
+
+  /** Scenario: APP-007; a shared recipient's update stays unpublished until review. */
+  it("keeps the approved version available while an update-capable shared recipient has a submission awaiting review", async () => {
+    const fixture = await createFixture();
+    const share = await must<ArtifactShare>(await supabase.rpc("create_artifact_share", {
+      p_artifact_id: fixture.artifact.id,
+      p_actor_user_id: fixture.sourceOwner.id,
+      p_actor_email: fixture.sourceOwner.email,
+      p_target_type: "user",
+      p_target_email: fixture.individualRecipient.email,
+      p_target_workspace_id: null,
+      p_target_workspace_name: null,
+      p_permission: "propose",
+      p_activate: false
+    }));
+    const active = await must<ArtifactShare>(await supabase.rpc("respond_to_artifact_share", {
+      p_share_id: share.id,
+      p_actor_user_id: fixture.individualRecipient.id,
+      p_actor_email: fixture.individualRecipient.email,
+      p_accept: true
+    }));
+    const candidate = await createCandidateProposal(fixture, suffix());
+    const artifact = await must<Pick<Artifact, "current_version_id" | "approved_version_id">>(await supabase.from("artifacts").select("current_version_id, approved_version_id").eq("id", fixture.artifact.id).single());
+    const proposal = await must<{ status: string; candidate_version_id: string }>(await supabase.from("proposals").select("status, candidate_version_id").eq("id", candidate.proposalId).single());
+
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships: [], workspaces: [], shares: [active], userId: fixture.individualRecipient.id })).toMatchObject({ canProposeUpdate: true, canPublish: false });
+    expect(proposal).toMatchObject({ status: "pending_review", candidate_version_id: candidate.candidateVersionId });
+    expect(artifact).toMatchObject({ current_version_id: candidate.candidateVersionId, approved_version_id: fixture.publishedVersionId });
   });
 
   /** Scenario: SC-004; Requirement: REQ-4 accepted skill update. */
