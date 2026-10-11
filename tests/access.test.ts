@@ -53,6 +53,18 @@ function share(permission: ArtifactShare["permission"]): ArtifactShare {
   };
 }
 
+function workspaceShare(permission: ArtifactShare["permission"]): ArtifactShare {
+  return {
+    ...share(permission),
+    id: `${permission}-workspace-share`,
+    target_type: "workspace",
+    target_user_id: null,
+    target_workspace_id: "recipient-workspace",
+    target_email: null,
+    target_workspace_name: "Recipient workspace"
+  };
+}
+
 describe("artifact permissions", () => {
   it("allows proposals for owners, reviewers, and editors only", () => {
     expect(canProposeRole("owner")).toBe(true);
@@ -94,6 +106,32 @@ describe("artifact permissions", () => {
 
   it("ignores revoked shares", () => {
     expect(computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [{ ...share("propose"), status: "revoked" }], userId: "recipient" })).toBeNull();
+  });
+
+  it("grants a workspace share only to members of its active target workspace", () => {
+    const targetMembership = {
+      ...membership("editor"),
+      workspace_id: "recipient-workspace",
+      user_id: "workspace-recipient",
+      email: "workspace-recipient@example.com"
+    };
+    const permission = computeArtifactPermission({
+      artifact,
+      memberships: [targetMembership],
+      workspaces: [{ id: "recipient-workspace", name: "Recipient workspace", created_at: "2026-09-03T00:00:00.000Z" }],
+      shares: [workspaceShare("propose")],
+      userId: "workspace-recipient"
+    });
+
+    expect(permission).toMatchObject({ accessScope: "shared_workspace", canProposeUpdate: true, canPublish: false, canManageShares: false });
+    expect(computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [workspaceShare("propose")], userId: "outsider" })).toBeNull();
+  });
+
+  it("does not grant access from pending, declined, or unrelated active shares", () => {
+    for (const status of ["pending", "declined", "revoked"] as const) {
+      expect(computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [{ ...share("propose"), status }], userId: "recipient" })).toBeNull();
+    }
+    expect(computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [share("propose")], userId: "not-the-recipient" })).toBeNull();
   });
 
   it("keeps private artifacts visible only to their creator", () => {

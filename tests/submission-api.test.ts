@@ -124,4 +124,56 @@ describe("submission API persistence modes", () => {
     expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), undefined, expect.objectContaining({ visibility: "private", createdByUserId: "user-1" }));
     expect(builder.from).not.toHaveBeenCalled();
   });
+
+  it("submits an eligible shared-skill update to the source workspace and preserves the share lineage", async () => {
+    const builder = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      single: vi.fn().mockResolvedValue({ data: { id: "proposal-update-1" }, error: null }),
+      then: (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null })
+    };
+    const existing = {
+      id: "artifact-shared-1",
+      workspace_id: "workspace-source-1",
+      can_propose_update: true,
+      approved_version_id: "version-published-1",
+      approved_version: { content_hash: "hash-published" },
+      source_share_id: "share-1"
+    };
+    mocks.hasSupabaseConfig.mockReturnValue(true);
+    mocks.getArtifactDetail.mockResolvedValue(existing);
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [] });
+    mocks.buildManualSubmission.mockReturnValue({
+      targetArtifactId: existing.id,
+      compareHref: `/artifacts/${existing.id}/review`,
+      successMessage: "Submitted update.",
+      artifact: { artifact: { name: "Support Triage" }, version: { content_hash: "hash-update" }, risks: [] }
+    });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "recipient-1", email: "recipient@example.com" }, memberships: [] });
+    mocks.ingestArtifacts.mockResolvedValue({ workspaceId: "workspace-source-1", artifacts: [{ artifactId: existing.id, versionId: "version-update-1" }] });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+
+    const response = await POST(request({ mode: "update", artifactId: existing.id, skillText: "updated instructions", changeSummary: "Clarified the review sequence." }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ proposalId: "proposal-update-1", proposalStatus: "pending_review", visibility: "workspace" });
+    expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), "workspace-source-1", expect.objectContaining({ createdByUserId: "recipient-1", sourceShareId: "share-1", visibility: "workspace" }));
+    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ artifact_id: existing.id, candidate_version_id: "version-update-1", base_version_id: "version-published-1", source_share_id: "share-1", kind: "update", status: "pending_review" }));
+  });
+
+  it("denies a view-only recipient before creating an update version or proposal", async () => {
+    mocks.hasSupabaseConfig.mockReturnValue(true);
+    mocks.getArtifactDetail.mockResolvedValue({ id: "artifact-view-1", can_propose_update: false });
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [] });
+
+    const response = await POST(request({ mode: "update", artifactId: "artifact-view-1", skillText: "updated instructions", changeSummary: "Clarified the review sequence." }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "You can view this skill, but you cannot propose updates to it." });
+    expect(mocks.buildManualSubmission).not.toHaveBeenCalled();
+    expect(mocks.ingestArtifacts).not.toHaveBeenCalled();
+  });
 });
