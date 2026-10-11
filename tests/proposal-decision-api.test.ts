@@ -114,4 +114,21 @@ describe("proposal decision API authorization", () => {
       artifactName: "Support Triage"
     });
   });
+
+  it.each([
+    ["rejected", "proposal_rejected"],
+    ["changes_requested", "changes_requested"]
+  ] as const)("records %s without notifying installed copies", async (decision, notificationType) => {
+    mocks.getProposal.mockResolvedValue(proposal());
+    rpc.mockResolvedValue({ data: { proposalId: "proposal-1", status: decision }, error: null });
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    from.mockReturnValue({ insert });
+
+    const response = await POST(request({ decision, note: "Please revise the connector guidance." }), { params: Promise.resolve({ id: "proposal-1" }) });
+
+    expect(response.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("decide_proposal", expect.objectContaining({ p_decision: decision, p_note: "Please revise the connector guidance." }));
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ type: notificationType, proposal_id: "proposal-1", user_id: "submitter-1" }));
+    expect(mocks.notifyDownloadedUsersOfUpdate).not.toHaveBeenCalled();
+  });
 });
