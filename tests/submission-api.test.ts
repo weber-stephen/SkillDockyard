@@ -232,6 +232,46 @@ describe("submission API persistence modes", () => {
     expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ artifact_id: existing.id, candidate_version_id: "version-update-1", base_version_id: "version-published-1", source_share_id: "share-1", kind: "update", status: "pending_review" }));
   });
 
+  /** Scenario: APP-003; an Editor can submit an update but the candidate is not published. */
+  it("allows an Editor to submit an update to its workspace as awaiting review", async () => {
+    const builder = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      single: vi.fn().mockResolvedValue({ data: { id: "proposal-editor-update-1" }, error: null }),
+      then: (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null })
+    };
+    const existing = {
+      id: "artifact-editor-1",
+      workspace_id: "workspace-editor-1",
+      can_propose_update: true,
+      approved_version_id: "version-published-1",
+      approved_version: { content_hash: "hash-published" },
+      source_share_id: null
+    };
+    mocks.hasSupabaseConfig.mockReturnValue(true);
+    mocks.getArtifactDetail.mockResolvedValue(existing);
+    mocks.getSettings.mockResolvedValue({ approvedMcpServers: [], highImpactTools: [], workspaceId: existing.workspace_id });
+    mocks.buildManualSubmission.mockReturnValue({
+      targetArtifactId: existing.id,
+      compareHref: `/artifacts/${existing.id}/review`,
+      successMessage: "Submitted update.",
+      artifact: { artifact: { name: "Editor update" }, version: { content_hash: "hash-editor-update" }, risks: [] }
+    });
+    mocks.getViewerContext.mockResolvedValue({ user: { id: "editor-1", email: "editor@example.com" }, memberships: [{ workspace_id: existing.workspace_id, role: "editor" }] });
+    mocks.ingestArtifacts.mockResolvedValue({ workspaceId: existing.workspace_id, artifacts: [{ artifactId: existing.id, versionId: "version-editor-update-1" }] });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+
+    const response = await POST(request({ mode: "update", artifactId: existing.id, skillText: "Updated instructions", changeSummary: "Clarified escalation criteria." }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ proposalId: "proposal-editor-update-1", proposalStatus: "pending_review", visibility: "workspace" });
+    expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), existing.workspace_id, expect.objectContaining({ createdByUserId: "editor-1", sourceShareId: null, visibility: "workspace" }));
+    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ artifact_id: existing.id, candidate_version_id: "version-editor-update-1", base_version_id: "version-published-1", kind: "update", status: "pending_review" }));
+  });
+
   it("denies a view-only recipient before creating an update version or proposal", async () => {
     mocks.hasSupabaseConfig.mockReturnValue(true);
     mocks.getArtifactDetail.mockResolvedValue({ id: "artifact-view-1", can_propose_update: false });

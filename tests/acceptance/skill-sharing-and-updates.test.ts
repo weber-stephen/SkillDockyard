@@ -93,7 +93,7 @@ async function createFixture(): Promise<Fixture> {
   return { sourceOwner, reviewer, individualRecipient, workspaceMember, outsider, sourceWorkspaceId: source.id, targetWorkspaceId: target.id, artifact, publishedVersionId: version.id };
 }
 
-async function createCandidateProposal(fixture: Fixture, id: string) {
+async function createCandidateProposal(fixture: Fixture, id: string, supersedesProposalId: string | null = null) {
   const version = await must<{ id: string }>(await supabase.from("artifact_versions").insert({
     artifact_id: fixture.artifact.id,
     content_hash: `sha256:update-${id}`,
@@ -114,7 +114,8 @@ async function createCandidateProposal(fixture: Fixture, id: string) {
     submitted_by_user_id: fixture.individualRecipient.id,
     submitter_email: fixture.individualRecipient.email,
     kind: "update",
-    status: "pending_review"
+    status: "pending_review",
+    supersedes_proposal_id: supersedesProposalId
   }).select("id").single());
   return { proposalId: proposal.id, candidateVersionId: version.id };
 }
@@ -320,5 +321,49 @@ describe("local Supabase skill sharing and update lifecycle", () => {
     const proposal = await must<{ status: string; resolution_note: string | null }>(await supabase.from("proposals").select("status, resolution_note").eq("id", candidate.proposalId).single());
     expect(artifact.approved_version_id).toBe(fixture.publishedVersionId);
     expect(proposal).toMatchObject({ status: decision, resolution_note: "Revise the rollout guidance." });
+  });
+
+  /** Scenario: APP-010 withdrawal; withdrawing a submission never promotes its candidate. */
+  it("keeps the published version active after the submitter withdraws an awaiting-review update", async () => {
+    const fixture = await createFixture();
+    const candidate = await createCandidateProposal(fixture, suffix());
+    await must<{ id: string }>(await supabase
+      .from("proposals")
+      .update({ status: "withdrawn", resolved_by_user_id: fixture.individualRecipient.id, resolved_at: new Date().toISOString(), resolution_note: "Withdrawn by submitter." })
+      .eq("id", candidate.proposalId)
+      .eq("submitted_by_user_id", fixture.individualRecipient.id)
+      .eq("status", "pending_review")
+      .select("id")
+      .single());
+
+    const artifact = await must<Pick<Artifact, "approved_version_id">>(await supabase.from("artifacts").select("approved_version_id").eq("id", fixture.artifact.id).single());
+    const proposal = await must<{ status: string; resolution_note: string | null }>(await supabase.from("proposals").select("status, resolution_note").eq("id", candidate.proposalId).single());
+
+    expect(artifact.approved_version_id).toBe(fixture.publishedVersionId);
+    expect(proposal).toMatchObject({ status: "withdrawn", resolution_note: "Withdrawn by submitter." });
+  });
+
+  /** Scenario: APP-010 replacement; a newer submission supersedes the older one without publishing either candidate. */
+  it("keeps the published version active when a newer update replaces an awaiting-review submission", async () => {
+    const fixture = await createFixture();
+    const first = await createCandidateProposal(fixture, suffix());
+    await must<{ id: string }>(await supabase
+      .from("proposals")
+      .update({ status: "superseded", resolved_by_user_id: fixture.individualRecipient.id, resolved_at: new Date().toISOString(), resolution_note: "Superseded by a newer submission." })
+      .eq("id", first.proposalId)
+      .eq("status", "pending_review")
+      .select("id")
+      .single());
+    const replacement = await createCandidateProposal(fixture, suffix(), first.proposalId);
+
+    const artifact = await must<Pick<Artifact, "current_version_id" | "approved_version_id">>(await supabase.from("artifacts").select("current_version_id, approved_version_id").eq("id", fixture.artifact.id).single());
+    const [older, newer] = await Promise.all([
+      supabase.from("proposals").select("status").eq("id", first.proposalId).single(),
+      supabase.from("proposals").select("status, supersedes_proposal_id").eq("id", replacement.proposalId).single()
+    ]);
+
+    expect(artifact).toMatchObject({ current_version_id: replacement.candidateVersionId, approved_version_id: fixture.publishedVersionId });
+    expect((await must<{ status: string }>(older)).status).toBe("superseded");
+    expect(await must<{ status: string; supersedes_proposal_id: string | null }>(newer)).toMatchObject({ status: "pending_review", supersedes_proposal_id: first.proposalId });
   });
 });
