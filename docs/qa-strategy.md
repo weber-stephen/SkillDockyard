@@ -24,8 +24,8 @@ Skill Dockyard is a Next.js SaaS and connected-computer command for teams to add
 
 | Level or type | Validates | Current evidence | Target by Q2 2027 | Owner | Tool and frequency |
 | --- | --- | --- | --- | --- | --- |
-| Unit / mocked boundary | Parsing, scanning, skill validation, domain rules, security helpers, API decision paths, and migration-source invariants | 103 Vitest cases in 25 files; most Supabase calls are mocked | 120 focused cases | Developer | Vitest on every PR |
-| Live integration / acceptance | Authenticated routes, Supabase RLS/RPC behavior, migrations, roles, share lifecycle, token revocation, and provider configuration seams | 10 local-Supabase acceptance cases for provisioning, sharing, review decisions, revocation, and owner-only administration | 35 cases in a disposable acceptance project | Developer | Vitest/API requests on every PR; release-candidate and nightly expansion when configured |
+| Unit / mocked boundary | Parsing, scanning, skill validation, domain rules, security helpers, API decision paths, and migration-source invariants | 104 Vitest cases in 25 files; most Supabase calls are mocked | 120 focused cases | Developer | Vitest on every PR |
+| Live integration / acceptance | Authenticated routes, Supabase RLS/RPC behavior, migrations, roles, share lifecycle, token revocation, and provider configuration seams | 12 local-Supabase acceptance cases for provisioning, sharing, review decisions, revocation, owner-only administration, withdrawal, and replacement | 35 cases in a disposable acceptance project | Developer | Vitest/API requests on every PR; release-candidate and nightly expansion when configured |
 | Browser E2E | Real user journeys through the production build | 12 Playwright Chromium cases for demo browse, navigation, review, submission, and deterministic screenshots | 15 critical cases; do not automate every variation | Developer | Smoke on PR preview; full set before release and nightly |
 | API contract | Schema, authorization status codes, request limits, and error shape for browser and connected-computer APIs | Route logic is mostly covered through mocked Vitest tests | Contract assertions for every mutation and connected-computer endpoint | Developer | API requests on PR and acceptance run |
 | Visual and responsive | Demo Skills/review screenshots, layout regressions, and key public/app viewports | Two deterministic Playwright screenshot journeys | Six key screens at desktop and mobile widths | Developer | PR smoke for changed screens; nightly full baseline |
@@ -37,13 +37,13 @@ The current count classifies only the fast Vitest suite as unit/mocked-boundary;
 
 ### 4. Test Pyramid Analysis
 
-**Current state (verified locally on 2026-10-11).** `npm test` passed 22 files and 85 cases in 0.74 seconds. The browser suite contains 10 Chromium cases across three specifications. The source repository has a single CI job with a 10-minute timeout; its historical wall-clock duration, scheduled-run pass rate, and flake rate are not recorded, so Phase 1 must establish those baselines rather than invent them.
+**Current state (verified locally on 2026-10-11).** `npm test` passed 25 files and 104 cases. The browser suite contains 12 Chromium cases across three specifications. The source repository has a single CI job with a 10-minute timeout; its historical wall-clock duration, scheduled-run pass rate, and flake rate are not recorded, so Phase 1 must establish those baselines rather than invent them.
 
 | Distribution | Count | Share | Assessment |
 | --- | ---: | ---: | --- |
-| Unit / mocked boundary | 103 | 82% | Valuable and fast, especially for rules and regressions |
-| Live integration | 10 | 8% | Initial authorization and lifecycle layer now runs against migrated local Supabase |
-| E2E | 12 | 10% | Sensible small suite, but demo-only coverage cannot prove authenticated behavior |
+| Unit / mocked boundary | 104 | 81% | Valuable and fast, especially for rules and regressions |
+| Live integration | 12 | 9% | Initial authorization and lifecycle layer now runs against migrated local Supabase |
+| E2E | 12 | 9% | Sensible small suite, but demo-only coverage cannot prove authenticated behavior |
 
 This is a unit-heavy **hourglass/missing-middle** shape, not an inverted E2E pyramid. Preserve the fast suite; add the middle rather than growing browser coverage indiscriminately.
 
