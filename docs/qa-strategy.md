@@ -24,16 +24,16 @@ Skill Dockyard is a Next.js SaaS and connected-computer command for teams to add
 
 | Level or type | Validates | Current evidence | Target by Q2 2027 | Owner | Tool and frequency |
 | --- | --- | --- | --- | --- | --- |
-| Unit / mocked boundary | Parsing, scanning, skill validation, domain rules, security helpers, API decision paths, and migration-source invariants | 85 Vitest cases in 22 files; most Supabase calls are mocked | 120 focused cases | Developer | Vitest on every PR |
-| Live integration / acceptance | Authenticated routes, Supabase RLS/RPC behavior, migrations, roles, share lifecycle, token revocation, and provider configuration seams | No automated live-database acceptance suite | 35 cases in a disposable acceptance project | Developer; owner supplies provider access | Vitest/API requests on release candidate and nightly when configured |
-| Browser E2E | Real user journeys through the production build | 10 Playwright Chromium cases for demo browse, navigation, review, submission, and deterministic screenshots | 15 critical cases; do not automate every variation | Developer | Smoke on PR preview; full set before release and nightly |
+| Unit / mocked boundary | Parsing, scanning, skill validation, domain rules, security helpers, API decision paths, and migration-source invariants | 103 Vitest cases in 25 files; most Supabase calls are mocked | 120 focused cases | Developer | Vitest on every PR |
+| Live integration / acceptance | Authenticated routes, Supabase RLS/RPC behavior, migrations, roles, share lifecycle, token revocation, and provider configuration seams | 10 local-Supabase acceptance cases for provisioning, sharing, review decisions, revocation, and owner-only administration | 35 cases in a disposable acceptance project | Developer | Vitest/API requests on every PR; release-candidate and nightly expansion when configured |
+| Browser E2E | Real user journeys through the production build | 12 Playwright Chromium cases for demo browse, navigation, review, submission, and deterministic screenshots | 15 critical cases; do not automate every variation | Developer | Smoke on PR preview; full set before release and nightly |
 | API contract | Schema, authorization status codes, request limits, and error shape for browser and connected-computer APIs | Route logic is mostly covered through mocked Vitest tests | Contract assertions for every mutation and connected-computer endpoint | Developer | API requests on PR and acceptance run |
 | Visual and responsive | Demo Skills/review screenshots, layout regressions, and key public/app viewports | Two deterministic Playwright screenshot journeys | Six key screens at desktop and mobile widths | Developer | PR smoke for changed screens; nightly full baseline |
 | Accessibility | Keyboard path, labels, focus, landmarks, and WCAG 2.2 AA automated checks | Manual/UI audit evidence; no automated axe gate | Critical public, auth, submission, review, sharing, and settings journeys | Developer | axe-core on PR; keyboard exploration before release |
 | Security and dependency | Request parsing, redirects, CSRF/header invariants, permission boundaries, dependency vulnerabilities | Security-focused Vitest tests and `npm audit --omit=dev` in CI | Keep zero new high/critical audit findings; add live role matrix | Developer | Every PR; release acceptance |
 | Performance and operations | Page budget, API latency, rate limiting, error reporting, uptime, backup/rollback readiness | Page smoke build; monitored production routes and documented runbooks | Lightweight budgets and release smoke; no speculative load target yet | Developer + owner | Weekly/pilot-release check |
 
-The current count classifies every existing Vitest case as unit/mocked-boundary because none runs against a provisioned Supabase project. This avoids calling a mock of an RPC an integration test. Target pyramid math is 120 + 35 + 15 = 170 tests: 71% unit, 21% integration, and 9% E2E.
+The current count classifies only the fast Vitest suite as unit/mocked-boundary; the separate local-Supabase suite is tracked as live integration. This avoids calling a mock of an RPC an integration test. Target pyramid math is 120 + 35 + 15 = 170 tests: 71% unit, 21% integration, and 9% E2E. The app-flow status and remaining gaps are maintained in [App-flow QA coverage](testing/app-flow-coverage.md).
 
 ### 4. Test Pyramid Analysis
 
@@ -41,9 +41,9 @@ The current count classifies every existing Vitest case as unit/mocked-boundary 
 
 | Distribution | Count | Share | Assessment |
 | --- | ---: | ---: | --- |
-| Unit / mocked boundary | 85 | 89% | Valuable and fast, especially for rules and regressions |
-| Live integration | 0 | 0% | Material gap at the Supabase/Auth/RLS/RPC boundary |
-| E2E | 10 | 11% | Sensible small suite, but demo-only coverage cannot prove authenticated behavior |
+| Unit / mocked boundary | 103 | 82% | Valuable and fast, especially for rules and regressions |
+| Live integration | 10 | 8% | Initial authorization and lifecycle layer now runs against migrated local Supabase |
+| E2E | 12 | 10% | Sensible small suite, but demo-only coverage cannot prove authenticated behavior |
 
 This is a unit-heavy **hourglass/missing-middle** shape, not an inverted E2E pyramid. Preserve the fast suite; add the middle rather than growing browser coverage indiscriminately.
 
@@ -127,7 +127,7 @@ Every defect fix includes a regression test at the lowest level that would have 
 
 ### 9. Quality Gates
 
-These gates distinguish what exists today from the staged target. Existing CI already runs typecheck, lint, Vitest, production build/page smoke, Chromium E2E, dependency audit, CLI build, and `npm pack --dry-run` on PRs. The following additions are required before calling a pilot release ready.
+These gates distinguish what exists today from the staged target. Existing CI already runs typecheck, lint, fast Vitest, local-Supabase acceptance, production build/page smoke, Chromium E2E, dependency audit, CLI build, and `npm pack --dry-run` on PRs. The following additions are required before calling a pilot release ready.
 
 | Gate | Required evidence | Pass/fail threshold |
 | --- | --- | --- |
@@ -186,5 +186,6 @@ Metrics inform investment; they are not a performance score for an individual. A
 | Version | Date | Owner | Change | Review trigger |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-10-11 | Stephen Weber | Initial strategy from repository, CI, test-suite, architecture, and launch-document evidence | First quarterly review, material incident, new provider/product area, acceptance-environment launch, or team change |
+| 1.1 | 2026-10-11 | Stephen Weber | Added the app-flow coverage inventory and updated current automated-suite evidence | Same triggers, plus any `APP-###` flow or coverage change |
 
 This document is reviewed quarterly at minimum. The owner records the decision, updated metrics, changed risk assumptions, and assigned next actions in the next revision.
