@@ -82,7 +82,7 @@ Do not state that every listed provider is a legal “subprocessor” until coun
 ### P0 — launch blockers
 
 1. **OPS-009 — counsel approval is absent.** No counsel-approved Privacy Policy, Terms, retention language, subprocessor posture, controller identity, governing law, or dispute posture exists. Do not launch broadly or represent the current pages as final.
-2. **OPS-007 — support ownership is unverified.** `support@skilldockyard.com` is public but no evidence confirms monitoring, ownership, escalation coverage, or incident recipient.
+2. **OPS-007 — closed with a solo-maintainer limitation.** `support@skilldockyard.com` has a tested Namecheap forwarding and Gmail/Resend reply path, with Stephen named as primary owner, backup owner, and incident recipient. This closes the configured ownership and access-test gate, but it does not provide independent absence coverage; that residual risk remains documented in the [support email runbook](support-email-runbook.md).
 3. **OPS-010 — elevate to P0 for global availability.** Define and test a verified workflow for access, correction, export, deletion, retention, backup handling, and security/privacy incident notification. The existing checklist calls OPS-010 P1; global availability makes its privacy portions P0.
 4. **Global territorial scope and representation are unresolved.** Counsel must assess EU/UK and other regional applicability, any representative requirement, data-transfer mechanism, and notices before enabling or marketing to those users.
 5. **Privacy disclosures are materially incomplete.** The public policy does not match stored skill content, device/installation records, local storage, authentication cookies, or named providers.
@@ -155,7 +155,7 @@ Use the published Support page in this branch: a privacy request goes to the mon
 
 | Checklist ID | Status | Required evidence before global launch |
 | --- | --- | --- |
-| OPS-007 | Open P0 | Monitored support address, named owner, incident escalation recipient, and tested inbound handling. |
+| OPS-007 | Closed P0; residual single-person coverage risk | Tested forwarding and reply path; named owner and incident recipient documented. Assign independent backup coverage when available. |
 | OPS-009 | Open P0 | Written qualified-counsel review/approval of final Privacy, Terms, retention, provider, jurisdiction, and regional posture. |
 | OPS-010 | Open; privacy portions recommended P0 | Documented and tested verified rights-request, deletion, export, retention, backup, and incident-notification procedure. |
 | AUTH-007 | Open P1 | Support-assisted owner-recovery procedure that preserves authorization and audit history. |
