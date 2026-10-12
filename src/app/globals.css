@@ -119,6 +119,22 @@ a:active { transform: translateY(1px); }
   outline-offset: 3px;
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 60;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-180%);
+  border: 2px solid var(--ring);
+  background: var(--panel);
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 /* App headings are compact, but never compressed. Display type stays opt-in. */
 .app-page-title {
   max-width: 22ch;

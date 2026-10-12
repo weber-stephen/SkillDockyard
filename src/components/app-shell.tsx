@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bell, Boxes, ClipboardList, FileDown, GitMerge, Inbox, Menu, Send, Settings2, ShieldCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductLink as Link } from "@/components/product-link";
@@ -13,10 +13,42 @@ const defaultNavigation: AppNavigationState = { canReview: true, pendingReviewCo
 
 export function AppShell({ children, mode, email, navigation = defaultNavigation }: { children: React.ReactNode; mode: "app" | "demo"; email?: string; navigation?: AppNavigationState }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeMenuRef = useRef<HTMLButtonElement>(null);
+  const menuDialogRef = useRef<HTMLElement>(null);
+  function closeMenu() {
+    setMenuOpen(false);
+    requestAnimationFrame(() => menuTriggerRef.current?.focus());
+  }
+  useEffect(() => {
+    if (!menuOpen) return;
+    closeMenuRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMenu();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [...(menuDialogRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [])];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
   return <div className="app-shell min-h-screen bg-background text-foreground">
+    <a className="skip-link" href="#main-content">Skip to main content</a>
     <aside className="app-sidebar fixed inset-y-0 left-0 hidden w-64 overflow-y-auto border-r border-border bg-panel/85 px-4 py-5 backdrop-blur lg:block"><Brand /><SidebarContent mode={mode} navigation={navigation} /></aside>
-    <main className="app-main lg:pl-64"><TopBar mode={mode} email={email} navigation={navigation} onOpenMenu={() => setMenuOpen(true)} /><div className="app-content mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-10">{children}</div></main>
-    {menuOpen ? <div className="fixed inset-0 z-50 lg:hidden"><button className="absolute inset-0 bg-foreground/20" aria-label="Close navigation" onClick={() => setMenuOpen(false)} /><section className="relative h-full w-[min(18rem,85vw)] overflow-y-auto border-r border-border bg-panel px-4 py-5 shadow-xl"><div className="mb-8 flex items-center justify-between"><Brand compact onNavigate={() => setMenuOpen(false)} /><button type="button" className="grid h-9 w-9 place-items-center rounded-md hover:bg-muted" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X className="h-5 w-5" /></button></div><SidebarContent mode={mode} navigation={navigation} onNavigate={() => setMenuOpen(false)} /></section></div> : null}
+    <div className="app-main lg:pl-64"><TopBar mode={mode} email={email} navigation={navigation} onOpenMenu={() => setMenuOpen(true)} menuOpen={menuOpen} menuTriggerRef={menuTriggerRef} /><main id="main-content" tabIndex={-1}><div className="app-content mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-10">{children}</div></main></div>
+    {menuOpen ? <div className="fixed inset-0 z-50 lg:hidden"><button type="button" className="absolute inset-0 bg-foreground/20" aria-label="Close navigation" onClick={closeMenu} /><section ref={menuDialogRef} id="mobile-navigation" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-heading" className="relative h-full w-[min(18rem,85vw)] overflow-y-auto border-r border-border bg-panel px-4 py-5 shadow-xl"><div className="mb-8 flex items-center justify-between"><Brand compact onNavigate={closeMenu} /><h2 id="mobile-navigation-heading" className="sr-only">Navigation</h2><button ref={closeMenuRef} type="button" className="grid h-9 w-9 place-items-center rounded-md hover:bg-muted" onClick={closeMenu} aria-label="Close navigation"><X className="h-5 w-5" /></button></div><SidebarContent mode={mode} navigation={navigation} onNavigate={closeMenu} /></section></div> : null}
   </div>;
 }
 
@@ -42,6 +74,6 @@ function NavigationLink({ href, label, icon: Icon, count = 0, pathname, onNaviga
   return <Link href={href} onClick={onNavigate} aria-current={active ? "page" : undefined} className={`flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><Icon className="h-4 w-4" /> <span className="min-w-0 flex-1">{label}</span>{count > 0 ? <span className="min-w-5 rounded-full bg-attention px-1.5 py-0.5 text-center text-[11px] font-bold text-foreground" aria-label={`${count} pending`}>{count > 99 ? "99+" : count}</span> : null}</Link>;
 }
 
-function TopBar({ mode, email, navigation, onOpenMenu }: { mode: "app" | "demo"; email?: string; navigation: AppNavigationState; onOpenMenu: () => void }) {
-  return <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6 lg:px-10"><div className="flex items-center gap-3"><button type="button" className="grid h-10 w-10 place-items-center rounded-md border border-border lg:hidden" onClick={onOpenMenu} aria-label="Open navigation"><Menu className="h-5 w-5" /></button><div><span className="eyebrow block text-muted-foreground">{mode === "demo" ? "Interactive demo" : navigation.workspaceName ?? "Private workspace"}</span>{mode === "demo" ? <span className="block text-xs text-muted-foreground">Changes are saved only in this browser.</span> : null}</div></div><div className="flex items-center gap-3"><Link href="/notifications" aria-label={navigation.unreadNotificationCount ? `${navigation.unreadNotificationCount} unread notifications` : "Notifications"} className="relative grid h-10 w-10 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Bell className="h-4 w-4" />{navigation.unreadNotificationCount > 0 ? <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-attention" aria-hidden="true" /> : null}</Link><div className="hidden items-center gap-1 lg:flex"><Link href="/settings" className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Settings2 className="h-4 w-4" />Workspace settings</Link><Link href="/exports" className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><FileDown className="h-4 w-4" />Export skill list</Link></div>{mode === "demo" ? <a className="text-sm font-bold text-primary underline underline-offset-4" href="/signup">Create a workspace</a> : email ? <AuthMenu email={email} /> : null}</div></div>;
+function TopBar({ mode, email, navigation, onOpenMenu, menuOpen, menuTriggerRef }: { mode: "app" | "demo"; email?: string; navigation: AppNavigationState; onOpenMenu: () => void; menuOpen: boolean; menuTriggerRef: React.RefObject<HTMLButtonElement | null> }) {
+  return <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6 lg:px-10"><div className="flex items-center gap-3"><button ref={menuTriggerRef} type="button" className="grid h-10 w-10 place-items-center rounded-md border border-border lg:hidden" onClick={onOpenMenu} aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded={menuOpen}><Menu className="h-5 w-5" /></button><div><span className="eyebrow block text-muted-foreground">{mode === "demo" ? "Interactive demo" : navigation.workspaceName ?? "Private workspace"}</span>{mode === "demo" ? <span className="block text-xs text-muted-foreground">Changes are saved only in this browser.</span> : null}</div></div><div className="flex items-center gap-3"><Link href="/notifications" aria-label={navigation.unreadNotificationCount ? `${navigation.unreadNotificationCount} unread notifications` : "Notifications"} className="relative grid h-10 w-10 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Bell className="h-4 w-4" />{navigation.unreadNotificationCount > 0 ? <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-attention" aria-hidden="true" /> : null}</Link><div className="hidden items-center gap-1 lg:flex"><Link href="/settings" className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Settings2 className="h-4 w-4" />Workspace settings</Link><Link href="/exports" className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><FileDown className="h-4 w-4" />Export skill list</Link></div>{mode === "demo" ? <a className="text-sm font-bold text-primary underline underline-offset-4" href="/signup">Create a workspace</a> : email ? <AuthMenu email={email} /> : null}</div></div>;
 }
