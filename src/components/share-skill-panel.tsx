@@ -20,12 +20,24 @@ export function ShareSkillPanel({
   const [targetWorkspaceId, setTargetWorkspaceId] = useState("");
   const [targetWorkspaceName, setTargetWorkspaceName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [messageIsError, setMessageIsError] = useState(false);
   const [pending, setPending] = useState(false);
   const router = useRouter();
 
   async function submit() {
+    if (targetType === "user" && !targetEmail.trim()) {
+      setMessage("Enter a recipient email before sharing this skill.");
+      setMessageIsError(true);
+      return;
+    }
+    if (targetType === "workspace" && !targetWorkspaceId && !targetEmail.trim()) {
+      setMessage("Choose a workspace or enter the workspace owner email before sharing this skill.");
+      setMessageIsError(true);
+      return;
+    }
     setPending(true);
     setMessage(null);
+    setMessageIsError(false);
     const response = await fetch("/api/shares", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,6 +53,7 @@ export function ShareSkillPanel({
     const payload = await response.json();
     setPending(false);
     setMessage(response.ok ? "Share created. Access begins after acceptance unless the workspace is already active." : payload.error ?? "We could not share that skill.");
+    setMessageIsError(!response.ok);
     if (response.ok) {
       trackAnalyticsEvent("skill_share_created", { target_type: targetType, permission: sharePermission });
       router.refresh();
@@ -48,17 +61,24 @@ export function ShareSkillPanel({
   }
 
   return (
-    <section className="rounded-md border border-border bg-panel p-5">
+    <section aria-labelledby="share-skill-heading" className="rounded-md border border-border bg-panel p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-black">Share Skill</h2>
+          <h2 id="share-skill-heading" className="font-black">Share skill</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">Recipients can submit updates by default. Publishing stays with the workspace owner or a reviewer.</p>
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-2 rounded-md border border-border p-1 text-sm font-semibold">
-        <button type="button" className={targetType === "user" ? "rounded-sm bg-primary px-3 py-2 text-white" : "rounded-sm px-3 py-2 text-muted-foreground"} onClick={() => setTargetType("user")}>Individual</button>
-        <button type="button" className={targetType === "workspace" ? "rounded-sm bg-primary px-3 py-2 text-white" : "rounded-sm px-3 py-2 text-muted-foreground"} onClick={() => setTargetType("workspace")}>Workspace</button>
-      </div>
+      <fieldset className="mt-4 grid grid-cols-2 rounded-md border border-border p-1 text-sm font-semibold">
+        <legend className="sr-only">Share with</legend>
+        <label className={targetType === "user" ? "rounded-sm bg-primary px-3 py-2 text-center text-white" : "rounded-sm px-3 py-2 text-center text-muted-foreground"}>
+          <input className="sr-only" type="radio" name="share-target-type" value="user" checked={targetType === "user"} onChange={() => setTargetType("user")} />
+          Individual
+        </label>
+        <label className={targetType === "workspace" ? "rounded-sm bg-primary px-3 py-2 text-center text-white" : "rounded-sm px-3 py-2 text-center text-muted-foreground"}>
+          <input className="sr-only" type="radio" name="share-target-type" value="workspace" checked={targetType === "workspace"} onChange={() => setTargetType("workspace")} />
+          Workspace
+        </label>
+      </fieldset>
 
       <div className="mt-4 space-y-4">
         <label className="block space-y-2">
@@ -109,7 +129,7 @@ export function ShareSkillPanel({
           </>
         )}
         <Button disabled={pending} onClick={() => void submit()}>Share skill</Button>
-        {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+        {message ? <p role={messageIsError ? "alert" : "status"} className="text-sm text-muted-foreground">{message}</p> : null}
       </div>
 
       {artifact.shares?.length ? (

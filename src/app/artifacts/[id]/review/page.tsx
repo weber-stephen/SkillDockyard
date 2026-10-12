@@ -49,13 +49,13 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Line Diff</h2>
-            <pre className="mt-4 max-h-[360px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">
+            <pre tabIndex={0} aria-label="Line-by-line comparison" className="mt-4 max-h-[360px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">
               {diff.length ? diff.map((line, index) => <DiffLine key={`${line.kind}-${index}`} line={line} />) : "No published baseline yet."}
             </pre>
           </div>
           <div className="rounded-md border border-border bg-panel p-5">
             <h2 className="font-black">Proposed Content</h2>
-            <pre className="mt-4 max-h-[520px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{reviewVersion.content_snapshot}</pre>
+            <pre tabIndex={0} aria-label="Proposed skill instructions" className="mt-4 max-h-[520px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{reviewVersion.content_snapshot}</pre>
           </div>
           {proposal?.reviews?.length ? <div className="rounded-md border border-border bg-panel p-5"><h2 className="font-black">Review history</h2><div className="mt-4 space-y-3">{proposal.reviews.map((review) => <div key={review.id} className="rounded-sm border border-border bg-background p-3"><div className="flex flex-wrap justify-between gap-2 text-sm font-bold"><span>{review.decision === "published" ? "Published" : review.decision === "changes_requested" ? "Changes requested" : "Rejected"}</span><span className="text-xs font-normal text-muted-foreground">{review.reviewer_name} · {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(review.created_at))}</span></div>{review.note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.note}</p> : null}</div>)}</div></div> : null}
         </div>
@@ -119,7 +119,7 @@ function buildLineDiff(previous: string, current: string) {
 
 function DiffLine({ line }: { line: { kind: "same" | "added" | "removed"; value: string } }) {
   const prefix = line.kind === "added" ? "+ " : line.kind === "removed" ? "- " : "  ";
-  const color = line.kind === "added" ? "text-emerald-700" : line.kind === "removed" ? "text-red-700" : "text-muted-foreground";
+  const color = line.kind === "added" ? "text-primary" : line.kind === "removed" ? "text-red-700" : "text-muted-foreground";
   return <span className={`block ${color}`}>{prefix}{line.value || " "}</span>;
 }
 

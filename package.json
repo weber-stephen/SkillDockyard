@@ -51,6 +51,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",

@@ -18,6 +18,7 @@ export const sampleArtifacts: Artifact[] = [
     current_version_id: "ver_release_captain_current",
     approved_version_id: "ver_release_captain_previous",
     can_publish: true,
+    can_manage_shares: true,
     risk_count: 1,
     updated_at: now
   },

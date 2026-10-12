@@ -1,7 +1,7 @@
 "use client";
 
 import { ProductLink as Link } from "@/components/product-link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, ChevronDown, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,7 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
   const [step, setStep] = useState<1 | 2>(1);
   const [visibility, setVisibility] = useState<"private" | "workspace">("private");
   const [baselineSkillText, setBaselineSkillText] = useState("");
+  const skillTextRef = useRef<HTMLTextAreaElement>(null);
   const selectedArtifact = useMemo(() => artifacts.find((artifact) => artifact.id === artifactId) ?? null, [artifactId, artifacts]);
   const selectedDetail = useMemo(() => artifactDetails.find((detail) => detail.id === artifactId) ?? null, [artifactDetails, artifactId]);
   const canUpdate = Boolean(selectedArtifact?.can_propose_update);
@@ -145,7 +146,11 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
   function continueToDetails() {
     setError(null);
     if (mode === "update" && !artifactId) return setError("Choose the shared skill you want to update.");
-    if (skillText.trim().length < 20) return setError("Paste the full skill instructions before continuing.");
+    if (skillText.trim().length < 20) {
+      setError("Paste the full skill instructions before continuing.");
+      skillTextRef.current?.focus();
+      return;
+    }
     if (!changeSummary.trim()) return setError(mode === "update" ? "Tell reviewers what improved in this update." : "Tell reviewers why this skill should be shared.");
     setStep(2);
   }
@@ -239,9 +244,11 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
           <span className="block text-xs leading-5 text-muted-foreground">Reviewers see this before comparing detailed content.</span>
         </label> : null}
 
-        {step === 1 ? <label className="block space-y-2">
-          <span className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold">Skill instructions <Button type="button" size="sm" variant="outline" onClick={() => { if (!skillText.trim() || window.confirm("Replace the current instructions with the guided template?")) setSkillText(skillTemplate); }}>Use guided template</Button></span>
+        {step === 1 ? <div className="block space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold"><label htmlFor="skill-instructions">Skill instructions</label><Button type="button" size="sm" variant="outline" onClick={() => { if (!skillText.trim() || window.confirm("Replace the current instructions with the guided template?")) setSkillText(skillTemplate); }}>Use guided template</Button></div>
           <Textarea
+            ref={skillTextRef}
+            id="skill-instructions"
             className="min-h-72 font-mono text-xs leading-6"
             value={skillText}
             onChange={(event) => setSkillText(event.target.value)}
@@ -249,7 +256,7 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
           />
           <span className="block text-xs leading-5 text-muted-foreground">Do not paste passwords, API keys, customer data, or private tokens.</span>
           <WritingChecklist content={skillText} />
-        </label> : null}
+        </div> : null}
 
         {step === 2 ? <div className="rounded-md border border-border bg-background">
           <button
@@ -269,7 +276,7 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
           ) : null}
         </div> : null}
 
-        {error ? <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm font-semibold text-destructive">{error}</div> : null}
+        {error ? <div role="alert" className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm font-semibold text-destructive">{error}</div> : null}
         {result ? <SubmissionSuccess result={result} /> : null}
 
         <div className="flex flex-wrap gap-3">

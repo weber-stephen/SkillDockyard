@@ -95,7 +95,7 @@ export function ReviewActions({
           Reject update
         </Button>
       </div>
-      {message ? <p className="text-sm font-semibold text-muted-foreground">{message === "Publish decision recorded." ? "Published. Teammates can now download this version from the skill page." : message}</p> : null}
+      {message ? <p role="alert" className="text-sm font-semibold text-muted-foreground">{message === "Publish decision recorded." ? "Published. Teammates can now download this version from the skill page." : message}</p> : null}
     </div>
   );
 }

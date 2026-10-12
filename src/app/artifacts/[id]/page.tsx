@@ -13,12 +13,13 @@ import { SkillDownloadPanel } from "@/components/skill-download-panel";
 import { listSharableWorkspaces } from "@/lib/shares";
 import { ShareSkillPanel } from "@/components/share-skill-panel";
 import { PrivateDraftActions } from "@/components/private-draft-actions";
+import { getProductMode } from "@/lib/product-mode";
 
 export default async function ArtifactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const artifact = await getArtifactDetail(id);
   if (!artifact) notFound();
-  const sharableWorkspaces = artifact.can_manage_shares ? await listSharableWorkspaces() : [];
+  const sharableWorkspaces = artifact.can_manage_shares && (await getProductMode()) !== "demo" ? await listSharableWorkspaces() : [];
   const sharing = getSharingStatusView(artifact);
   const portable = getPortableSkillStatus(artifact);
   const hasPendingChange = Boolean(artifact.current_version_id && artifact.current_version_id !== artifact.approved_version_id);
@@ -63,7 +64,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             <h2 className="font-black">Current Skill</h2>
           </div>
           {artifact.current_version?.summary ? <p className="mb-4 text-sm leading-6 text-muted-foreground">{artifact.current_version.summary}</p> : null}
-          <pre className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
+          <pre tabIndex={0} aria-label="Current skill instructions" className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
         <aside className="min-w-0 space-y-4 xl:sticky xl:top-5">
           {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
