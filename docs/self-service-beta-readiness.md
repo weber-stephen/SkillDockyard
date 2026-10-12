@@ -19,7 +19,7 @@ Ratings reflect the repository and documented provider posture at the time of wr
 | Privacy and regional compliance | High (5/5) | Incomplete public disclosures, no finalized retention/rights process, and unresolved global-territory assessment. | Moderate-high until qualified counsel completes a fixed-scope review. |
 | User content and IP | High (4/5) | Users can add, publish, share, and download skill contents, but the Terms lack final content-license, liability, and dispute provisions. | Moderate after final Terms and clear content restrictions. |
 | Personal financial exposure | High (4/5) | Entity, insurance, and final liability allocation are not evidenced in the repository. | Requires owner/adviser decisions; code cannot remove this exposure. |
-| Operations and recovery | High (4/5) | Support ownership, Free Plan logical backups, and restore evidence are open. | Moderate after monitoring, backup, restore, and incident exercises are completed. |
+| Operations and recovery | High (4/5) | Support routing, Free Plan logical backups, and restore evidence are configured; support remains single-person coverage and rights/incident exercises remain open. | Moderate after independent backup coverage and the remaining exercises are completed. |
 | Unauthorized access | Moderate (3/5) | Server authorization, RLS, CAPTCHA, rate limits, hashed tokens, monitoring, and tests exist; residual account/session and user-content risk remains. | Moderate; keep security controls and test regressions. |
 
 ## Work to implement

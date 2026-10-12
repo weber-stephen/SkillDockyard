@@ -234,8 +234,8 @@ npm pack --dry-run
   - Requirement: Do not restore over production. Verify schema, migration history, RLS/function grants, and aggregate integrity checks after restoring the dump.
 - [x] **OPS-006 — P0 — Codex:** Create an incident and rollback runbook covering web rollback, migration incidents, secret rotation, token revocation, and customer communication.
   - Evidence: See [production-operations-runbook.md](production-operations-runbook.md).
-- [ ] **OPS-007 — P0 — Stephen:** Select, monitor, and publish a support email address.
-  - Required evidence: named primary owner, backup owner, security-incident escalation recipient, access test, and documented business-day monitoring procedure in the private records described by [public-beta-owner-runbook.md](public-beta-owner-runbook.md). Do not claim monitoring publicly until those are complete.
+- [x] **OPS-007 — P0 — Stephen:** Select, monitor, and publish a support email address.
+  - Evidence: On October 11, 2026, `support@skilldockyard.com` was configured with Namecheap Free Email Forwarding to Stephen's monitored inbox and Gmail was verified to send from that address through Resend SMTP. Stephen is the named primary owner, backup owner, and security-incident escalation recipient under the documented solo-maintainer exception; the single-person coverage risk is accepted and recorded in [support-email-runbook.md](support-email-runbook.md). The inbound and outbound paths were tested. Monitor each business day and recheck quarterly or after a provider, DNS, or account change. No destination address or credentials are recorded in the repository.
 - [x] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
   - Evidence: `/privacy`, `/terms`, and `/support` are linked publicly and included in the production build; legal approval remains OPS-009.
 - [ ] **OPS-009 — P0 — Stephen:** Obtain qualified-counsel review and written approval of the public-beta Privacy Policy, Terms, retention language, providers/subprocessors, and territorial posture. Global availability remains blocked pending a separate written approval.

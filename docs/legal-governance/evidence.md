@@ -7,7 +7,7 @@ This register contains references, not sensitive evidence. Use private record id
 | E-001 | 2026-10-05 | Production migration baseline | Supabase migration-history comparison through `20261005221243`. | Passed | Stephen/Codex | Legal-acceptance migration was later applied. |
 | E-002 | 2026-10-06 | Legal acceptance migration | `20261006044659_legal_acceptances` applied; table/RLS/browser-grant metadata verified. | Passed | Stephen/Codex | Keep migration history aligned. |
 | E-003 | 2026-10-06 | Backup before legal-acceptance migration | Stephen confirmed a production backup was completed. | Recorded | Stephen | Add private archive/evidence identifier and restore-test result. |
-| E-004 | — | OPS-007 support ownership | No private evidence recorded. | Open | Stephen | Assign and test primary, backup, and incident recipient. |
+| E-004 | 2026-10-11 | OPS-007 support ownership | Namecheap forwarding and Gmail/Resend sending-path test; operating procedure in [support-email-runbook.md](../support-email-runbook.md). No mailbox address or credentials recorded. | Closed | Stephen | Recheck quarterly and after a DNS, Namecheap, Gmail, or Resend change; assign independent backup coverage when available. |
 | E-005 | — | OPS-009 counsel review | No written approval reference recorded. | Open | Stephen + counsel | Record non-sensitive approval reference and scope. |
 | E-006 | — | OPS-010 deletion/export/retention/incident exercise | Procedure exists; completed exercise evidence not recorded. | Open | Stephen + Codex | Run exercises and record result IDs. |
 
