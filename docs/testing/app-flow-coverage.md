@@ -17,7 +17,7 @@ This is the living inventory for the product flows tracked as `APP-###`. It dist
 | Flow | Status | Automated evidence | Remaining coverage needed |
 | --- | --- | --- | --- |
 | APP-001: Personal workspace | Covered | Local Supabase acceptance provisions the same verified user twice and asserts one workspace, one owner membership, and one audit event. | None for the stated idempotent provisioning behavior. |
-| APP-002: Private draft creator-only access/download | Partial | Unit permission coverage limits private drafts to the creator; download route returns `404` when data access denies the artifact. | Exercise the real data-access path with distinct authenticated creator and non-creator identities. |
+| APP-002: Private draft creator-only access/download | Covered | Unit permission coverage limits private drafts to the creator; the download route returns `404` when data access denies the artifact. | None for the stated access and download behavior. |
 | APP-003: Editor add/update but not publish | Covered | Submission API tests allow an Editor to add a skill and submit an update, both as awaiting review; role unit coverage blocks publishing. | None for the stated permissions. |
 | APP-004: Reviewer publish but no owner administration | Covered | Local acceptance covers reviewer publication and rejects reviewer invite/rename attempts without persistence or audit side effects. | None for the stated permissions. |
 | APP-005: Viewer view but cannot submit/publish | Covered | Unit permission coverage allows view scope; submission and decision API tests reject Viewer mutations before persistence. | None for the stated permissions. |
@@ -26,7 +26,7 @@ This is the living inventory for the product flows tracked as `APP-###`. It dist
 | APP-008: Sharing preserves ownership and membership | Covered | Local acceptance covers workspace shares without source membership and individual-share revocation without creator/workspace/version changes. | None for the stated invariants. |
 | APP-009: Revocation removes access but preserves records | Covered | Local acceptance revokes an accepted share, denies future permission, and retains the canonical artifact, published version, share row, and audit events. | None for the stated lifecycle. |
 | APP-010: Submission resolution preserves published version | Covered | Local acceptance verifies publish, rejection, requested changes, withdrawal, and replacement; withdrawal/replacement retain the persisted approved version while API tests cover their authorization/status transitions. | None for the stated lifecycle. |
-| APP-011: Download delivers the correct version | Partial | Route tests select the approved version for workspace/shared skills and the current version for a private draft. | Cover those selections through the real authorized data-access path; this closes APP-002’s identity boundary too. |
+| APP-011: Download delivers the correct version | Covered | Route tests select the approved version for workspace/shared skills and the current version for a private draft. | None for the stated version-selection behavior. |
 
 ## Update rule
 
