@@ -37,7 +37,7 @@ from public.repos where id = '20000000-0000-0000-0000-000000000001';
 
 select throws_ok(
   $$ select public.create_artifact_share('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'outsider.acceptance@example.test', 'user', 'recipient.acceptance@example.test', null, null, 'view', false) $$,
-  '%owners or reviewers can share%',
+  '.*owners or reviewers can share.*',
   'an unrelated user cannot create a share'
 );
 select lives_ok(
