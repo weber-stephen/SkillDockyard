@@ -17,6 +17,8 @@ type TestUser = { id: string; email: string };
 type Fixture = {
   sourceOwner: TestUser;
   reviewer: TestUser;
+  editor: TestUser;
+  viewer: TestUser;
   individualRecipient: TestUser;
   workspaceMember: TestUser;
   outsider: TestUser;
@@ -50,9 +52,11 @@ async function addMembership(workspaceId: string, user: TestUser, role: Workspac
 
 async function createFixture(): Promise<Fixture> {
   const id = suffix();
-  const [sourceOwner, reviewer, individualRecipient, workspaceMember, outsider] = await Promise.all([
+  const [sourceOwner, reviewer, editor, viewer, individualRecipient, workspaceMember, outsider] = await Promise.all([
     createUser("source-owner", id),
     createUser("reviewer", id),
+    createUser("editor", id),
+    createUser("viewer", id),
     createUser("individual-recipient", id),
     createUser("workspace-member", id),
     createUser("outsider", id)
@@ -62,6 +66,8 @@ async function createFixture(): Promise<Fixture> {
   await Promise.all([
     addMembership(source.id, sourceOwner, "owner"),
     addMembership(source.id, reviewer, "reviewer"),
+    addMembership(source.id, editor, "editor"),
+    addMembership(source.id, viewer, "viewer"),
     addMembership(target.id, workspaceMember, "owner")
   ]);
   const repo = await must<{ id: string }>(await supabase.from("repos").insert({ workspace_id: source.id, name: `skills-${id}`, root_path: `/fixtures/${id}`, default_branch: "main" }).select("id").single());
@@ -73,7 +79,7 @@ async function createFixture(): Promise<Fixture> {
     type: "claude_skill",
     path: `skills/release-safety-${id}/SKILL.md`,
     description: "Acceptance fixture",
-    owner: "Source workspace",
+    owner: null,
     status: "approved",
     visibility: "workspace",
     created_by_user_id: sourceOwner.id
@@ -90,7 +96,7 @@ async function createFixture(): Promise<Fixture> {
   }).select("id").single());
   const persisted = await must<Artifact>(await supabase.from("artifacts").update({ current_version_id: version.id, approved_version_id: version.id }).eq("id", artifactRow.id).select("*").single());
   const artifact: Artifact = { ...persisted, repo_name: repo.id, risk_count: 0 };
-  return { sourceOwner, reviewer, individualRecipient, workspaceMember, outsider, sourceWorkspaceId: source.id, targetWorkspaceId: target.id, artifact, publishedVersionId: version.id };
+  return { sourceOwner, reviewer, editor, viewer, individualRecipient, workspaceMember, outsider, sourceWorkspaceId: source.id, targetWorkspaceId: target.id, artifact, publishedVersionId: version.id };
 }
 
 async function createCandidateProposal(fixture: Fixture, id: string, supersedesProposalId: string | null = null) {
@@ -265,6 +271,34 @@ describe("local Supabase skill sharing and update lifecycle", () => {
     expect(audits.map((audit) => audit.event_type)).not.toContain("workspace_renamed");
   });
 
+  /** Scenario: APP-003 through APP-005; role permissions are server-enforced, not UI-only. */
+  it("allows editors to submit but denies editors and viewers server-side sharing or publishing authority", async () => {
+    const fixture = await createFixture();
+    const memberships = [
+      { id: "reviewer", workspace_id: fixture.sourceWorkspaceId, user_id: fixture.reviewer.id, email: fixture.reviewer.email, role: "reviewer" as const, created_at: new Date().toISOString() },
+      { id: "editor", workspace_id: fixture.sourceWorkspaceId, user_id: fixture.editor.id, email: fixture.editor.email, role: "editor" as const, created_at: new Date().toISOString() },
+      { id: "viewer", workspace_id: fixture.sourceWorkspaceId, user_id: fixture.viewer.id, email: fixture.viewer.email, role: "viewer" as const, created_at: new Date().toISOString() }
+    ];
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships, workspaces: [], shares: [], userId: fixture.reviewer.id })).toMatchObject({ canProposeUpdate: true, canPublish: true, canManageShares: true });
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships, workspaces: [], shares: [], userId: fixture.editor.id })).toMatchObject({ canProposeUpdate: true, canPublish: false, canManageShares: false });
+    expect(computeArtifactPermission({ artifact: fixture.artifact, memberships, workspaces: [], shares: [], userId: fixture.viewer.id })).toMatchObject({ canProposeUpdate: false, canPublish: false, canManageShares: false });
+
+    const denied = await Promise.all([fixture.editor, fixture.viewer].map((actor) => supabase.rpc("create_artifact_share", {
+      p_artifact_id: fixture.artifact.id,
+      p_actor_user_id: actor.id,
+      p_actor_email: actor.email,
+      p_target_type: "user",
+      p_target_email: fixture.outsider.email,
+      p_target_workspace_id: null,
+      p_target_workspace_name: null,
+      p_permission: "view",
+      p_activate: false
+    })));
+    for (const result of denied) expect(result.error?.message).toContain("owners or reviewers can share");
+    const shares = await must<Array<{ id: string }>>(await supabase.from("artifact_shares").select("id").eq("artifact_id", fixture.artifact.id));
+    expect(shares).toEqual([]);
+  });
+
   /** Scenario: SC-003; Requirement: REQ-3 unshared skills deny access. */
   it("does not grant an unshared user skill access or update permission", async () => {
     const fixture = await createFixture();
@@ -301,7 +335,7 @@ describe("local Supabase skill sharing and update lifecycle", () => {
   });
 
   /** Scenario: SC-004; Requirement: REQ-4 accepted skill update. */
-  it("publishes a submitted update only through the reviewer decision and records its audit history", async () => {
+  it("publishes a submitted update with no maintainer metadata only through the reviewer decision and records its audit history", async () => {
     const fixture = await createFixture();
     const candidate = await createCandidateProposal(fixture, suffix());
     const decision = await must<{ proposalId: string; status: string }>(await supabase.rpc("decide_proposal", { p_proposal_id: candidate.proposalId, p_reviewer_user_id: fixture.reviewer.id, p_reviewer_name: fixture.reviewer.email, p_decision: "published", p_note: "Ready to publish." }));

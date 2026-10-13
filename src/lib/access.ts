@@ -63,7 +63,7 @@ export function computeArtifactPermission(input: {
   shares: ArtifactShare[];
   userId: string;
 }) {
-  const membership = input.memberships.find((item) => item.workspace_id === input.artifact.workspace_id) ?? null;
+  const membership = input.memberships.find((item) => item.workspace_id === input.artifact.workspace_id && item.user_id === input.userId) ?? null;
   const sourceWorkspace = input.workspaces.find((workspace) => workspace.id === input.artifact.workspace_id) ?? null;
   const isPrivate = input.artifact.visibility === "private";
   const isPrivateCreator = isPrivate && input.artifact.created_by_user_id === input.userId;

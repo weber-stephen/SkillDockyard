@@ -117,6 +117,10 @@ Browser-safe values use `NEXT_PUBLIC_`. Everything else is server-only:
 
 Local values belong in `.env.local`. Production values belong in Vercel. Never commit populated environment files or copy secrets into documentation.
 
+## Local acceptance environment
+
+`npm run test:acceptance` starts a disposable Docker-backed Supabase stack from `supabase/config.toml`, resets it from committed migrations, and discovers its API keys and local email-capture URL with `supabase status --output env`. The runner supplies those values only to child processes, builds the test app with the matching local canonical origin, and creates synthetic verified identities and data per test. It never reads production configuration, calls Resend, or writes populated environment files. Docker Desktop is required locally; GitHub Actions runs the same stack for the required acceptance gate.
+
 ## Change protocol for agents
 
 Before changing a feature:
