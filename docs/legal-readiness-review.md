@@ -1,4 +1,4 @@
-# Legal-readiness review — closed B2B pilot
+# Legal-readiness review — public test
 
 **Status:** Working launch-review package. This is not legal advice and is not attorney-approved.
 
@@ -6,7 +6,7 @@ The current source of truth for legal decisions, risks, document status, provide
 
 **Review date:** October 5, 2026  
 **Product:** Skill Dockyard  
-**Current launch posture:** Closed, invite-only, business-use-oriented pilot for adults. The next planned posture is a self-service beta; its implementation and unresolved owner/counsel gates are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). Public self-service signup and global availability are currently blocked. There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
+**Current launch posture:** Public, business-use-oriented test for adults. It is not an invite-only pilot or a broad commercial launch. The unresolved owner/counsel gates for self-service and broader availability are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
 
 Every item marked **Requires counsel/owner decision** must be resolved before it is represented as final public legal language or the service is opened broadly.
 

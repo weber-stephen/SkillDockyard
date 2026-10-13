@@ -10,9 +10,8 @@ Launch Skill Dockyard at **[https://skilldockyard.com](https://skilldockyard.com
 - patched dependencies and repeatable release gates;
 - server-enforced workspace, skill, sharing, and review permissions;
 - verified Supabase migrations, RLS, auth, and email delivery;
-- a published connected-computer CLI;
 - monitoring, backups, support, and rollback procedures; and
-- a controlled first-user rollout with explicit go/no-go criteria.
+- a public test with clearly documented residual risks.
 
 ## Non-negotiable constraints
 
@@ -33,10 +32,10 @@ Launch Skill Dockyard at **[https://skilldockyard.com](https://skilldockyard.com
 | GitHub settings | Prepares workflow and exact instructions | Enables settings if account access is required |
 | Supabase production | Prepares migrations, queries, and tests | Authorizes production application and provider settings |
 | Vercel and DNS | Prepares code/config and verifies responses | Controls project, registrar, billing, and public access |
-| npm | Builds, tests, and prepares release | Owns npm identity/token or trusted-publisher authorization |
+| npm and CLI | Retains existing packaging checks | Deferred from this public test |
 | SMTP, monitoring, rate-limit provider | Integrates selected provider | Selects/purchases provider and supplies scoped secrets |
 | Legal and trademark | Adds approved pages and links | Owns professional review and final approval |
-| Go-live | Runs technical verification | Makes final go/no-go decision |
+| Public test | Runs technical verification | Records residual-risk decisions where needed |
 
 ## Execution strategy
 
@@ -48,8 +47,7 @@ Recommended pull-request boundaries:
 2. Database migrations and atomic workspace provisioning.
 3. API security, audit atomicity, headers, and distributed rate limiting.
 4. Password recovery, email flows, legal/support routes, and accessibility terminology pass.
-5. CLI packaging and release automation.
-6. Production platform configuration, monitoring, E2E acceptance, and launch runbooks.
+5. Production platform configuration, monitoring, E2E acceptance, and launch runbooks.
 
 ## Phase 0 — Establish a safe baseline
 
@@ -80,8 +78,8 @@ Recommended pull-request boundaries:
 
 ### Stephen actions
 
-1. Choose invite-only pilot or unrestricted self-service signup.
-2. Identify the initial production testers without committing their personal information.
+1. Confirm that the current rollout is a public test, not an invite-only pilot or broad commercial launch.
+2. Identify any test accounts without committing personal information.
 3. Confirm whether existing uncommitted migration work is intended for this launch.
 
 ### Exit criteria
@@ -282,9 +280,11 @@ This repository uses imperative SQL migrations. Use the installed Supabase CLI's
 - Legal/support links are present and approved.
 - Critical flows pass keyboard, mobile, and automated accessibility checks.
 
-## Phase 5 — Package and publish the connected-computer CLI
+## Deferred work — Package and publish the connected-computer CLI
 
-**Checklist:** `CLI-001` through `CLI-010`
+**Checklist:** `CLI-001` through `CLI-010` (deferred from the public test)
+
+Do not configure npm publishing, publish a package, or make public `npx` commands part of this release. Retain this phase as the future CLI-release plan.
 
 ### Codex actions
 
@@ -330,7 +330,7 @@ Use a temporary test account and never commit the pairing code or resulting toke
 - Token revocation immediately prevents future CLI access.
 - A local modification blocks overwrite and gives a useful recovery path.
 
-## Phase 6 — Configure Vercel, DNS, and the canonical domain
+## Phase 5 — Configure Vercel, DNS, and the canonical domain
 
 **Checklist:** `LAUNCH-003`, `PLAT-001` through `PLAT-010`, `DATA-013`, `DATA-014`
 
@@ -377,7 +377,7 @@ Add provider-specific server-only variables for rate limiting, SMTP, error monit
 - Keep the previous known-good Vercel deployment identifiable by commit SHA.
 - A web rollback must not assume a database down-migration. Confirm schema compatibility before promoting an older deployment.
 
-## Phase 7 — Add observability, backup verification, and incident response
+## Phase 6 — Add observability, backup verification, and incident response
 
 **Checklist:** `OPS-001` through `OPS-006`, `OPS-011`
 
@@ -413,7 +413,7 @@ Add provider-specific server-only variables for rate limiting, SMTP, error monit
 - A restore/rollback exercise is documented and understood.
 - The incident runbook is sufficient for someone other than its author to follow.
 
-## Phase 8 — Run production acceptance with a role matrix
+## Phase 7 — Run production acceptance with a role matrix
 
 **Checklist:** `APP-002` through `APP-012`, `QA-001` through `QA-006`
 
@@ -440,7 +440,7 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 6. **Individual sharing:** Exercise **Can view**, **Can submit updates**, accept, decline, and revoke.
 7. **Workspace sharing:** Confirm acceptance requires the invited workspace's accountable owner and does not transfer ownership or create membership.
 8. **Downloads:** Confirm private and published version selection and ZIP contents.
-9. **Connected computer:** Pair, import, check, install an update, detect local changes, revoke the token, and confirm denial afterward.
+9. **Connected computer:** Deferred; the CLI is not part of this public test.
 10. **Audit/notifications:** Verify required events and notifications without exposing data to unrelated users.
 11. **Exports:** Verify only accessible skills appear and CSV/JSON output cannot inject spreadsheet formulas or leak internal-only data.
 12. **Responsive/accessibility:** Repeat the primary journey with keyboard only and at mobile width.
@@ -448,21 +448,21 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 ### Exit criteria
 
 - Every scenario has a dated pass/fail record.
-- No P0/P1 defect remains open.
+- No unresolved defect invalidates the verified scenario.
 - Audit history and production logs support the observed outcomes.
-- The rollback exercise succeeds before invitations are sent.
+- The rollback exercise succeeds before materially expanding the public test.
 
-## Phase 9 — Launch and controlled rollout
+## Phase 8 — Public-test operation
 
-**Checklist:** `QA-007`, `QA-008`, `POST-001` through `POST-005`, `LAUNCH-005`
+**Checklist:** `POST-001` through `POST-005`
 
 ### Release preparation
 
 1. Freeze non-launch changes.
 2. Confirm all P0 checklist items are complete.
-3. Record production commit, deployment, migration, web, and CLI versions.
+3. Record deployment and migration evidence where the relevant checklist item requires it.
 4. Confirm monitoring, support coverage, and rollback target.
-5. Make the explicit go/no-go decision.
+5. Record any residual-risk decision required by legal or operational gates.
 
 ### Launch procedure
 
@@ -471,19 +471,16 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 3. Run canonical-domain smoke checks.
 4. Apply only migrations not already applied, following the approved migration procedure.
 5. Run post-migration integrity checks and advisors.
-6. Publish the approved CLI version if not already published.
-7. Run the full new-user-to-CLI acceptance journey once more.
-8. Record **GO** only if every P0 check passes.
-9. Invite the named pilot cohort; do not open unrestricted signup unless that was the approved rollout mode.
+6. Run the applicable new-user acceptance journey; CLI steps are deferred.
+7. Keep unresolved P0 risks visible while the service remains a public test.
 
 ### Stop and rollback triggers
 
-Declare **NO-GO** or halt invitations when any of the following occurs:
+Pause signup or affected functionality when any of the following occurs:
 
 - cross-workspace or private-draft data exposure;
 - ownership inconsistency or unauthorized publishing;
 - broken signup, confirmation, recovery, or invitation flow;
-- production CLI cannot connect/import/update safely;
 - critical/high reachable vulnerability without approved mitigation;
 - unavailable monitoring, backup, or rollback path;
 - canonical domain or TLS failure; or
@@ -495,8 +492,8 @@ Rollback web traffic to the previous compatible Vercel deployment. Disable the a
 
 - Watch error, auth, email, database, rate-limit, import, publish, download, and update metrics.
 - Review denied requests for both abuse and false-positive authorization failures.
-- Contact pilot users for task-level feedback.
-- Hold 24-hour and 72-hour reviews before expanding the cohort.
+- Collect public-test feedback at the task level.
+- Hold 24-hour and 72-hour operational reviews before materially expanding the test.
 - Convert findings into prioritized issues and rerun affected acceptance scenarios after each fix.
 
 ## Final definition of done
@@ -507,7 +504,6 @@ Production launch is complete only when:
 2. `https://skilldockyard.com` is canonical, public, monitored, and recoverable;
 3. the production database matches committed migrations and passes integrity/advisor checks;
 4. automated and manual role-matrix tests pass;
-5. the CLI is publicly installable and works against production;
-6. support, legal, backup, monitoring, and incident ownership are defined; and
-7. Stephen records an explicit **GO** decision and the initial users can complete the promised workflow.
+5. support, legal, backup, monitoring, and incident ownership are defined; and
+6. public-test users can complete the promised web workflow.
 
