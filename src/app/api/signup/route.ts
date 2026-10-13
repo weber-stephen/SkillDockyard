@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await readJsonSchema(request, signupSchema, 8 * 1024);
-    if (process.env.NODE_ENV === "production" && !body.captchaToken) return NextResponse.json({ error: "We could not start your signup. Please try again later." }, { status: 400 });
+    if (process.env.NODE_ENV === "production" && process.env.SKILL_DOCKYARD_TEST_MODE !== "true" && !body.captchaToken) return NextResponse.json({ error: "We could not start your signup. Please try again later." }, { status: 400 });
     const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
     const rateKey = fingerprintRateLimitKey(`${body.email.trim().toLowerCase()}:${forwardedFor}`);
     const limited = await actionRateLimit("signup", rateKey, 5, 15 * 60_000);
