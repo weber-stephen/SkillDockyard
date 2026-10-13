@@ -30,6 +30,7 @@ export default defineConfig({
     timeout: 30_000,
     env: {
       ...process.env,
+      NEXT_PUBLIC_SITE_URL: `http://${host}:${port}`,
       NEXT_PUBLIC_SUPABASE_URL: "",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "",

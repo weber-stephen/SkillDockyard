@@ -31,6 +31,22 @@ Open [http://localhost:3000](http://localhost:3000). The public landing page exp
 
 Run the fast unit suite with `npm test`. It covers skill validation plus server-side authorization, invitation, sharing, and submission decision boundaries with mocked Supabase RPC contracts. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down. Run `npx playwright install chromium` once, then `npm run test:browser` to exercise the demo browse, navigation, review, and submission journeys against that production build. The browser suite also maintains deterministic screenshots for the demo Skills and review pages; CI uploads traces, screenshots, and the HTML report when a browser test fails.
 
+### Required local acceptance gate
+
+The merge gate also runs against a disposable local Supabase stack. Docker Desktop is required locally; no production account, email address, database, or secret is used. Start the stack and reset it from committed migrations, then run the same checks used in CI:
+
+```bash
+npx supabase start
+npx supabase db reset --yes
+npm run test:db
+npm run test:acceptance
+npx playwright install chromium
+npm run test:browser:acceptance
+npx supabase stop --no-backup
+```
+
+`test:browser:acceptance` captures confirmation email through the local Mailpit inbox and exercises signup plus folder/ZIP import. `CI / verify` requires these checks to pass before a pull request can merge to `main`.
+
 ### Production launch
 
 Use [the production launch checklist](docs/production-launch-checklist.md) to track go-live readiness for Codex and human owners. Follow [the production launch implementation plan](docs/production-launch-plan.md) for the ordered engineering, Supabase, Vercel, DNS, npm, monitoring, acceptance, and rollback work. The canonical production domain is `https://skilldockyard.com`.
