@@ -42,10 +42,9 @@ async function createPrivateSkill(user: Awaited<ReturnType<typeof createConfirme
 }
 
 async function login(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Log in" }).click();
+  const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+  if (error || !data.properties.hashed_token) throw new Error(error?.message ?? "Could not create a local browser session");
+  await page.goto(`/auth/confirm?token_hash=${encodeURIComponent(data.properties.hashed_token)}&type=magiclink&next=/app`);
   await expect(page).toHaveURL(/\/app/);
 }
 
