@@ -102,58 +102,20 @@ export async function POST(request: Request) {
       });
     }
 
-    const { data: pendingProposal, error: pendingProposalError } = await supabase
-      .from("proposals")
-      .select("id, candidate_version_id, status")
-      .eq("artifact_id", ingested.artifactId)
-      .eq("status", "pending_review")
-      .maybeSingle();
-    if (pendingProposalError) throw pendingProposalError;
-
-    // A browser retry can arrive after the proposal was persisted but before the
-    // success response reached the client. Treat that retry as idempotent.
-    if (pendingProposal?.candidate_version_id === ingested.versionId) {
-      return NextResponse.json({
-        mode: "supabase",
-        saved: true,
-        visibility: "workspace",
-        message: "This skill is already waiting for review.",
-        artifactId: ingested.artifactId,
-        versionId: ingested.versionId,
-        proposalId: pendingProposal.id,
-        proposalStatus: "pending_review",
-        compareHref: `/artifacts/${ingested.artifactId}/review`,
-        trustNotes: submission.artifact.risks.length
-      });
-    }
-
-    if (pendingProposal?.status === "pending_review") {
-      await supabase
-        .from("proposals")
-        .update({ status: "superseded", resolved_by_user_id: viewer.user.id, resolved_at: new Date().toISOString(), resolution_note: "Superseded by a newer submission." })
-        .eq("id", pendingProposal.id)
-        .eq("status", "pending_review");
-    }
-    const { data: proposal, error: proposalError } = await supabase
-      .from("proposals")
-      .insert({
-        artifact_id: ingested.artifactId,
-        candidate_version_id: ingested.versionId,
-        base_version_id: existingArtifact?.approved_version_id ?? null,
-        workspace_id: result.workspaceId,
-        submitted_by_user_id: viewer.user.id,
-        submitter_email: viewer.user.email ?? null,
-        source_share_id: existingArtifact?.source_share_id ?? null,
-        supersedes_proposal_id: pendingProposal?.id ?? existingArtifact?.current_proposal?.id ?? null,
-        kind: body.mode === "update" ? "update" : "new",
-        status: "pending_review"
-      })
-      .select("id")
-      .single();
+    const { data: proposalResult, error: proposalError } = await supabase.rpc("submit_artifact_proposal", {
+      p_artifact_id: ingested.artifactId,
+      p_candidate_version_id: ingested.versionId,
+      p_actor_user_id: viewer.user.id,
+      p_actor_email: viewer.user.email ?? "",
+      p_kind: body.mode === "update" ? "update" : "new",
+      p_source_share_id: existingArtifact?.source_share_id ?? null
+    });
     if (proposalError) throw proposalError;
+    const proposal = proposalResult as { proposalId?: string; idempotent?: boolean } | null;
+    if (!proposal?.proposalId) throw new Error("The submission could not be recorded.");
 
     await createProposalNotifications(supabase, {
-      proposalId: proposal.id,
+      proposalId: proposal.proposalId,
       workspaceId: result.workspaceId,
       artifactName: submission.artifact.artifact.name,
       submitterId: viewer.user.id
@@ -166,7 +128,7 @@ export async function POST(request: Request) {
       message: submission.successMessage,
       artifactId: ingested.artifactId,
       versionId: ingested.versionId,
-      proposalId: proposal.id,
+      proposalId: proposal.proposalId,
       proposalStatus: "pending_review",
       compareHref: `/artifacts/${ingested.artifactId}/review`,
       trustNotes: submission.artifact.risks.length

@@ -18,10 +18,13 @@ export async function GET(request: Request) {
 
   if (hasSupabaseConfig() && !demo) {
     const supabase = createServerSupabase();
-    const { error } = await supabase.from("export_runs").insert({
-      workspace_id: await ensureWorkspaceId(),
-      format,
-      artifact_count: rows.length
+    const user = await requireUser();
+    const { error } = await supabase.rpc("record_workspace_export", {
+      p_workspace_id: await ensureWorkspaceId(),
+      p_actor_user_id: user.id,
+      p_actor_email: user.email ?? "",
+      p_format: format,
+      p_artifact_count: rows.length
     });
     if (error) return NextResponse.json({ error: "The skill list could not be recorded for download." }, { status: 500 });
   }

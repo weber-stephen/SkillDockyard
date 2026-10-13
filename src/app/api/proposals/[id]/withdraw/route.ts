@@ -7,15 +7,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   const { user } = await getViewerContext();
   const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from("proposals")
-    .update({ status: "withdrawn", resolved_by_user_id: user.id, resolved_at: new Date().toISOString(), resolution_note: "Withdrawn by submitter." })
-    .eq("id", id)
-    .eq("submitted_by_user_id", user.id)
-    .eq("status", "pending_review")
-    .select("id")
-    .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  if (!data) return NextResponse.json({ error: "Only awaiting-review submissions you created can be withdrawn." }, { status: 409 });
-  return NextResponse.json({ ok: true, proposalId: id, status: "withdrawn" });
+  const { data, error } = await supabase.rpc("withdraw_proposal", {
+    p_proposal_id: id,
+    p_actor_user_id: user.id,
+    p_actor_email: user.email ?? ""
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+  return NextResponse.json({ ok: true, ...(data ?? { proposalId: id, status: "withdrawn" }) });
 }
