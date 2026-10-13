@@ -76,7 +76,7 @@ export function detectRisks(input: RiskRuleInput): DetectedRisk[] {
     risks.push({
       kind: "missing_owner",
       severity: "low",
-      message: "Assign an owner before publishing this skill.",
+      message: "Consider naming a maintainer so teammates know who to contact with questions.",
       evidence: null
     });
   }

@@ -26,6 +26,7 @@ jobs:
       - run: npm test
       - run: npx supabase start
       - run: npx supabase db reset --yes
+      - run: npm run test:db
       - name: Run local Supabase acceptance tests
         run: |
           set -a
@@ -45,6 +46,9 @@ jobs:
             sleep 2
           done
           npm run test:acceptance
+      - run: npx playwright install --with-deps chromium
+      - name: Run authenticated browser acceptance tests
+        run: npm run test:browser:acceptance
       - name: Stop local Supabase
         if: always()
         run: npx supabase stop --no-backup
@@ -58,6 +62,7 @@ jobs:
           name: playwright-report
           path: |
             playwright-report
+            playwright-acceptance-report
             test-results
           if-no-files-found: ignore
       - run: npm audit --omit=dev --audit-level=high
