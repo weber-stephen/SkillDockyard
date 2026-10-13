@@ -87,6 +87,7 @@ jobs:
         run: npx supabase stop --no-backup
 
   verify:
+    name: CI / verify
     if: ${{ always() }}
     needs: [fast, acceptance]
     runs-on: ubuntu-latest
