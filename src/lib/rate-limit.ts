@@ -40,7 +40,7 @@ export async function consumeRateLimit(key: string, limit: number, windowMs: num
     const result = await limiter.limit(key);
     return { allowed: result.success, retryAfterSeconds: result.success ? 0 : Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)) };
   }
-  if (process.env.NODE_ENV === "production") throw new RateLimitConfigurationError();
+  if (process.env.NODE_ENV === "production" && process.env.SKILL_DOCKYARD_TEST_MODE !== "true") throw new RateLimitConfigurationError();
   return consumeLocalRateLimit(key, limit, windowMs, now);
 }
 
