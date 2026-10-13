@@ -31,6 +31,19 @@ Open [http://localhost:3000](http://localhost:3000). The public landing page exp
 
 Run the fast unit suite with `npm test`. It covers skill validation plus server-side authorization, invitation, sharing, and submission decision boundaries with mocked Supabase RPC contracts. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down. Run `npx playwright install chromium` once, then `npm run test:browser` to exercise the demo browse, navigation, review, and submission journeys against that production build. The browser suite also maintains deterministic screenshots for the demo Skills and review pages; CI uploads traces, screenshots, and the HTML report when a browser test fails.
 
+### Local acceptance gate
+
+Install and start Docker Desktop before running local acceptance tests. The suite starts a disposable local Supabase stack, applies every repository migration, captures confirmation email in local Mailpit, and uses only generated `@example.test` accounts. It never reads production Supabase, Resend, or local secret files.
+
+```bash
+npm run test:db                  # executable pgTAP authorization and audit tests
+npm run test:email               # signup confirmation through local Mailpit
+npm run test:connected-computer  # packaged updater refuses local edits
+npm run test:acceptance          # complete local launch acceptance gate
+```
+
+The test runner discovers local URLs and keys from `supabase status --output env`; do not copy those values into `.env.local`. Real Resend deliverability remains a manual post-deploy smoke check.
+
 ### Production launch
 
 Use [the production launch checklist](docs/production-launch-checklist.md) to track go-live readiness for Codex and human owners. Follow [the production launch implementation plan](docs/production-launch-plan.md) for the ordered engineering, Supabase, Vercel, DNS, npm, monitoring, acceptance, and rollback work. The canonical production domain is `https://skilldockyard.com`.
