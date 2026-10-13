@@ -1,7 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { safeLocalPath } from "@/lib/safe-redirect";
+import { contentSecurityPolicy } from "@/proxy";
+
+const originalSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+afterEach(() => {
+  if (originalSupabaseUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = originalSupabaseUrl;
+});
 
 describe("production security controls", () => {
   it("rejects external and ambiguous continuation paths", () => {
@@ -21,6 +29,16 @@ describe("production security controls", () => {
     expect(source).toContain("allowed.has(origin)");
     expect(source).toContain("https://www.googletagmanager.com");
     expect(source).toContain("https://www.google-analytics.com");
+  });
+
+  it("permits the configured Supabase origin for browser authentication", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "http://127.0.0.1:54321";
+
+    const policy = contentSecurityPolicy("test-nonce");
+
+    expect(policy).toContain("connect-src 'self' https://*.supabase.co wss://*.supabase.co");
+    expect(policy).toContain("http://127.0.0.1:54321");
+    expect(policy).toContain("ws://127.0.0.1:54321");
   });
 
   it("keeps server credentials out of public environment names", () => {

@@ -39,10 +39,11 @@ Install and start Docker Desktop before running local acceptance tests. The suit
 npm run test:db                  # executable pgTAP authorization and audit tests
 npm run test:email               # signup confirmation through local Mailpit
 npm run test:connected-computer  # packaged updater refuses local edits
+npm run test:browser:acceptance  # authenticated signup and private-draft import
 npm run test:acceptance          # complete local launch acceptance gate
 ```
 
-The test runner discovers local URLs and keys from `supabase status --output env`; do not copy those values into `.env.local`. Real Resend deliverability remains a manual post-deploy smoke check.
+The test runner discovers local URLs and keys from `supabase status --output env`; do not copy those values into `.env.local`. `CI / verify` requires the complete local acceptance gate before a pull request can merge to `main`. Real Resend deliverability remains a manual post-deploy smoke check.
 
 ### Production launch
 

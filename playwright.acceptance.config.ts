@@ -4,9 +4,13 @@ const host = "127.0.0.1";
 const port = Number(process.env.ACCEPTANCE_TEST_PORT ?? 4319);
 const baseURL = `http://${host}:${port}`;
 
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("Acceptance browser tests require the local Supabase environment. Run through npm run test:acceptance.");
+}
+
 export default defineConfig({
-  testDir: "./tests/acceptance",
-  testMatch: "**/*.spec.ts",
+  testDir: "./tests",
+  testMatch: ["**/acceptance/**/*.spec.ts", "**/acceptance-browser/**/*.spec.ts"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
@@ -19,6 +23,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: false,
     timeout: 60_000,
-    env: { ...process.env, NEXT_PUBLIC_SITE_URL: baseURL }
+    env: { ...process.env, NEXT_PUBLIC_SITE_URL: baseURL, SELF_SERVICE_SIGNUP_ENABLED: "true" }
   }
 });

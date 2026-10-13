@@ -41,6 +41,7 @@ jobs:
           name: fast-browser-artifacts
           path: |
             playwright-report
+            playwright-acceptance-report
             test-results
           if-no-files-found: ignore
 

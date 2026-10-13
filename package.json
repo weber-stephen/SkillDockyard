@@ -28,6 +28,7 @@
     "test:email": "tsx scripts/run-acceptance.ts email",
     "test:connected-computer": "tsx scripts/run-acceptance.ts connected-computer",
     "test:acceptance": "tsx scripts/run-acceptance.ts all",
+    "test:browser:acceptance": "tsx scripts/run-acceptance.ts browser",
     "typecheck": "tsc --noEmit",
     "cli:build": "tsup \"src/cli/index.ts\" \"src/cli/commands/**/*.ts\" --format cjs --target node22 --out-dir dist --clean",
     "cli": "npm run cli:build --silent && node bin/run.js",

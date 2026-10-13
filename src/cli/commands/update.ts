@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Args, Command, Flags } from "@oclif/core";
-import { api, hashContent, installRoot, readState, writeState, type CliInstall } from "@/cli/state";
+import { api, hashContent, installRoot, isSkillReplacementUnsafe, readState, writeState, type CliInstall } from "@/cli/state";
 
 type SkillPayload = { artifactId: string; versionId: string; slug: string; contentHash: string; content: string };
 
@@ -17,19 +17,16 @@ export default class Update extends Command {
     const uniqueTargets = [...new Map(targets.map((item) => [`${item.artifactId}:${item.target}`, item])).values()];
     for (const { artifactId, target } of uniqueTargets) {
       const existing = state.installs.find((item) => item.artifactId === artifactId && item.target === target);
-      if (existing && fs.existsSync(existing.path) && hashContent(fs.readFileSync(existing.path, "utf8")) !== existing.contentHash) {
+      if (existing && isSkillReplacementUnsafe(existing.path, existing.contentHash)) {
         this.warn(`${existing.slug} has local changes. It was not downloaded or overwritten.`);
         continue;
       }
       const payload = await api<SkillPayload>(state, `/api/cli/skills/${artifactId}?target=${target}`);
       const destination = path.join(installRoot(target), payload.slug);
       const skillFile = path.join(destination, "SKILL.md");
-      if (fs.existsSync(skillFile)) {
-        const currentHash = hashContent(fs.readFileSync(skillFile, "utf8"));
-        if (!existing || currentHash !== existing.contentHash) {
-          this.warn(`${payload.slug} has local changes or was not installed by this CLI. It was not overwritten.`);
-          continue;
-        }
+      if (isSkillReplacementUnsafe(skillFile, existing?.contentHash)) {
+        this.warn(`${payload.slug} has local changes or was not installed by this CLI. It was not overwritten.`);
+        continue;
       }
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       const temporary = `${destination}.skill-dockyard-${process.pid}`;
