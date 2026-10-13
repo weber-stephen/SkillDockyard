@@ -19,7 +19,10 @@ function capture(command: string, args: string[]) {
 function parseEnv(value: string): LocalEnv {
   return Object.fromEntries(value.split(/\r?\n/).flatMap((line) => {
     const separator = line.indexOf("=");
-    return separator > 0 ? [[line.slice(0, separator), line.slice(separator + 1)]] : [];
+    if (separator <= 0) return [];
+    const raw = line.slice(separator + 1).trim();
+    const unquoted = raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw;
+    return [[line.slice(0, separator), unquoted]];
   }));
 }
 
