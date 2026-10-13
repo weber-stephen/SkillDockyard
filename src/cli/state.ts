@@ -28,6 +28,12 @@ export function newDeviceId() { return crypto.randomUUID(); }
 export function hashContent(content: string) { return `sha256:${crypto.createHash("sha256").update(content).digest("hex")}`; }
 export function installRoot(target: "codex" | "claude-code") { return path.join(os.homedir(), target === "codex" ? ".codex" : ".claude", "skills"); }
 
+/** A locally edited or unmanaged skill is never safe for an automated replacement. */
+export function isSkillReplacementUnsafe(skillFile: string, recordedHash: string | null | undefined) {
+  if (!fs.existsSync(skillFile)) return false;
+  return !recordedHash || hashContent(fs.readFileSync(skillFile, "utf8")) !== recordedHash;
+}
+
 export async function api<T>(state: Pick<CliState, "endpoint" | "token">, pathname: string, init: RequestInit = {}) {
   const response = await fetch(`${state.endpoint.replace(/\/$/, "")}${pathname}`, { ...init, headers: { "Content-Type": "application/json", Authorization: `Bearer ${state.token}`, ...(init.headers ?? {}) } });
   const body = await response.json().catch(() => ({}));
