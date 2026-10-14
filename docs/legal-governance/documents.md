@@ -2,9 +2,9 @@
 
 | Document | Public route | Current version / status | Owner | Required before final publication |
 | --- | --- | --- | --- | --- |
-| Privacy Policy | `/privacy` | Versioned in code; provisional, not attorney-approved. | Stephen | Legal entity/contact, processing map, providers, regional rights, retention, transfers, security/incident wording, counsel approval. |
+| Privacy Policy | `/privacy` | Versioned in code; provisional, not attorney-approved; it includes a consent-gated analytics disclosure. | Stephen | Legal entity/contact, processing map, providers (including Google analytics), regional rights, retention, transfers, security/incident wording, counsel approval. |
 | Terms of Service | `/terms` | Versioned in code; provisional, not attorney-approved. | Stephen | Eligibility, user-content license, acceptable use, IP, suspension/termination, disclaimers, liability, governing law/disputes, counsel approval. |
-| Support | `/support` | Public guidance; monitoring commitment not evidenced. | Stephen | OPS-007 support ownership and escalation evidence; counsel-approved rights/incident language if added. |
+| Support | `/support` | Public guidance; OPS-007 support ownership is evidenced with a documented solo-maintainer limitation. | Stephen | Counsel-approved rights/incident language if added. |
 | Public-beta owner runbook | Internal repository document | Current operational procedure; not public legal terms. | Stephen | Complete private evidence and exercises; update for operational changes. |
 | Production operations runbook | Internal repository document | Current technical incident/rollback procedure; notification terms unresolved. | Stephen | Counsel/owner incident-notification decision. |
 

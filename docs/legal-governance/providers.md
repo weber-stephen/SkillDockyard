@@ -10,6 +10,7 @@ Observed technical role is not a legal classification. Do not call any provider 
 | Cloudflare Turnstile | Signup/login/recovery bot protection. | Cookie/device-signal classification, notice/consent, DPA, transfer mechanism. | Requires counsel/owner decision |
 | Sentry | Scrubbed error monitoring and source-map upload. | Event fields, retention, region, DPA, transfer mechanism. | Requires counsel/owner decision |
 | Upstash | Shared production rate limiting. | Request-derived key content, retention, region, DPA, transfer mechanism. | Requires counsel/owner decision |
+| Google Tag Manager / Google Analytics | Consent-gated product analytics for route categories, fixed action labels, and validated campaign parameters. | Consent and cookie classification, role, contract, data location, retention, transfer mechanism, and regional treatment. | Requires counsel/owner decision |
 | GitHub / npm | Source/release workflow and connected-computer command distribution. | Whether either processes customer personal data in the final user flow. | Requires counsel/owner decision |
 
 ## Evidence rule

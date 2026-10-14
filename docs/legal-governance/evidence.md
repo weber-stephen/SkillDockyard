@@ -10,6 +10,7 @@ This register contains references, not sensitive evidence. Use private record id
 | E-004 | 2026-10-11 | OPS-007 support ownership | Namecheap forwarding and Gmail/Resend sending-path test; operating procedure in [support-email-runbook.md](../support-email-runbook.md). No mailbox address or credentials recorded. | Closed | Stephen | Recheck quarterly and after a DNS, Namecheap, Gmail, or Resend change; assign independent backup coverage when available. |
 | E-005 | — | OPS-009 counsel review | No written approval reference recorded. | Open | Stephen + counsel | Record non-sensitive approval reference and scope. |
 | E-006 | 2026-10-12 | OPS-010 deletion/export/retention/incident exercise | Controlled exercise sequence and evidence requirements documented in [ops-010-exercise-runbook.md](../ops-010-exercise-runbook.md). No completed exercise evidence recorded. | Open | Stephen + Codex | Run exercises with an authorized test account; record retention and incident-notification decisions before closure. |
+| E-007 | 2026-10-14 | OPS-009 preparation inventory | [Public-test counsel packet](ops-009-public-test-packet.md) reconciles shipped signup and consent-gated analytics behavior with the provider and document registers. | Recorded | Stephen + Codex | Counsel review, owner decisions, and written approval remain open. |
 
 ## Entry format for new evidence
 
