@@ -4,9 +4,9 @@
 
 The current source of truth for legal decisions, risks, document status, provider posture, evidence references, and change control is [legal-governance/README.md](legal-governance/README.md). This review remains the implementation evidence baseline.
 
-**Review date:** October 5, 2026  
+**Review date:** October 14, 2026
 **Product:** Skill Dockyard  
-**Current launch posture:** Public, business-use-oriented test for adults. It is not an invite-only pilot or a broad commercial launch. The unresolved owner/counsel gates for self-service and broader availability are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). There are no paid subscriptions, advertising, behavioral profiling, or sale of personal information.
+**Current launch posture:** Public, business-use-oriented test for adults. It is not an invite-only pilot or a broad commercial launch. The unresolved owner/counsel gates for self-service and broader availability are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md). There are no paid subscriptions, advertising, ad-personalization, or sale of personal information. Consent-gated product analytics are implemented; their legal classification remains unresolved.
 
 Every item marked **Requires counsel/owner decision** must be resolved before it is represented as final public legal language or the service is opened broadly.
 
@@ -24,8 +24,8 @@ Global availability does not itself establish that no local representative is re
 | --- | --- | --- |
 | `/privacy` | General collection, use, provider, retention, and contact statements. | Incomplete for the implementation and broader launch. |
 | `/terms` | General account, workspace, availability, and acceptable-use statements. | Missing material user-content, IP, suspension, termination, governing-law, dispute, and limitation provisions. |
-| `/support` | Support, account recovery, and security-report guidance. | Updated in this branch with verified privacy-request and connected-computer guidance; monitored ownership remains unconfirmed. |
-| Signup | Public self-service signup is closed. Controlled operators can use a server-only Supabase Auth invitation after the documented legal gates are complete. | No in-product Terms acceptance or versioned acceptance record; counsel must approve the pilot-agreement process before any external invitation. |
+| `/support` | Support, account recovery, privacy-request, and security-report guidance. | OPS-007 mailbox ownership and the solo-maintainer limitation are evidenced; final rights and incident language remain subject to counsel review. |
+| Signup | The server-side route is implemented but production registration is paused unless the application flag and Supabase Auth setting are both enabled. It requires Terms/Privacy acknowledgement, Turnstile, and email confirmation. | Versioned acceptance is server-managed and gates app access. Counsel and operational approval remain required before public self-service signup is enabled. |
 
 ### Information processed in the application
 
@@ -37,7 +37,8 @@ Global availability does not itself establish that no local representative is re
 | Sharing and audit data | Shares, target emails/workspaces, invite states, review decisions/notes, actor details, timestamps, download/export audit records, and notifications. | Revocation removes future access but preserves history. Retention is undefined. |
 | Connected-computer records | One-time pairing-code hashes; hashed 90-day bearer-token records, hints, expiry, revocation, last use; installation records include device ID, target, content hash, and timestamps. | Browser UI can revoke connected-computer tokens. The raw bearer token is stored locally in the command configuration file with restrictive permissions where supported. |
 | Download and install activity | Browser/command download records, target, version, source, and timestamps; command installation/check reports. | No user-facing retention or export scope for activity data. |
-| Browser-local data | Demo private-draft metadata is stored in local storage. Download history stores skill ID, target, content hash, and timestamp in local storage. | Demo draft UI can clear drafts; no general browser-storage notice or control for download history. |
+| Browser-local data | Demo private-draft metadata, download history (skill ID, target, content hash, and timestamp), and the analytics-consent choice are stored in local storage. | Demo draft UI can clear drafts; the Privacy page exposes analytics-preference controls. No general browser-storage notice or download-history control exists. |
+| Optional product analytics | When a valid GTM container is configured, Google Tag Manager and Google Analytics load only after a visitor grants analytics consent. Events use route categories, fixed action labels, and validated campaign parameters; ad storage, ad user data, and ad personalization remain denied. | Visitors can decline or later change analytics consent. Counsel must determine the applicable notice, consent, provider, retention, and regional treatment. |
 | Security and reliability data | Sentry receives scrubbed errors; request cookies, bodies, and headers are removed, and user context is reduced to an internal ID. Upstash rate-limit keys and provider logs may process request-derived information. | This branch disables Sentry performance tracing (`tracesSampleRate: 0`) pending counsel’s cookie/telemetry classification. |
 
 ### Providers and subprocessors to verify
@@ -50,15 +51,16 @@ Global availability does not itself establish that no local representative is re
 | Cloudflare Turnstile | Bot protection on signup, login, and password recovery. | Cookie/device-signal classification, notice/consent treatment, DPA, and transfer mechanism. |
 | Sentry | Scrubbed error monitoring and source-map upload. | Error event fields, retention, region, DPA, and transfer mechanism. Performance tracing is disabled in this branch. |
 | Upstash | Shared production rate limiting. | Key/data content, retention, region, DPA, and transfer mechanism. |
+| Google Tag Manager / Google Analytics | Consent-gated product analytics for site visits, campaign performance, and feature use. | Consent and cookie classification, controller/processor role, contract, data location, retention, transfers, and regional treatment. |
 | npm / GitHub | Command-package distribution and release workflow. | Whether either is a processor for customer personal data in the final flow. |
 
-Do not state that every listed provider is a legal “subprocessor” until counsel confirms controller/processor roles and contracts. No product analytics SDK, advertising SDK, or custom marketing-cookie code was found in the reviewed source.
+Do not state that every listed provider is a legal “subprocessor” until counsel confirms controller/processor roles and contracts. The reviewed source contains consent-gated Google Tag Manager and Google Analytics, but no advertising or ad-personalization configuration.
 
 ## Document-to-implementation comparison
 
 ### Privacy Policy gaps
 
-- The current provider statement omits provider names and does not describe authentication cookies, Turnstile, Sentry, Upstash, local browser storage, connected-computer token records, installation records, or raw skill-content snapshots.
+- The current provider statement omits provider names and does not describe authentication cookies, Turnstile, Sentry, Upstash, Google Tag Manager/Google Analytics, local browser storage, connected-computer token records, installation records, or raw skill-content snapshots.
 - The current statement says users may request access, correction, export, or deletion but does not describe verification, scope, sole-owner/workspace effects, audit-history preservation, backups, or operational handling.
 - “While your account is active and as needed” is not a defined retention schedule and should not be presented as one.
 - It lacks controller identity, contact/address, applicable scope, lawful bases, international-transfer treatment, regional rights, complaint options, security-incident language, children/age position, and change/effective-date process.
@@ -70,7 +72,7 @@ Do not state that every listed provider is a legal “subprocessor” until coun
 - They lack an explicit restriction on submitting credentials, sensitive personal data, malware, or content the user lacks the right to share.
 - They lack account eligibility, suspension/termination, effect of termination, IP/feedback, disclaimer, limitation-of-liability, governing-law, dispute, and change-notice sections.
 - They say workspace owners and reviewers “control publishing and access,” which should be aligned with the documented role model without implying that a skill share transfers ownership.
-- Signup has no acceptance control or evidence of acceptance to a versioned Terms/Privacy notice.
+- Signup records a versioned Terms/Privacy acknowledgement, but counsel must approve the final documents and the applicable acceptance posture before registration is enabled publicly.
 
 ### Support and terminology gaps
 
@@ -132,7 +134,7 @@ Use the published Support page in this branch: a privacy request goes to the mon
 
 - **Requires counsel/owner decision:** legal entity name, jurisdiction, physical or registered address, privacy contact, and controller/processor roles.
 - **Requires counsel/owner decision:** countries/regions actively targeted, whether access is restricted pending review, and EU/UK representative analysis.
-- **Requires counsel/owner decision:** lawful bases, cookie/Turnstile/Sentry classification, consent requirements, and whether client error reporting may remain enabled by region.
+- **Requires counsel/owner decision:** lawful bases; cookie, local-storage, Turnstile, Sentry, Google Tag Manager, and Google Analytics classification; consent requirements; and whether client error reporting or analytics may remain enabled by region.
 - **Requires counsel/owner decision:** provider DPAs, locations, transfer mechanisms, backup retention, and subprocessor list.
 - **Requires counsel/owner decision:** retention periods for accounts, content, invitations, logs, tokens, downloads/installations, audit records, and backups.
 - **Requires counsel/owner decision:** deletion/export rights process; sole-owner and shared-content handling; legal-hold policy; incident threshold, notification content, timing, and authority.
@@ -167,7 +169,7 @@ The detailed non-repository operating procedure for OPS-007 and OPS-010 is [publ
 - `AGENTS.md`
 - `docs/architecture.md`, `docs/brand-strategy.md`, `docs/permissions.md`, `docs/production-launch-checklist.md`, and `docs/production-operations-runbook.md`
 - `src/app/privacy/page.tsx`, `src/app/terms/page.tsx`, `src/app/support/page.tsx`, signup/auth surfaces, API routes, and public footer
-- `src/lib/cli-auth.ts`, `src/cli/state.ts`, ingestion, sharing, workspace administration, exports, downloads, rate limiting, and Sentry configuration
+- `src/lib/cli-auth.ts`, `src/cli/state.ts`, ingestion, sharing, workspace administration, exports, downloads, rate limiting, Sentry configuration, and consent-gated analytics implementation
 - `supabase/migrations` defining account, workspace, invitation, skill, version, share, audit, token, download, installation, notification, and onboarding records
 
 ## Non-finality notice
