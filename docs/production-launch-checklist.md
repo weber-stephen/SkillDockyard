@@ -88,10 +88,12 @@ npm pack --dry-run
   - Evidence: Migration inventory review found an RLS enable statement for every public table; the live production state remains covered by DATA-011 and DATA-012.
 - [x] **DATA-006 — P0 — Codex:** Verify every privileged database function has an intentional security mode, fixed `search_path`, explicit execute grants, and no unintended `PUBLIC`, `anon`, or `authenticated` access.
   - Evidence: New functions are explicit invokers except the private auth trigger; legacy functions are hardened by `20261003153210_harden_function_execution.sql`; execution is revoked from public browser roles.
-- [ ] **DATA-007 — P0 — Codex:** Verify server authorization for every object-level operation.
+- [x] **DATA-007 — P0 — Codex:** Verify server authorization for every object-level operation.
   - List, read, download, submit, publish, request changes, reject, withdraw, share, accept, decline, revoke, invite, rename, and export.
-- [ ] **DATA-008 — P0 — Codex:** Make security-sensitive mutations and required audit records atomic.
+  - Evidence: DATA-007 inventory and regressions cover the server routes and helpers for each listed operation, including private drafts, cross-workspace IDs, revoked/view-only shares, invitation email mismatch, non-owner administration, and workspace-role boundaries. Verified October 13, 2026 with `tests/access.test.ts`, `tests/shares.test.ts`, `tests/submission-api.test.ts`, `tests/proposal-decision-api.test.ts`, `tests/proposal-withdraw-api.test.ts`, `tests/skill-download-api.test.ts`, and `tests/data-007-008.test.ts` via `npm test` (106 passing).
+- [x] **DATA-008 — P0 — Codex:** Make security-sensitive mutations and required audit records atomic.
   - A successful response must never be returned when the required audit write failed.
+  - Evidence: `20261013090000_data_007_008_authorization_and_atomic_audits.sql` places submission, withdrawal, export, decision, and workspace-invitation mutations with their audit inserts in transaction-scoped functions; it also reasserts verified email and ownership consistency at the write boundary. `tests/proposal-withdraw-api.test.ts` forces an RPC failure and verifies no success response; `tests/data-007-008.test.ts` verifies server routes use only the transactional entry points. Verified October 13, 2026 with `npm run typecheck`, `npm run lint`, `npm test` (106 passing), and `npm run build`.
 - [x] **DATA-009 — P0 — Joint:** Apply every committed migration to the production Supabase project in filename order.
   - Evidence: Applied migrations `20261003151241` through `20261003154937` to the linked production project on October 3, 2026 after successful dry runs.
 - [x] **DATA-010 — P0 — Joint:** Confirm the local migration list and production migration history match.

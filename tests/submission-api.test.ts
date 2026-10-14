@@ -89,14 +89,15 @@ describe("submission API persistence modes", () => {
     });
     mocks.getViewerContext.mockResolvedValue({ user: { id: "user-1", email: "user@example.com" }, memberships: [{ workspace_id: "workspace-1", role: "editor" }] });
     mocks.ingestArtifacts.mockResolvedValue({ workspaceId: "workspace-1", artifacts: [{ artifactId: "artifact-1", versionId: "version-1" }] });
-    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+    const rpc = vi.fn().mockResolvedValue({ data: { proposalId: "proposal-1" }, error: null });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder), rpc });
 
     const response = await POST(request({ mode: "new" }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ mode: "supabase", saved: true, proposalId: "proposal-1", proposalStatus: "pending_review" });
     expect(mocks.ingestArtifacts).toHaveBeenCalledOnce();
-    expect(builder.insert).toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledWith("submit_artifact_proposal", expect.objectContaining({ p_artifact_id: "artifact-1", p_candidate_version_id: "version-1", p_kind: "new" }));
   });
 
   it("denies a viewer before a new workspace skill can be ingested or submitted", async () => {
@@ -153,18 +154,13 @@ describe("submission API persistence modes", () => {
     });
     mocks.getViewerContext.mockResolvedValue({ user: { id: "recipient-1", email: "recipient@example.com" }, memberships: [] });
     mocks.ingestArtifacts.mockResolvedValue({ workspaceId: existing.workspace_id, artifacts: [{ artifactId: existing.id, versionId: "version-new" }] });
-    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+    const rpc = vi.fn().mockResolvedValue({ data: { proposalId: "proposal-new" }, error: null });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder), rpc });
 
     const response = await POST(request({ mode: "update", artifactId: existing.id }));
 
     expect(response.status).toBe(200);
-    expect(builder.update).toHaveBeenCalledWith(expect.objectContaining({ status: "superseded", resolution_note: "Superseded by a newer submission." }));
-    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({
-      candidate_version_id: "version-new",
-      base_version_id: "version-published-1",
-      supersedes_proposal_id: "proposal-old",
-      status: "pending_review"
-    }));
+    expect(rpc).toHaveBeenCalledWith("submit_artifact_proposal", expect.objectContaining({ p_candidate_version_id: "version-new", p_source_share_id: "share-1", p_kind: "update" }));
   });
 
   it("persists private submissions without creating a proposal", async () => {
@@ -222,14 +218,15 @@ describe("submission API persistence modes", () => {
     });
     mocks.getViewerContext.mockResolvedValue({ user: { id: "recipient-1", email: "recipient@example.com" }, memberships: [] });
     mocks.ingestArtifacts.mockResolvedValue({ workspaceId: "workspace-source-1", artifacts: [{ artifactId: existing.id, versionId: "version-update-1" }] });
-    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+    const rpc = vi.fn().mockResolvedValue({ data: { proposalId: "proposal-update-1" }, error: null });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder), rpc });
 
     const response = await POST(request({ mode: "update", artifactId: existing.id, skillText: "updated instructions", changeSummary: "Clarified the review sequence." }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ proposalId: "proposal-update-1", proposalStatus: "pending_review", visibility: "workspace" });
     expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), "workspace-source-1", expect.objectContaining({ createdByUserId: "recipient-1", sourceShareId: "share-1", visibility: "workspace" }));
-    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ artifact_id: existing.id, candidate_version_id: "version-update-1", base_version_id: "version-published-1", source_share_id: "share-1", kind: "update", status: "pending_review" }));
+    expect(rpc).toHaveBeenCalledWith("submit_artifact_proposal", expect.objectContaining({ p_artifact_id: existing.id, p_candidate_version_id: "version-update-1", p_source_share_id: "share-1", p_kind: "update" }));
   });
 
   /** Scenario: APP-003; an Editor can submit an update but the candidate is not published. */
@@ -262,14 +259,15 @@ describe("submission API persistence modes", () => {
     });
     mocks.getViewerContext.mockResolvedValue({ user: { id: "editor-1", email: "editor@example.com" }, memberships: [{ workspace_id: existing.workspace_id, role: "editor" }] });
     mocks.ingestArtifacts.mockResolvedValue({ workspaceId: existing.workspace_id, artifacts: [{ artifactId: existing.id, versionId: "version-editor-update-1" }] });
-    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder) });
+    const rpc = vi.fn().mockResolvedValue({ data: { proposalId: "proposal-editor-update-1" }, error: null });
+    mocks.createServerSupabase.mockReturnValue({ from: vi.fn().mockReturnValue(builder), rpc });
 
     const response = await POST(request({ mode: "update", artifactId: existing.id, skillText: "Updated instructions", changeSummary: "Clarified escalation criteria." }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ proposalId: "proposal-editor-update-1", proposalStatus: "pending_review", visibility: "workspace" });
     expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), existing.workspace_id, expect.objectContaining({ createdByUserId: "editor-1", sourceShareId: null, visibility: "workspace" }));
-    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ artifact_id: existing.id, candidate_version_id: "version-editor-update-1", base_version_id: "version-published-1", kind: "update", status: "pending_review" }));
+    expect(rpc).toHaveBeenCalledWith("submit_artifact_proposal", expect.objectContaining({ p_artifact_id: existing.id, p_candidate_version_id: "version-editor-update-1", p_source_share_id: null, p_kind: "update" }));
   });
 
   it("denies a view-only recipient before creating an update version or proposal", async () => {
