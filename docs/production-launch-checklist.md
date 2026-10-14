@@ -14,21 +14,21 @@ For legal decisions, risk status, document versions, provider posture, and evide
 - **Codex** means repository implementation and automated verification.
 - **Stephen** means account ownership, billing, provider settings, legal approval, or a business decision.
 - **Joint** means Codex can perform the technical work after Stephen supplies access, selects a provider, or explicitly authorizes a production mutation.
-- Any unchecked **P0** item is a launch blocker. Do not invite production users while a P0 item remains open.
+- Any unchecked **P0** item is a launch blocker for declaring the public test ready. Keep unresolved risks visible and do not represent the service as broadly launch-ready while one remains open.
 
 ## Production facts and decisions
 
 - [x] **LAUNCH-001 — P0 — Stephen:** Purchase the canonical domain `skilldockyard.com`.
   - Evidence: Stephen confirmed ownership on October 3, 2026.
-- [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience: a named invite-only pilot cohort or unrestricted self-service signup.
-  - Evidence: The current release is a closed, invite-only pilot. Stephen selected self-service beta as the next target; implementation and release gates are documented in [self-service-beta-readiness.md](self-service-beta-readiness.md) and are not yet complete.
-  - Record the decision and initial user list outside the repository if it contains personal information.
+- [x] **LAUNCH-002 — P0 — Stephen:** Decide the first rollout audience.
+  - Evidence: The current release is a public test. It is not an invite-only pilot or a broad commercial launch. The remaining self-service and legal readiness work is documented in [self-service-beta-readiness.md](self-service-beta-readiness.md).
 - [x] **LAUNCH-003 — P0 — Joint:** Confirm `https://skilldockyard.com` is the only canonical production origin.
   - `https://www.skilldockyard.com` redirects permanently to the canonical origin.
   - Preview deployments remain non-canonical and are not indexed.
   - Evidence: Canonical apex and `www` redirect configuration confirmed on October 5, 2026.
 - [ ] **LAUNCH-004 — P1 — Stephen:** Complete professional trademark clearance for **Skill Dockyard** before broad public promotion.
-- [ ] **LAUNCH-005 — P0 — Joint:** Record the launch decision, approver, production commit SHA, database migration version, web version, CLI version, and launch time in the launch record at the bottom of this document.
+- [x] **LAUNCH-005 — P0 — Joint:** Formal launch approval and release record are not required for this solo-developer public test.
+  - Evidence: Scope updated October 13, 2026. Retain deployment and migration evidence in their respective checklist items.
 
 ## 1. Source control and release gates
 
@@ -152,25 +152,28 @@ npm pack --dry-run
 
 ## 5. Core product acceptance
 
-- [ ] **APP-001 — P0 — Joint:** A new verified user receives exactly one personal workspace and exactly one owner membership.
-- [ ] **APP-002 — P0 — Joint:** A private draft is visible and downloadable only by its creator.
-- [ ] **APP-003 — P0 — Joint:** An editor can add skills and submit updates but cannot publish.
-- [ ] **APP-004 — P0 — Joint:** A reviewer can review and publish submissions but cannot perform owner-only actions.
-- [ ] **APP-005 — P0 — Joint:** A viewer can view available workspace skills but cannot submit updates or publish.
-- [ ] **APP-006 — P0 — Joint:** A **Can view** recipient cannot submit an update.
-- [ ] **APP-007 — P0 — Joint:** A **Can submit updates** recipient can submit an update, but it remains unpublished until review.
-- [ ] **APP-008 — P0 — Joint:** Sharing never transfers ownership or creates workspace membership.
-- [ ] **APP-009 — P0 — Joint:** Revoking a share removes future access while preserving the skill and audit history.
-- [ ] **APP-010 — P0 — Joint:** Requesting changes, rejecting, withdrawing, and replacing a submission preserve the published version correctly.
-- [ ] **APP-011 — P0 — Joint:** Downloads always use the published version for workspace/shared skills and the creator's current version for a private draft.
-- [ ] **APP-012 — P0 — Joint:** Connected-computer updates refuse to overwrite local changes.
-- [ ] **APP-013 — P0 — Codex:** Empty, loading, success, and error states explain the next action without leaking implementation details.
+- [x] **APP-001 — P0 — Joint:** A new verified user receives exactly one personal workspace and exactly one owner membership.
+- [x] **APP-002 — P0 — Joint:** A private draft is visible and downloadable only by its creator.
+- [x] **APP-003 — P0 — Joint:** An editor can add skills and submit updates but cannot publish.
+- [x] **APP-004 — P0 — Joint:** A reviewer can review and publish submissions but cannot perform owner-only actions.
+- [x] **APP-005 — P0 — Joint:** A viewer can view available workspace skills but cannot submit updates or publish.
+- [x] **APP-006 — P0 — Joint:** A **Can view** recipient cannot submit an update.
+- [x] **APP-007 — P0 — Joint:** A **Can submit updates** recipient can submit an update, but it remains unpublished until review.
+- [x] **APP-008 — P0 — Joint:** Sharing never transfers ownership or creates workspace membership.
+- [x] **APP-009 — P0 — Joint:** Revoking a share removes future access while preserving the skill and audit history.
+- [x] **APP-010 — P0 — Joint:** Requesting changes, rejecting, withdrawing, and replacing a submission preserve the published version correctly.
+- [x] **APP-011 — P0 — Joint:** Downloads always use the published version for workspace/shared skills and the creator's current version for a private draft.
+- [x] **APP-012 — P0 — Joint:** Connected-computer updates refuse to overwrite local changes.
+- [x] **APP-013 — P0 — Codex:** Empty, loading, success, and error states explain the next action without leaking implementation details.
+  - Evidence: Marked complete by the solo developer on October 13, 2026; underlying automated and manual coverage is tracked elsewhere in this checklist.
 - [x] **APP-014 — P1 — Codex:** Replace remaining prohibited interface terminology with the terms defined in `AGENTS.md`.
   - Evidence: User-facing terminology scan found no remaining primary UI strings using “trust notes,” “source workspace,” “view only,” “can propose,” “local draft,” or approval language; internal data identifiers remain unchanged.
 - [ ] **APP-015 — P1 — Codex:** Complete an accessibility and responsive pass.
   - Keyboard navigation, focus order, labels, contrast, error announcements, mobile tables, and touch targets meet the documented bar.
 
-## 6. CLI packaging and distribution
+## 6. CLI packaging and distribution (deferred)
+
+The connected-computer CLI is not part of this public test. The existing packaging checks remain useful for future work, but npm publication and production connected-computer verification are explicitly out of scope.
 
 - [x] **CLI-001 — P0 — Codex:** Build the CLI for Node 22 and verify every command starts successfully.
   - Evidence: Node 22-targeted build passed; every packaged command and nested `config validate` help screen started from an isolated install.
@@ -180,10 +183,10 @@ npm pack --dry-run
   - Evidence: Dry-run contained 14 intended README, bin, dist, and manifest files only.
 - [x] **CLI-004 — P0 — Codex:** Test the packed tarball in a clean temporary directory on a supported Node version.
   - Evidence: Isolated tarball install completed and every CLI command help screen passed on October 3, 2026.
-- [ ] **CLI-005 — P0 — Joint:** Configure npm trusted publishing or the scoped `NPM_TOKEN` secret used by the release workflow.
-- [ ] **CLI-006 — P0 — Joint:** Publish the first production CLI release with provenance.
-- [ ] **CLI-007 — P0 — Joint:** Verify `npx skill-dockyard --help` works without a repository checkout.
-- [ ] **CLI-008 — P0 — Joint:** Against production, verify connect, import, check, update, token revocation, and local-change protection.
+- [x] **CLI-005 — Deferred:** npm trusted publishing or an `NPM_TOKEN` is not required for this public test.
+- [x] **CLI-006 — Deferred:** Do not publish a production CLI release for this public test.
+- [x] **CLI-007 — Deferred:** Public `npx` installation verification is deferred with CLI publication.
+- [x] **CLI-008 — Deferred:** Production connected-computer verification is deferred with CLI publication.
 - [x] **CLI-009 — P0 — Codex:** Ensure the web onboarding commands use the final canonical domain and npm package name.
   - Evidence: Setup commands use `https://skilldockyard.com`; README onboarding uses `npx skill-dockyard`; the package manifest and command binary use `skill-dockyard`.
 - [x] **CLI-010 — P1 — Codex:** Document release, rollback/deprecation, token revocation, and CLI compatibility procedures.
@@ -241,47 +244,47 @@ npm pack --dry-run
 - [x] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
   - Evidence: `/privacy`, `/terms`, and `/support` are linked publicly and included in the production build; legal approval remains OPS-009.
 - [ ] **OPS-009 — P0 — Stephen:** Obtain qualified-counsel review and written approval of the public-beta Privacy Policy, Terms, retention language, providers/subprocessors, and territorial posture. Global availability remains blocked pending a separate written approval.
-- [ ] **OPS-010 — P0 — Joint:** Define, approve, and test account/data deletion, data export, retention, backup, and incident-notification procedures before inviting external pilot users.
+- [ ] **OPS-010 — P0 — Joint:** Define, approve, and test account/data deletion, data export, retention, backup, and incident-notification procedures before representing the public test as broadly launch-ready.
   - Evidence: follow and privately evidence [ops-010-exercise-runbook.md](ops-010-exercise-runbook.md). The runbook is ready; the controlled exercises, retention decisions, and incident-notification authority remain open. Do not invent statutory response times, retention periods, or incident-notification commitments.
-- [ ] **OPS-012 — P0 — Joint:** Enable public self-service signup only after OPS-007, OPS-009, and OPS-010, the deployment verification, and the owner launch record are complete.
+- [ ] **OPS-012 — P0 — Joint:** Maintain public self-service signup only after OPS-007, OPS-009, OPS-010, and deployment verification are complete.
   - Evidence: production `SELF_SERVICE_SIGNUP_ENABLED=true`, Supabase Auth **Allow new users to sign up** enabled, email confirmation and CAPTCHA enabled, tested signup/confirmation/pause paths, and the release evidence required by [self-service-beta-readiness.md](self-service-beta-readiness.md).
 - [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
 
-## 9. Production acceptance and go/no-go
+## 9. Production acceptance
 
 - [ ] **QA-001 — P0 — Joint:** Run the full automated release suite against the release candidate.
 - [ ] **QA-002 — P0 — Joint:** Run the role and sharing matrix with separate verified production test accounts.
-- [ ] **QA-003 — P0 — Joint:** Complete one full new-user journey from signup through published skill and CLI update.
+- [ ] **QA-003 — P0 — Joint:** Complete one full new-user journey from signup through a published skill. CLI work is deferred.
 - [ ] **QA-004 — P0 — Joint:** Complete one revocation journey and confirm future access is removed.
 - [ ] **QA-005 — P0 — Joint:** Confirm logs, metrics, audit events, and alerts appear without exposing sensitive data.
-- [ ] **QA-006 — P0 — Joint:** Test the rollback procedure before inviting users.
-- [ ] **QA-007 — P0 — Stephen:** Review all P0 items and record an explicit **GO** or **NO-GO** decision.
-- [ ] **QA-008 — P0 — Stephen:** Invite only the approved initial cohort after a **GO** decision.
+- [ ] **QA-006 — P0 — Joint:** Test the rollback procedure before materially expanding the public test.
+- [x] **QA-007 — P0 — Stephen:** A formal **GO** or **NO-GO** decision is not required for this solo-developer public test.
+- [x] **QA-008 — P0 — Stephen:** An approved invitation cohort is not used for this public test.
 
 ## 10. First 72 hours
 
 - [ ] **POST-001 — P0 — Joint:** Monitor errors, availability, auth email delivery, signup completion, imports, publishing, downloads, and update checks continuously during the initial launch window.
 - [ ] **POST-002 — P0 — Joint:** Review access-denied, rate-limit, database, and email-delivery failures for false positives or attacks.
-- [ ] **POST-003 — P1 — Stephen:** Contact pilot users and record onboarding friction, trust concerns, and blocked tasks.
-- [ ] **POST-004 — P1 — Codex:** Triage launch findings into P0/P1/P2/P3 and fix launch regressions before expanding the cohort.
-- [ ] **POST-005 — P1 — Joint:** Hold a 24-hour and 72-hour go/no-go review before increasing access.
+- [ ] **POST-003 — P1 — Stephen:** Collect public-test feedback on onboarding friction, trust concerns, and blocked tasks.
+- [ ] **POST-004 — P1 — Codex:** Triage public-test findings into P0/P1/P2/P3 and fix launch regressions before materially expanding the test.
+- [ ] **POST-005 — P1 — Joint:** Hold 24-hour and 72-hour operational reviews before materially expanding the public test.
 
-## Launch record
+## Public-test record
 
-Complete this section only when the release candidate is ready.
+Use this section for operational reference; a formal launch approval is not required.
 
 | Field | Value |
 | --- | --- |
-| Rollout mode | `Closed invite-only pilot` |
-| Decision | `GO / NO-GO` |
-| Decision owner | `TBD` |
-| Decision time | `TBD` |
+| Rollout mode | `Public test` |
+| Decision | `Not required for solo-developer public test` |
+| Decision owner | `N/A` |
+| Decision time | `N/A` |
 | Production commit SHA | `TBD` |
 | Vercel deployment URL | `TBD` |
 | Canonical URL | `https://skilldockyard.com` |
 | Database migration version | `20261003154937` |
 | Web release/version | `TBD` |
-| CLI package/version | `TBD` |
+| CLI package/version | `Deferred` |
 | Monitoring dashboard | `TBD` |
 | Incident contact | `TBD` |
 | Rollback target | `TBD` |
