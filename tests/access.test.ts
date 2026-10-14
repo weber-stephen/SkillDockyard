@@ -96,6 +96,16 @@ describe("artifact permissions", () => {
     });
   });
 
+  it("uses the signed-in member's role when a workspace has mixed roles", () => {
+    const reviewer = membership("reviewer");
+    const viewer = { ...membership("viewer"), id: "viewer-membership", user_id: "viewer", email: "viewer@example.com" };
+    expect(computeArtifactPermission({ artifact, memberships: [reviewer, viewer], workspaces, shares: [], userId: "viewer" })).toMatchObject({
+      canProposeUpdate: false,
+      canPublish: false,
+      canManageShares: false
+    });
+  });
+
   it("lets shared recipients propose only when the share allows it", () => {
     const proposed = computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [share("propose")], userId: "recipient" });
     const viewOnly = computeArtifactPermission({ artifact, memberships: [], workspaces: [], shares: [share("view")], userId: "recipient" });

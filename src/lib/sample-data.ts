@@ -170,7 +170,7 @@ export const sampleDetails: Record<string, ArtifactDetail> = {
         artifact_version_id: "ver_agents_current",
         kind: "missing_owner",
         severity: "low",
-        message: "Assign a marketing or sales owner before publishing this skill.",
+        message: "Consider adding a marketing or sales maintainer so teammates know who can answer questions about this skill.",
         evidence: null,
         created_at: now
       }
