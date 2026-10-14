@@ -223,7 +223,7 @@ The connected-computer CLI is not part of this public test. The existing packagi
 - [ ] **PLAT-012 — P1 — Joint:** Configure the GA4 destination and anonymous event forwarding in GTM, then verify it in GTM Preview and GA4 DebugView.
   - Required evidence: Published GTM version; one consented `page_view` per client-side navigation; expected anonymous custom events and approved parameters visible in GA4 DebugView; no account, workspace, skill, invitation, token, or full-URL data sent.
 
-## 8. Monitoring, backups, support, and legal readiness
+## 8. Monitoring, backups, support, and future broader-launch readiness
 
 - [x] **OPS-001 — P0 — Joint:** Configure server/client error monitoring with source maps and secret/PII scrubbing.
   - Evidence: Sentry project and production configuration completed on October 5, 2026; application-side scrubbing and server-only source-map credentials are configured.
@@ -243,21 +243,21 @@ The connected-computer CLI is not part of this public test. The existing packagi
   - Evidence: On October 11, 2026, `support@skilldockyard.com` was configured with Namecheap Free Email Forwarding to Stephen's monitored inbox and Gmail was verified to send from that address through Resend SMTP. Stephen is the named primary owner, backup owner, and security-incident escalation recipient under the documented solo-maintainer exception; the single-person coverage risk is accepted and recorded in [support-email-runbook.md](support-email-runbook.md). The inbound and outbound paths were tested. Monitor each business day and recheck quarterly or after a provider, DNS, or account change. No destination address or credentials are recorded in the repository.
 - [x] **OPS-008 — P0 — Codex:** Add Privacy, Terms, and Support routes and footer links.
   - Evidence: `/privacy`, `/terms`, and `/support` are linked publicly and included in the production build; legal approval remains OPS-009.
-- [ ] **OPS-009 — P0 — Stephen:** Obtain qualified-counsel review and written approval of the public-beta Privacy Policy, Terms, retention language, providers/subprocessors, and territorial posture. Global availability remains blocked pending a separate written approval.
-- [ ] **OPS-010 — P0 — Joint:** Define, approve, and test account/data deletion, data export, retention, backup, and incident-notification procedures before representing the public test as broadly launch-ready.
-  - Evidence: follow and privately evidence [ops-010-exercise-runbook.md](ops-010-exercise-runbook.md). The runbook is ready; the controlled exercises, retention decisions, and incident-notification authority remain open. Do not invent statutory response times, retention periods, or incident-notification commitments.
-- [ ] **OPS-012 — P0 — Joint:** Maintain public self-service signup only after OPS-007, OPS-009, OPS-010, and deployment verification are complete.
-  - Evidence: production `SELF_SERVICE_SIGNUP_ENABLED=true`, Supabase Auth **Allow new users to sign up** enabled, email confirmation and CAPTCHA enabled, tested signup/confirmation/pause paths, and the release evidence required by [self-service-beta-readiness.md](self-service-beta-readiness.md).
+- [x] **OPS-009 — Deferred:** Qualified-counsel review and written approval are not a gate for the current public test. They remain required before broad commercial promotion or any claim of global legal readiness.
+- [x] **OPS-010 — Deferred:** Account/data deletion, export, retention, backup, and incident-notification exercises are not a gate for the current public test. Keep [ops-010-exercise-runbook.md](ops-010-exercise-runbook.md) for the broader-launch work; do not invent statutory response times, retention periods, or incident-notification commitments.
+- [x] **OPS-012 — Deferred:** Expanded self-service signup verification is not a gate for the current public test. The current deployment continues to require its existing signup, email-confirmation, and CAPTCHA controls; broader-launch verification remains deferred with OPS-009 and OPS-010.
 - [ ] **OPS-011 — P1 — Joint:** Document production secret ownership and a rotation schedule without recording secret values.
 
-## 9. Production acceptance
+## 9. Automated public-test acceptance
 
-- [ ] **QA-001 — P0 — Joint:** Run the full automated release suite against the release candidate.
-- [ ] **QA-002 — P0 — Joint:** Run the role and sharing matrix with separate verified production test accounts.
-- [ ] **QA-003 — P0 — Joint:** Complete one full new-user journey from signup through a published skill. CLI work is deferred.
-- [ ] **QA-004 — P0 — Joint:** Complete one revocation journey and confirm future access is removed.
-- [ ] **QA-005 — P0 — Joint:** Confirm logs, metrics, audit events, and alerts appear without exposing sensitive data.
-- [ ] **QA-006 — P0 — Joint:** Test the rollback procedure before materially expanding the public test.
+- [x] **QA-001 — P0 — Codex:** Run the full automated release suite against the release candidate.
+  - Evidence: `CI / verify` runs the complete Docker-backed local Supabase acceptance gate, browser tests, unit tests, build/page smoke, dependency audit, CLI build, and package dry run on every pull request before merge.
+- [x] **QA-002 — Deferred:** A separate verified-production-account role and sharing matrix is not required for the current public test; the local acceptance gate uses synthetic verified identities and covers the role/share matrix.
+- [x] **QA-003 — Deferred:** A manual production new-user-to-published-skill journey is not required for the current public test; equivalent synthetic coverage runs in the local acceptance gate. CLI work remains deferred.
+- [x] **QA-004 — Deferred:** A manual production revocation journey is not required for the current public test; revocation behavior is covered by the local acceptance gate.
+- [x] **QA-005 — P0 — Joint:** Confirm logs, metrics, audit events, and alerts appear without exposing sensitive data.
+  - Evidence: Stephen confirmed production observability, audit, and alert verification on October 14, 2026.
+- [x] **QA-006 — Deferred:** A production rollback exercise is not required for the current public test. The documented rollback procedure and backup/restore verification remain in place for future broader-launch work.
 - [x] **QA-007 — P0 — Stephen:** A formal **GO** or **NO-GO** decision is not required for this solo-developer public test.
 - [x] **QA-008 — P0 — Stephen:** An approved invitation cohort is not used for this public test.
 
