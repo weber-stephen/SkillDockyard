@@ -413,11 +413,11 @@ Add provider-specific server-only variables for rate limiting, SMTP, error monit
 - A restore/rollback exercise is documented and understood.
 - The incident runbook is sufficient for someone other than its author to follow.
 
-## Phase 7 — Run production acceptance with a role matrix
+## Phase 7 — Run automated public-test acceptance
 
-**Checklist:** `APP-002` through `APP-012`, `QA-001` through `QA-006`
+**Checklist:** `APP-002` through `APP-012`, `QA-001`, `QA-005`
 
-Use separate verified test accounts. Do not simulate multiple roles by editing browser state or changing database rows between steps.
+The Docker-backed local acceptance gate provisions synthetic verified accounts and data, then validates role, sharing, submission, revocation, audit, and browser flows on every pull request. Manual production-account, production-revocation, and rollback exercises are deferred from the current public test and remain future broader-launch safeguards.
 
 ### Test identities
 
@@ -447,10 +447,9 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 
 ### Exit criteria
 
-- Every scenario has a dated pass/fail record.
+- The automated acceptance gate passes on the release candidate.
 - No unresolved defect invalidates the verified scenario.
-- Audit history and production logs support the observed outcomes.
-- The rollback exercise succeeds before materially expanding the public test.
+- Production observability, audit, and alert verification is recorded without sensitive data.
 
 ## Phase 8 — Public-test operation
 
@@ -459,10 +458,10 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 ### Release preparation
 
 1. Freeze non-launch changes.
-2. Confirm all P0 checklist items are complete.
+2. Confirm all current public-test gates are complete.
 3. Record deployment and migration evidence where the relevant checklist item requires it.
 4. Confirm monitoring, support coverage, and rollback target.
-5. Record any residual-risk decision required by legal or operational gates.
+5. Keep the deferred broader-launch safeguards visible as future work.
 
 ### Launch procedure
 
@@ -471,8 +470,8 @@ Use separate verified test accounts. Do not simulate multiple roles by editing b
 3. Run canonical-domain smoke checks.
 4. Apply only migrations not already applied, following the approved migration procedure.
 5. Run post-migration integrity checks and advisors.
-6. Run the applicable new-user acceptance journey; CLI steps are deferred.
-7. Keep unresolved P0 risks visible while the service remains a public test.
+6. Confirm the automated acceptance gate remains green; CLI steps are deferred.
+7. Keep deferred broader-launch safeguards visible while the service remains a public test.
 
 ### Stop and rollback triggers
 
@@ -500,10 +499,10 @@ Rollback web traffic to the previous compatible Vercel deployment. Disable the a
 
 Production launch is complete only when:
 
-1. every P0 item in the checklist is checked with evidence;
+1. every current public-test gate in the checklist is checked with evidence;
 2. `https://skilldockyard.com` is canonical, public, monitored, and recoverable;
 3. the production database matches committed migrations and passes integrity/advisor checks;
-4. automated and manual role-matrix tests pass;
-5. support, legal, backup, monitoring, and incident ownership are defined; and
+4. automated role-matrix tests pass;
+5. support, backup, monitoring, and incident ownership are defined for the current public test; and
 6. public-test users can complete the promised web workflow.
 
