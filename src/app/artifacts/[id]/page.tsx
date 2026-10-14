@@ -41,12 +41,12 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             {sharing.description} {artifact.description ?? "No description extracted yet."}
           </p>
         </div>
-        <Button asChild>
+        {artifact.visibility === "private" || artifact.can_publish || artifact.current_proposal ? <Button asChild>
           <Link href={artifact.visibility === "private" ? `/artifacts/${artifact.id}` : `/artifacts/${artifact.id}/review`}>
             {artifact.visibility === "private" ? "View private draft" : artifact.current_proposal ? "Review pending submission" : "Compare versions"}
             <ArrowRight className="h-4 w-4" />
           </Link>
-        </Button>
+        </Button> : null}
       </header>
 
       <section className="grid gap-x-6 border-y border-border md:grid-cols-2 xl:grid-cols-5">
