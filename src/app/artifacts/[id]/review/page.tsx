@@ -14,6 +14,7 @@ export default async function ReviewPage({ params, searchParams }: { params: Pro
   const query = searchParams ? await searchParams : {};
   const selectedProposal = query.proposal ? await getProposal(query.proposal) : artifact.current_proposal ? await getProposal(artifact.current_proposal.id) : null;
   const proposal = selectedProposal?.artifact_id === artifact.id ? selectedProposal : null;
+  if (!demo && !artifact.can_publish && !proposal) notFound();
   const reviewVersion = proposal?.candidate_version ?? artifact.current_version;
   const baselineVersion = proposal?.base_version ?? artifact.approved_version;
   const diff = buildLineDiff(baselineVersion?.content_snapshot ?? "", reviewVersion.content_snapshot);

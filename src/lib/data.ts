@@ -4,7 +4,7 @@ import { getArtifactShares } from "@/lib/shares";
 import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { getProductMode } from "@/lib/product-mode";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
-import type { Artifact, ArtifactDetail, ArtifactShare, GovernanceExportRow, Proposal } from "@/lib/types";
+import type { Artifact, ArtifactDetail, ArtifactShare, ArtifactVersion, GovernanceExportRow, Proposal, RiskFlag } from "@/lib/types";
 
 export async function listArtifacts(): Promise<Artifact[]> {
   if ((await getProductMode()) === "demo") return sampleArtifacts;
@@ -96,21 +96,26 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
   for (const result of [versionsResult, risksResult, approvalsResult, proposalsResult]) {
     if (result.error && !isMissingSupabaseSchemaError(result.error)) throw result.error;
   }
-  const versions = versionsResult.data;
-  const risks = risksResult.data;
+  const versions = (versionsResult.data ?? []) as ArtifactVersion[];
+  const risks = (risksResult.data ?? []) as RiskFlag[];
   const approvals = approvalsResult.data;
 
-  const current = versions?.find((version) => version.id === artifact.current_version_id) ?? versions?.[0] ?? null;
-  const approved = versions?.find((version) => version.id === artifact.approved_version_id) ?? null;
   const proposalRows = (proposalsResult.data ?? []) as Proposal[];
   const proposalVersionIds = [...new Set(proposalRows.flatMap((proposal) => [proposal.candidate_version_id, proposal.base_version_id].filter((id): id is string => Boolean(id))))];
-  const proposalVersions = new Map((versions ?? []).filter((version) => proposalVersionIds.includes(version.id)).map((version) => [version.id, version]));
+  const proposalVersions = new Map(versions.filter((version) => proposalVersionIds.includes(version.id)).map((version) => [version.id, version]));
   const proposals = proposalRows.map((proposal) => ({
     ...proposal,
     candidate_version: proposalVersions.get(proposal.candidate_version_id) ?? null,
     base_version: proposal.base_version_id ? proposalVersions.get(proposal.base_version_id) ?? null : null
   }));
-  const currentProposal = proposals.find((proposal) => proposal.status === "pending_review") ?? null;
+  const visible = selectVisibleArtifactData({
+    artifact: artifact as Artifact,
+    userId: user.id,
+    canPublish: permission.canPublish,
+    versions,
+    risks,
+    proposals
+  });
 
   return {
     ...(artifact as Artifact),
@@ -122,14 +127,46 @@ export async function getArtifactDetail(id: string): Promise<ArtifactDetail | nu
     source_workspace_name: permission.sourceWorkspaceName ?? sourceWorkspace?.name ?? null,
     created_by_viewer: (artifact as Artifact).created_by_user_id === user.id,
     source_share_id: permission.share?.id ?? null,
-    current_version: current,
-    approved_version: approved,
-    risks: risks ?? [],
+    current_version_id: visible.currentVersion?.id ?? null,
+    risk_count: visible.risks.length,
+    current_version: visible.currentVersion,
+    approved_version: visible.approvedVersion,
+    risks: visible.risks,
     approvals: approvals ?? [],
-    current_proposal: currentProposal,
-    proposals,
+    current_proposal: visible.currentProposal,
+    proposals: visible.proposals,
     shares: permission.canManageShares ? shares : shares.filter((share) => share.status === "active")
   } as ArtifactDetail;
+}
+
+export function selectVisibleArtifactData(input: {
+  artifact: Pick<Artifact, "visibility" | "current_version_id" | "approved_version_id">;
+  userId: string;
+  canPublish: boolean;
+  versions: ArtifactVersion[];
+  risks: RiskFlag[];
+  proposals: Proposal[];
+}) {
+  const submittedVersion = input.versions.find((version) => version.id === input.artifact.current_version_id) ?? input.versions[0] ?? null;
+  const approvedVersion = input.versions.find((version) => version.id === input.artifact.approved_version_id) ?? null;
+  const pendingProposal = input.proposals.find((proposal) => proposal.status === "pending_review") ?? null;
+  const canViewSubmittedVersion = input.artifact.visibility === "private"
+    || input.canPublish
+    || pendingProposal?.submitted_by_user_id === input.userId;
+  const currentVersion = canViewSubmittedVersion ? submittedVersion : approvedVersion;
+  const currentProposal = canViewSubmittedVersion ? pendingProposal : null;
+  const proposals = input.canPublish
+    ? input.proposals
+    : currentProposal ? [currentProposal] : [];
+  const visibleVersionId = currentVersion?.id ?? null;
+
+  return {
+    currentVersion,
+    approvedVersion,
+    risks: visibleVersionId ? input.risks.filter((risk) => risk.artifact_version_id === visibleVersionId) : [],
+    currentProposal,
+    proposals
+  };
 }
 
 export function getDemoArtifactDetail(id: string): ArtifactDetail | null {

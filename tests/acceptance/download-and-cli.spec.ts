@@ -67,6 +67,42 @@ test("APP-002 and APP-011 only let a private-draft creator download current ZIP 
   expect(denied).toBe(404);
 });
 
+test("SEC-001 keeps an awaiting-review instruction snapshot from workspace viewers", async ({ page }) => {
+  const owner = await createConfirmedUser("submitted-owner");
+  const viewer = await createConfirmedUser("submitted-viewer");
+  const { data: workspace, error: workspaceError } = await admin.from("workspaces").insert({ name: `Submitted ${crypto.randomUUID()}`, owner_user_id: owner.id }).select("id").single();
+  if (workspaceError || !workspace) throw new Error(workspaceError?.message ?? "No workspace");
+  const { error: membershipError } = await admin.from("workspace_members").insert([
+    { workspace_id: workspace.id, user_id: owner.id, email: owner.email, role: "owner" },
+    { workspace_id: workspace.id, user_id: viewer.id, email: viewer.email, role: "viewer" }
+  ]);
+  if (membershipError) throw new Error(membershipError.message);
+  const { data: repo, error: repoError } = await admin.from("repos").insert({ workspace_id: workspace.id, name: `submitted-${crypto.randomUUID()}`, root_path: "/acceptance/submitted" }).select("id").single();
+  if (repoError || !repo) throw new Error(repoError?.message ?? "No repository");
+  const { data: artifact, error: artifactError } = await admin.from("artifacts").insert({ workspace_id: workspace.id, repo_id: repo.id, name: "Submitted skill", slug: `submitted-${crypto.randomUUID()}`, type: "claude_skill", path: "skills/submitted/SKILL.md", status: "approved", visibility: "workspace", created_by_user_id: owner.id }).select("id").single();
+  if (artifactError || !artifact) throw new Error(artifactError?.message ?? "No artifact");
+  const { data: published, error: publishedError } = await admin.from("artifact_versions").insert({ artifact_id: artifact.id, content_hash: `sha256:published-${crypto.randomUUID()}`, content_snapshot: "PUBLISHED INSTRUCTIONS", status: "approved", tools: [], mcp_servers: [], tags: [] }).select("id").single();
+  if (publishedError || !published) throw new Error(publishedError?.message ?? "No published version");
+  const { data: candidate, error: candidateError } = await admin.from("artifact_versions").insert({ artifact_id: artifact.id, content_hash: `sha256:candidate-${crypto.randomUUID()}`, content_snapshot: "UNPUBLISHED INSTRUCTIONS", status: "needs_reapproval", tools: [], mcp_servers: [], tags: [] }).select("id").single();
+  if (candidateError || !candidate) throw new Error(candidateError?.message ?? "No candidate version");
+  const { error: artifactUpdateError } = await admin.from("artifacts").update({ current_version_id: candidate.id, approved_version_id: published.id, status: "needs_reapproval" }).eq("id", artifact.id);
+  if (artifactUpdateError) throw new Error(artifactUpdateError.message);
+  const { error: proposalError } = await admin.from("proposals").insert({ artifact_id: artifact.id, candidate_version_id: candidate.id, base_version_id: published.id, workspace_id: workspace.id, submitted_by_user_id: owner.id, submitter_email: owner.email, kind: "update", status: "pending_review" });
+  if (proposalError) throw new Error(proposalError.message);
+
+  await login(page, viewer.email);
+  const detail = await page.evaluate(async (id) => {
+    const response = await fetch(`/api/artifacts/${id}`);
+    return { status: response.status, body: await response.json() };
+  }, artifact.id);
+
+  expect(detail.status).toBe(200);
+  expect(detail.body.current_version.content_snapshot).toBe("PUBLISHED INSTRUCTIONS");
+  expect(detail.body.current_proposal).toBeNull();
+  expect(detail.body.proposals).toEqual([]);
+  expect(JSON.stringify(detail.body)).not.toContain("UNPUBLISHED INSTRUCTIONS");
+});
+
 test("APP-012 packaged connected-computer update leaves local SKILL.md untouched @connected-computer", async () => {
   const user = await createConfirmedUser("cli-user");
   const { data: workspaceId, error } = await admin.rpc("ensure_personal_workspace", { p_user_id: user.id, p_user_email: user.email, p_workspace_name: "CLI acceptance workspace" });

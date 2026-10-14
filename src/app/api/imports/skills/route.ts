@@ -42,17 +42,18 @@ export async function POST(request: Request) {
     const proposalIds: string[] = [];
     if (input.visibility === "workspace") {
       for (const item of result.artifacts) {
-        const { data: proposal, error } = await supabase.from("proposals").insert({
-          artifact_id: item.artifactId,
-          candidate_version_id: item.versionId,
-          workspace_id: result.workspaceId,
-          submitted_by_user_id: viewer.user.id,
-          submitter_email: viewer.user.email ?? null,
-          kind: "new",
-          status: "pending_review"
-        }).select("id").single();
+        const { data: proposal, error } = await supabase.rpc("submit_artifact_proposal", {
+          p_artifact_id: item.artifactId,
+          p_candidate_version_id: item.versionId,
+          p_actor_user_id: viewer.user.id,
+          p_actor_email: viewer.user.email ?? "",
+          p_kind: item.status === "needs_reapproval" ? "update" : "new",
+          p_source_share_id: null
+        });
         if (error) throw error;
-        proposalIds.push(proposal.id);
+        const proposalId = (proposal as { proposalId?: string } | null)?.proposalId;
+        if (!proposalId) throw new Error("The submission could not be recorded.");
+        proposalIds.push(proposalId);
       }
       const { data: reviewers } = await supabase.from("workspace_members").select("user_id").eq("workspace_id", result.workspaceId).in("role", ["owner", "reviewer"]);
       const recipients = (reviewers ?? []).map((reviewer) => reviewer.user_id).filter((id): id is string => Boolean(id && id !== viewer.user.id));

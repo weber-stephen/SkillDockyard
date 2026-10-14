@@ -52,9 +52,11 @@ export async function getProposal(id: string): Promise<(Proposal & { artifact: A
   if (error) throw error;
   if (!data) return null;
 
+  const { user } = await getViewerContext();
   const { getArtifactDetail } = await import("@/lib/data");
   const artifact = await getArtifactDetail(data.artifact_id as string);
   if (!artifact) return null;
+  if (!artifact.can_publish && data.submitted_by_user_id !== user.id) return null;
   const { data: reviews, error: reviewsError } = await supabase.from("proposal_reviews").select("*").eq("proposal_id", id).order("created_at", { ascending: false });
   if (reviewsError) throw reviewsError;
   const versionIds = [data.candidate_version_id, data.base_version_id].filter(Boolean);
