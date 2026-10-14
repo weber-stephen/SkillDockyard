@@ -31,21 +31,19 @@ Open [http://localhost:3000](http://localhost:3000). The public landing page exp
 
 Run the fast unit suite with `npm test`. It covers skill validation plus server-side authorization, invitation, sharing, and submission decision boundaries with mocked Supabase RPC contracts. Run the full page smoke suite with `npm run test:pages`; it builds the production app, starts it without external Supabase access, checks public and demo pages, verifies internal links, and then shuts the server down. Run `npx playwright install chromium` once, then `npm run test:browser` to exercise the demo browse, navigation, review, and submission journeys against that production build. The browser suite also maintains deterministic screenshots for the demo Skills and review pages; CI uploads traces, screenshots, and the HTML report when a browser test fails.
 
-### Required local acceptance gate
+### Local acceptance gate
 
-The merge gate also runs against a disposable local Supabase stack. Docker Desktop is required locally; no production account, email address, database, or secret is used. Start the stack and reset it from committed migrations, then run the same checks used in CI:
+Install and start Docker Desktop before running local acceptance tests. The suite starts a disposable local Supabase stack, applies every repository migration, captures confirmation email in local Mailpit, and uses only generated `@example.test` accounts. It never reads production Supabase, Resend, or local secret files.
 
 ```bash
-npx supabase start
-npx supabase db reset --yes
-npm run test:db
-npm run test:acceptance
-npx playwright install chromium
-npm run test:browser:acceptance
-npx supabase stop --no-backup
+npm run test:db                  # executable pgTAP authorization and audit tests
+npm run test:email               # signup confirmation through local Mailpit
+npm run test:connected-computer  # packaged updater refuses local edits
+npm run test:browser:acceptance  # authenticated signup and private-draft import
+npm run test:acceptance          # complete local launch acceptance gate
 ```
 
-`test:browser:acceptance` captures confirmation email through the local Mailpit inbox and exercises signup plus folder/ZIP import. `CI / verify` requires these checks to pass before a pull request can merge to `main`.
+The test runner discovers local URLs and keys from `supabase status --output env`; do not copy those values into `.env.local`. `CI / verify` requires the complete local acceptance gate before a pull request can merge to `main`. Real Resend deliverability remains a manual post-deploy smoke check.
 
 ### Production launch
 

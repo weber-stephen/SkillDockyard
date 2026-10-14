@@ -1,14 +1,19 @@
 project_id = "skill-dockyard-tests"
 
 [auth]
-site_url = "http://127.0.0.1:4320"
-additional_redirect_urls = ["http://127.0.0.1:4320"]
+site_url = "http://127.0.0.1:4319"
+additional_redirect_urls = ["http://127.0.0.1:4319/auth/confirm", "http://localhost:4319/auth/confirm"]
 enable_signup = true
 enable_anonymous_sign_ins = false
 
 [auth.email]
 enable_confirmations = true
+max_frequency = "1s"
+
+[inbucket]
+admin_email = "noreply@skilldockyard.test"
+sender_name = "Skill Dockyard Test"
 
 [auth.email.template.confirmation]
-subject = "Confirm your Skill Dockyard email"
+subject = "Confirm your Skill Dockyard account"
 content_path = "./supabase/templates/confirmation.html"

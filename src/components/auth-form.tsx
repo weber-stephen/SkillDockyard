@@ -18,7 +18,7 @@ export function AuthForm({ mode, nextPath, signupEnabled = true }: { mode: "logi
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const signup = mode === "signup";
-  const captchaRequired = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) || process.env.NODE_ENV === "production";
+  const captchaRequired = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) || (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_SKILL_DOCKYARD_TEST_MODE !== "true");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
