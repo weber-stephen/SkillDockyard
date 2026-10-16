@@ -8,7 +8,7 @@
 
 ### Headline options
 
-1. Make your best campaign brief reusable.
+1. Turn your best campaign brief into an AI skill your team can reuse.
 2. One campaign workflow your whole team can trust.
 3. Keep winning campaign prompts from disappearing into chats.
 4. Review the brief before it becomes the team standard.

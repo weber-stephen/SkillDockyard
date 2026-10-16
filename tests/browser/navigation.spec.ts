@@ -31,7 +31,7 @@ test.describe("demo navigation and skill browsing", () => {
   test("explains the campaign-brief use case on a public, indexable page", async ({ page }) => {
     await page.goto("/campaign-briefs");
 
-    await expect(page.getByRole("heading", { name: "Make your best campaign brief reusable." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Turn your best campaign brief into an AI skill your team can reuse." })).toBeVisible();
     await expect(page.getByRole("link", { name: "Create free account", exact: true }).first()).toHaveAttribute("href", "/signup");
   });
 
