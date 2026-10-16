@@ -24,8 +24,15 @@ test.describe("demo navigation and skill browsing", () => {
     const hero = page.locator("main > section").first();
     await expect(hero.getByText("Free during beta", { exact: true })).toBeVisible();
     await expect(hero.getByRole("link", { name: "Create free account", exact: true })).toHaveAttribute("href", "/signup");
-    await expect(hero.getByRole("link", { name: "Explore the demo", exact: true })).toHaveAttribute("href", "/demo");
+    await expect(hero.getByRole("link", { name: "Explore the campaign demo", exact: true })).toHaveAttribute("href", "/demo/artifacts/art_release_captain");
     await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Create free account", exact: true })).toHaveAttribute("href", "/signup");
+  });
+
+  test("explains the campaign-brief use case on a public, indexable page", async ({ page }) => {
+    await page.goto("/campaign-briefs");
+
+    await expect(page.getByRole("heading", { name: "Make your best campaign brief reusable." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create free account", exact: true }).first()).toHaveAttribute("href", "/signup");
   });
 
   test("shows standard Codex and Claude Code skill locations on the import page", async ({ page }) => {

@@ -9,6 +9,9 @@ import {
   routeCategory,
   setAnalyticsEnabled,
   trackAnalyticsEvent,
+  trackAnalyticsEventOnce,
+  signupCompletionStorageKey,
+  returningUserStorageKey,
   type AnalyticsConsent,
   type AnalyticsEventName
 } from "@/lib/analytics";
@@ -72,10 +75,33 @@ export function AnalyticsProvider({ containerId }: { containerId?: string }) {
       route_category: routeCategory(pathname),
       ...campaignParameters(window.location.search)
     });
+    if (pathname === "/") trackAnalyticsEvent("landing_page_view", { entry_point: "direct_or_campaign" });
     if (pathname === "/demo" && !demoTracked.current) {
       demoTracked.current = true;
       trackAnalyticsEvent("demo_entered", { entry_point: "demo" });
     }
+  }, [consent, enabled, pathname]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (pathname === "/app" && params.get("signup") === "confirmed") {
+      window.sessionStorage.setItem(signupCompletionStorageKey, "pending");
+      params.delete("signup");
+      const query = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
+    }
+    if (!enabled || consent !== "granted") return;
+    if (window.sessionStorage.getItem(signupCompletionStorageKey) === "pending") {
+      if (trackAnalyticsEventOnce("signup_completed", "signup-completed", { verification: "email" })) {
+        window.sessionStorage.removeItem(signupCompletionStorageKey);
+      }
+    }
+    const now = Date.now();
+    const previous = Number(window.localStorage.getItem(returningUserStorageKey));
+    if (Number.isFinite(previous) && now - previous >= 24 * 60 * 60 * 1000) {
+      trackAnalyticsEventOnce("returning_user", `returning-${new Date(now).toISOString().slice(0, 10)}`, { minimum_days_since_last_visit: 1 });
+    }
+    window.localStorage.setItem(returningUserStorageKey, String(now));
   }, [consent, enabled, pathname]);
 
   useEffect(() => {
@@ -90,6 +116,14 @@ export function AnalyticsProvider({ containerId }: { containerId?: string }) {
         ...(location ? { location } : {}),
         ...(label ? { label } : {})
       });
+      // Preserve the established CTA event while giving the signup path a
+      // funnel-specific event for launch analysis.
+      if (name === "primary_cta_click") {
+        trackAnalyticsEvent("cta_clicked", {
+          ...(location ? { location } : {}),
+          ...(label ? { label } : {})
+        });
+      }
     }
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

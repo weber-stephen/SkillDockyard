@@ -5,7 +5,7 @@ import { ingestArtifacts } from "@/lib/ingest";
 import { getSettings } from "@/lib/settings";
 import { buildManualSubmission, type ManualSubmissionInput } from "@/lib/submissions";
 import { validateManualSubmissionInput } from "@/lib/submissions";
-import { hasSupabaseConfig } from "@/lib/supabase/server";
+import { createServerSupabase, hasSupabaseConfig } from "@/lib/supabase/server";
 import { recordOnboardingMilestone } from "@/lib/onboarding";
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
 import { consumeRateLimit, recordRateLimitFailure, RateLimitConfigurationError } from "@/lib/rate-limit";
@@ -55,6 +55,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "You can view this workspace, but you cannot submit skills for review." }, { status: 403 });
       }
     }
+    const { count: existingSkillCount, error: existingSkillCountError } = await createServerSupabase().from("artifacts").select("id", { count: "exact", head: true }).eq("created_by_user_id", viewer.user.id);
+    if (existingSkillCountError) throw existingSkillCountError;
+    const firstValue = body.mode === "new" && (existingSkillCount ?? 0) === 0;
     const userRate = await consumeRateLimit(`submission-user:${viewer.user.id}`, 20, 60_000);
     const workspaceIds = new Set((viewer.memberships ?? []).map((membership) => membership.workspace_id));
     if (existingArtifact?.workspace_id) workspaceIds.add(existingArtifact.workspace_id);
@@ -98,7 +101,8 @@ export async function POST(request: Request) {
         proposalId: null,
         proposalStatus: null,
         compareHref: `/artifacts/${ingested.artifactId}`,
-        trustNotes: submission.artifact.risks.length
+        trustNotes: submission.artifact.risks.length,
+        firstValue
       });
     }
 
@@ -131,7 +135,8 @@ export async function POST(request: Request) {
       proposalId: proposal.proposalId,
       proposalStatus: "pending_review",
       compareHref: `/artifacts/${ingested.artifactId}/review`,
-      trustNotes: submission.artifact.risks.length
+      trustNotes: submission.artifact.risks.length,
+      firstValue
     });
   } catch (error) {
     if (error instanceof RateLimitConfigurationError) return NextResponse.json({ error: "This service is temporarily unavailable." }, { status: 503 });

@@ -10,7 +10,7 @@ import { clearLocalDrafts, readLocalDrafts, writeLocalDraft, type LocalDraftArti
 import type { SubmissionOptions } from "@/lib/submission-options";
 import type { Artifact, ArtifactDetail } from "@/lib/types";
 import { getSkillWritingChecks, skillTemplate } from "@/lib/skill-writing";
-import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackAnalyticsEvent, trackAnalyticsEventOnce } from "@/lib/analytics";
 
 interface SubmissionResponse {
   saved: boolean;
@@ -19,6 +19,7 @@ interface SubmissionResponse {
   artifactId: string | null;
   compareHref: string | null;
   trustNotes: number;
+  firstValue?: boolean;
 }
 
 export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDemo, initialArtifactId }: { mode: "new" | "update"; artifacts: Artifact[]; artifactDetails: ArtifactDetail[]; options: SubmissionOptions; isDemo: boolean; initialArtifactId?: string }) {
@@ -141,6 +142,10 @@ export function SubmissionForm({ mode, artifacts, artifactDetails, options, isDe
 
     setResult(payload);
     trackAnalyticsEvent("skill_submission_succeeded", { submission_kind: mode, environment: "live", visibility: mode === "new" ? visibility : "workspace" });
+    if (mode === "new" && payload.firstValue) {
+      trackAnalyticsEventOnce("first_value_achieved", "first-value-submission", { path: "manual_skill" });
+      trackAnalyticsEventOnce("onboarding_completed", "onboarding-completed", { path: "manual_skill" });
+    }
   }
 
   function continueToDetails() {

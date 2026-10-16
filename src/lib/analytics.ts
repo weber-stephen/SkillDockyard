@@ -2,7 +2,15 @@ export type AnalyticsConsent = "granted" | "denied";
 
 export type AnalyticsEventName =
   | "page_view"
+  | "landing_page_view"
   | "cta_clicked"
+  | "primary_cta_click"
+  | "signup_started"
+  | "signup_completed"
+  | "onboarding_started"
+  | "onboarding_completed"
+  | "first_value_achieved"
+  | "returning_user"
   | "login_succeeded"
   | "demo_entered"
   | "skill_submission_succeeded"
@@ -32,6 +40,8 @@ declare global {
 let analyticsEnabled = false;
 
 export const analyticsConsentStorageKey = "skill-dockyard.analytics-consent.v1";
+export const signupCompletionStorageKey = "skill-dockyard.signup-completion.v1";
+export const returningUserStorageKey = "skill-dockyard.last-active.v1";
 
 export function isValidGtmContainerId(value: string | undefined) {
   return Boolean(value && /^GTM-[A-Z0-9]+$/.test(value));
@@ -45,6 +55,15 @@ export function trackAnalyticsEvent(name: AnalyticsEventName, parameters: Record
   if (typeof window === "undefined" || !analyticsEnabled) return;
   window.dataLayer = window.dataLayer ?? [];
   window.dataLayer.push({ event: name, ...parameters });
+}
+
+export function trackAnalyticsEventOnce(name: AnalyticsEventName, key: string, parameters: Record<string, AnalyticsValue> = {}) {
+  if (typeof window === "undefined" || !analyticsEnabled) return false;
+  const storageKey = `skill-dockyard.analytics-event.${key}`;
+  if (window.sessionStorage.getItem(storageKey)) return false;
+  trackAnalyticsEvent(name, parameters);
+  window.sessionStorage.setItem(storageKey, "1");
+  return true;
 }
 
 export function routeCategory(pathname: string) {
