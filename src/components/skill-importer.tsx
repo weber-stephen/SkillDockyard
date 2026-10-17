@@ -5,7 +5,7 @@ import { Archive, CheckCircle2, FileArchive, FolderOpen, ShieldAlert, Upload } f
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { parseBrowserImport, type BrowserImportCandidate } from "@/lib/browser-skill-files";
-import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackAnalyticsEvent, trackAnalyticsEventOnce } from "@/lib/analytics";
 import { ProductLink as Link } from "@/components/product-link";
 
 export function SkillImporter({ isDemo }: { isDemo: boolean }) {
@@ -51,6 +51,10 @@ export function SkillImporter({ isDemo }: { isDemo: boolean }) {
       if (!response.ok) throw new Error(body.error ?? "We could not import these skills.");
       setMessage(visibility === "private" ? `${body.imported} skill${body.imported === 1 ? " was" : "s were"} saved as private draft${body.imported === 1 ? "" : "s"}.` : `${body.imported} skill${body.imported === 1 ? " was" : "s were"} submitted for review.`);
       trackAnalyticsEvent("skill_import_completed", { count: body.imported, visibility });
+      if (body.firstValue) {
+        trackAnalyticsEventOnce("first_value_achieved", "first-value-import", { path: "browser_import" });
+        trackAnalyticsEventOnce("onboarding_completed", "onboarding-completed", { path: "browser_import" });
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "We could not import these skills.");
       trackAnalyticsEvent("skill_import_failed", { phase: "save" });

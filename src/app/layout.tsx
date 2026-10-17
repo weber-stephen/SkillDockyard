@@ -3,6 +3,7 @@ import { Figtree } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics-provider";
+import { publicSiteOrigin } from "@/lib/safe-redirect";
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -11,9 +12,10 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(publicSiteOrigin("http://localhost:3000")),
   title: "Skill Dockyard — Keep your team's AI workflows current",
   description: "Review, publish, and reuse the AI instructions your team improves together.",
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     title: "Skill Dockyard — Keep your team's AI workflows current",

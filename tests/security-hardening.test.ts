@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { safeLocalPath } from "@/lib/safe-redirect";
+import { publicSiteOrigin, safeLocalPath } from "@/lib/safe-redirect";
 import { contentSecurityPolicy } from "@/proxy";
 
 const originalSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,6 +16,18 @@ describe("production security controls", () => {
     expect(safeLocalPath("/app/artifacts")).toBe("/app/artifacts");
     for (const unsafe of ["https://evil.example", "//evil.example", "/\\evil.example", null]) {
       expect(safeLocalPath(unsafe)).toBe("/app");
+    }
+  });
+
+  it("falls back when the configured public URL is not an HTTP origin", () => {
+    const previous = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.NEXT_PUBLIC_SITE_URL = "localhost:3000";
+
+    try {
+      expect(publicSiteOrigin("http://127.0.0.1:4318")).toBe("http://127.0.0.1:4318");
+    } finally {
+      if (previous === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+      else process.env.NEXT_PUBLIC_SITE_URL = previous;
     }
   });
 

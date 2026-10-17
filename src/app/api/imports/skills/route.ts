@@ -25,6 +25,8 @@ export async function POST(request: Request) {
     if (input.visibility === "workspace" && (!workspaceMembership || workspaceMembership.role === "viewer")) {
       return NextResponse.json({ error: "You can view this workspace, but you cannot submit skills for review." }, { status: 403 });
     }
+    const { count: existingSkillCount, error: existingSkillCountError } = await createServerSupabase().from("artifacts").select("id", { count: "exact", head: true }).eq("created_by_user_id", viewer.user.id);
+    if (existingSkillCountError) throw existingSkillCountError;
     const rate = await consumeRateLimit(`browser-import-user:${viewer.user.id}`, 10, 60_000);
     if (!rate.allowed) {
       recordRateLimitFailure("browser-import-user");
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
       })));
     }
     await recordOnboardingMilestone(result.workspaceId, "scan");
-    return NextResponse.json({ imported: result.artifacts.length, visibility: input.visibility, artifactIds: result.artifacts.map((item) => item.artifactId), proposalIds });
+    return NextResponse.json({ imported: result.artifacts.length, visibility: input.visibility, artifactIds: result.artifacts.map((item) => item.artifactId), proposalIds, firstValue: (existingSkillCount ?? 0) === 0 && result.artifacts.length > 0 });
   } catch (error) {
     if (error instanceof RateLimitConfigurationError) return NextResponse.json({ error: "This service is temporarily unavailable." }, { status: 503 });
     return NextResponse.json({ error: error instanceof Error ? error.message : "We could not import these skills." }, { status: 400 });
