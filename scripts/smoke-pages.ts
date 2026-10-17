@@ -8,7 +8,7 @@ const nextBinary = `${process.cwd()}/node_modules/.bin/next`;
 
 const pageRoutes = [
   ["/", "Turn your team’s best campaign brief into a skill everyone can use."],
-  ["/campaign-briefs", "Make your best campaign brief reusable."],
+  ["/campaign-briefs", "Turn your best campaign brief into an AI skill your team can reuse."],
   ["/login", ""],
   ["/signup", ""],
   ["/demo", "Keep every shared skill reviewed, current, and ready to use."],
