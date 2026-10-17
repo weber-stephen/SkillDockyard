@@ -1,5 +1,7 @@
 # Reddit-led soft launch plan
 
+> For the current multi-channel strategy and schedule, use [the complete marketing plan](MARKETING_PLAN.md). This document remains useful for Reddit-specific background.
+
 **Status:** Proposed; no posts, outreach, deployment, or analytics configuration have been performed under this plan. Founder approval is required before each external action. This plan replaces the LinkedIn-first channel sequence in the older launch documents. LinkedIn is excluded because the founder's profile is attached to their employment.
 
 ## Objective and audience

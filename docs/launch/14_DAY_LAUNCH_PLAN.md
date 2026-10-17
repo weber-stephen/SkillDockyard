@@ -1,6 +1,6 @@
 # 14-day soft launch plan
 
-> Superseded for acquisition sequencing by [the Reddit-led launch plan](REDDIT_LED_LAUNCH_PLAN.md), which excludes LinkedIn at the founder's request.
+> Superseded for acquisition sequencing by [the complete marketing plan](MARKETING_PLAN.md), which excludes LinkedIn at the founder's request.
 
 | Day | Owner | Action | Time | Success metric | Dependency |
 | --- | --- | --- | ---: | --- | --- |

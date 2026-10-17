@@ -1,6 +1,6 @@
 # Organic acquisition strategy
 
-> For the current channel order, use [the Reddit-led launch plan](REDDIT_LED_LAUNCH_PLAN.md). LinkedIn is excluded at the founder's request.
+> For the current channel order, use [the complete marketing plan](MARKETING_PLAN.md). LinkedIn is excluded at the founder's request.
 
 ## First two weeks
 
