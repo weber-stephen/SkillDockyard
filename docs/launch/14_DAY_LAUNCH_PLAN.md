@@ -1,5 +1,7 @@
 # 14-day soft launch plan
 
+> Superseded for acquisition sequencing by [the Reddit-led launch plan](REDDIT_LED_LAUNCH_PLAN.md), which excludes LinkedIn at the founder's request.
+
 | Day | Owner | Action | Time | Success metric | Dependency |
 | --- | --- | --- | ---: | --- | --- |
 | 1 | Codex | Merge tested funnel, SEO, and docs work through PR | 30m | CI passes | Founder approves PR/preview |

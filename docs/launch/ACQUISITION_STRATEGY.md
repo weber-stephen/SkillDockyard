@@ -1,5 +1,7 @@
 # Organic acquisition strategy
 
+> For the current channel order, use [the Reddit-led launch plan](REDDIT_LED_LAUNCH_PLAN.md). LinkedIn is excluded at the founder's request.
+
 ## First two weeks
 
 1. **Founder feedback outreach** — Ask warm marketing leads already using Codex or Claude Code to try one campaign brief. Highest qualification and fastest learning; no automated messages.
