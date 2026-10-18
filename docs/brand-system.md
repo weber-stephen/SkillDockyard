@@ -8,7 +8,7 @@ This document translates the positioning in [brand-strategy.md](brand-strategy.m
 
 ## Design intent
 
-Skill Dockyard serves engineering, platform, security, operations, and AI enablement leaders while remaining approachable to capable workplace users. The visual system should therefore feel:
+Skill Dockyard serves engineering, platform, security, operations, AI enablement, and marketing leaders while remaining approachable to capable workplace users. The initial campaign-brief launch must remain useful to marketing teams without becoming consumer-like or decorative. The visual system should therefore feel:
 
 - Operational, not experimental
 - Trustworthy, not restrictive

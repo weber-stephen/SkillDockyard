@@ -5,9 +5,10 @@ import { ArrowRight, Check, FileSearch, Send, Sparkles, X } from "lucide-react";
 import { ProductLink as Link } from "@/components/product-link";
 import { Button } from "@/components/ui/button";
 import type { OnboardingPath, OnboardingState } from "@/lib/onboarding";
+import { trackAnalyticsEvent, trackAnalyticsEventOnce } from "@/lib/analytics";
 
 const paths: Array<{ id: OnboardingPath; title: string; body: string; bestFor: string; action: string; href: string; icon: typeof Send }> = [
-  { id: "starter", title: "Start with examples", body: "Add three useful, editable skills to your private library.", bestFor: "Best if you want to see what a good skill looks like before writing your own.", action: "Add starter skills", href: "#starter", icon: Sparkles },
+  { id: "starter", title: "Start with campaign examples", body: "Add editable campaign, customer-voice, and sales-prep skills to your private library.", bestFor: "Best if your team wants a practical campaign brief to improve before writing a skill from scratch.", action: "Add starter skills", href: "#starter", icon: Sparkles },
   { id: "share", title: "Add a skill manually", body: "Save a workflow from a file, document, or chat.", bestFor: "Best if the skill is not already installed on this computer.", action: "Add a new skill", href: "/submit", icon: Send },
   { id: "scan", title: "Import skills", body: "Bring in skills already installed in Codex or Claude Code.", bestFor: "Best if you have a skill folder or ZIP file from this computer.", action: "Import my skills", href: "/import", icon: FileSearch }
 ];
@@ -23,7 +24,10 @@ export function SetupHub({ initialState, hasArtifacts, artifactCount = hasArtifa
     setBusy(path);
     try {
       const response = await fetch("/api/onboarding", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
-      if (response.ok) setState(await response.json());
+      if (response.ok) {
+        setState(await response.json());
+        trackAnalyticsEvent("onboarding_started", { path });
+      }
     } finally { setBusy(null); }
   }
 
@@ -41,6 +45,10 @@ export function SetupHub({ initialState, hasArtifacts, artifactCount = hasArtifa
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Starter skills could not be added.");
       setStarterMessage(body.created?.length ? `Added ${body.created.length} starter skills to your private library.` : "Your starter skills are already in the library.");
+      if (body.firstValue) {
+        trackAnalyticsEventOnce("first_value_achieved", "first-value-starter", { path: "starter_skills" });
+        trackAnalyticsEventOnce("onboarding_completed", "onboarding-completed", { path: "starter_skills" });
+      }
     } catch (error) {
       setStarterMessage(error instanceof Error ? error.message : "Starter skills could not be added.");
     } finally {

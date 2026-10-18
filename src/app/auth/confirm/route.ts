@@ -20,5 +20,11 @@ export async function GET(request: NextRequest) {
     }
   });
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-  return error ? NextResponse.redirect(new URL("/login?error=confirmation", origin)) : response;
+  if (error) return NextResponse.redirect(new URL("/login?error=confirmation", origin));
+  if (type === "signup") {
+    const confirmed = new URL(safeNext, origin);
+    confirmed.searchParams.set("signup", "confirmed");
+    response.headers.set("Location", confirmed.toString());
+  }
+  return response;
 }

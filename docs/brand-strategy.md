@@ -14,6 +14,12 @@ The brand should feel:
 - Deliberate rather than bureaucratic
 - Useful rather than futuristic
 
+## Initial launch wedge
+
+The initial self-service launch focuses on small marketing teams using Codex or Claude Code for recurring campaign work. Campaign Brief Builder is the first public proof point: a team can refine a workflow for audience, evidence, messages, channels, and sales handoff without losing track of the version teammates should use.
+
+This is a launch wedge, not a narrowing of the long-term product category. Sales enablement and engineering/platform teams remain supported audiences.
+
 ## Positioning
 
 ### Target customer
@@ -24,6 +30,8 @@ Skill Dockyard is primarily designed for:
 - AI enablement teams responsible for reusable workflows
 - Reviewers responsible for quality, compatibility, and safety
 - Workplace teams that create and reuse skills across tools such as Codex and Claude Code
+
+For the initial launch, prioritize a marketing lead with a small team that already uses Codex or Claude Code and needs repeatable campaign workflows.
 
 The buyer is likely to be an engineering, platform, security, operations, or AI enablement leader. The end user may be any capable workplace user who creates, improves, installs, or uses a skill.
 

@@ -90,26 +90,26 @@ export default function MarketingPage() {
               </p>
             ) : null}
             <p className={`${signupEnabled ? "mt-4" : ""} max-w-xl text-xs font-bold uppercase tracking-[0.18em] text-primary`}>
-              A shared workspace for AI skills
+              Shared campaign skills for Codex teams
             </p>
             <h1 className="mt-6 max-w-[14ch] text-balance font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.94] tracking-[-0.035em]">
-              Turn one person’s AI skill into a team resource.
+              Turn your team’s best campaign brief into a skill everyone can use.
             </h1>
             <p className="mt-7 max-w-[62ch] text-pretty text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">
-              Skills passed around in messages are easy to miss and hard to keep current. Skill Dockyard gives your team one place to find skills, review improvements, and install the latest published version.
+              Keep campaign planning, customer insight, and sales handoff workflows out of scattered chats. Review improvements, publish one trusted version, and use it with Codex or Claude Code.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {signupEnabled ? (
                 <>
                   <Button asChild className="min-h-11 w-full sm:w-auto">
-                    <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="create_free_account">
+                    <Link href="/signup" data-analytics-event="primary_cta_click" data-analytics-location="landing_hero" data-analytics-label="create_free_account">
                       Create free account
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="min-h-11 w-full bg-panel/70 sm:w-auto">
-                    <Link href="/demo" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_demo">
-                      Explore the demo
+                    <Link href="/demo/artifacts/art_release_captain" data-analytics-event="cta_clicked" data-analytics-location="landing_hero" data-analytics-label="explore_campaign_demo">
+                      Explore the campaign demo
                     </Link>
                   </Button>
                 </>
@@ -154,7 +154,7 @@ function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
           <BrandMark compact className="sm:gap-3" />
           {signupEnabled ? (
             <Button asChild className="min-h-11 shrink-0 px-3 text-[13px] sm:hidden">
-              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
+              <Link href="/signup" data-analytics-event="primary_cta_click" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
             </Button>
           ) : null}
         </div>
@@ -163,15 +163,15 @@ function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
           <a className="inline-flex min-h-11 items-center justify-center px-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:text-sm" href="#how-it-works">
             How it works
           </a>
-          <Link className="inline-flex min-h-11 items-center justify-center px-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm" href="/demo">
-            Demo
+          <Link className="inline-flex min-h-11 items-center justify-center px-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm" href="/campaign-briefs">
+            Campaign briefs
           </Link>
           <Link className="inline-flex min-h-11 items-center justify-center px-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:text-sm" href="/login">
             Log in
           </Link>
           {signupEnabled ? (
             <Button asChild className="ml-2 hidden min-h-11 sm:inline-flex">
-              <Link href="/signup" data-analytics-event="cta_clicked" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
+              <Link href="/signup" data-analytics-event="primary_cta_click" data-analytics-location="landing_header" data-analytics-label="create_free_account">Create free account</Link>
             </Button>
           ) : null}
         </nav>
@@ -187,7 +187,7 @@ function RevisionSheet() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Example workflow</p>
           <h2 id="example-workflow-title" className="mt-2 font-display text-2xl font-bold tracking-[-0.02em]">
-            Campaign Brief Builder
+            Campaign Brief Builder for Codex
           </h2>
         </div>
         <span className="w-fit border border-attention/40 bg-attention/10 px-3 py-1.5 text-xs font-bold text-foreground">
@@ -224,10 +224,10 @@ function WorkflowSection() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">How it works</p>
             <h2 className="mt-4 max-w-[12ch] text-balance font-display text-4xl font-bold leading-[1] tracking-[-0.025em] sm:text-5xl">
-              From useful idea to trusted, installed skill.
+              From proven campaign brief to trusted team skill.
             </h2>
             <p className="mt-6 max-w-[48ch] text-pretty text-lg leading-8 text-muted-foreground">
-              Skill Dockyard keeps each stage clear, so people can contribute improvements without changing what teammates use before it has been reviewed.
+              Start with a campaign workflow your team already trusts. Skill Dockyard keeps improvements clear, so the version people rely on only changes after review.
             </p>
           </div>
 
@@ -330,10 +330,10 @@ function ClosingCallToAction({ signupEnabled }: { signupEnabled: boolean }) {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{signupEnabled ? "Free during beta" : "Start with the demo"}</p>
           <h2 className="mt-4 max-w-[17ch] text-balance font-display text-4xl font-bold leading-[1] tracking-[-0.025em] sm:text-5xl">
-            {signupEnabled ? "Give your team one trusted version to build from." : "Let useful AI skill improvements reach the whole team."}
+            {signupEnabled ? "Give every campaign a trusted starting point." : "Let useful campaign-skill improvements reach the whole team."}
           </h2>
           <p className="mt-5 max-w-[58ch] text-pretty text-lg leading-8 text-muted-foreground">
-            {signupEnabled ? "Create your workspace at no cost during beta, or explore the product with sample data first." : "Explore a sample skill, review an update, and see how teammates can install the published version."}
+            {signupEnabled ? "Create a free beta workspace, add the campaign examples, and improve the version your team uses next." : "Explore a campaign skill, review an update, and see how teammates can use the published version."}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">

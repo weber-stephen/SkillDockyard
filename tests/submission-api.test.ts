@@ -165,8 +165,11 @@ describe("submission API persistence modes", () => {
 
   it("persists private submissions without creating a proposal", async () => {
     const builder = {
-      from: vi.fn(),
-      insert: vi.fn()
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      insert: vi.fn(),
+      then: (resolve: (value: unknown) => unknown) => resolve({ count: 0, error: null })
     };
     mocks.hasSupabaseConfig.mockReturnValue(true);
     mocks.getArtifactDetail.mockResolvedValue(null);
@@ -186,7 +189,7 @@ describe("submission API persistence modes", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ mode: "supabase", saved: true, visibility: "private", proposalId: null });
     expect(mocks.ingestArtifacts).toHaveBeenCalledWith(expect.any(Array), undefined, expect.objectContaining({ visibility: "private", createdByUserId: "user-1" }));
-    expect(builder.from).not.toHaveBeenCalled();
+    expect(builder.from).toHaveBeenCalledWith("artifacts");
   });
 
   it("submits an eligible shared-skill update to the source workspace and preserves the share lineage", async () => {

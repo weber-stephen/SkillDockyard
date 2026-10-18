@@ -7,7 +7,8 @@ const baseUrl = `http://${host}:${port}`;
 const nextBinary = `${process.cwd()}/node_modules/.bin/next`;
 
 const pageRoutes = [
-  ["/", "Turn one person’s AI skill into a team resource."],
+  ["/", "Turn your team’s best campaign brief into a skill everyone can use."],
+  ["/campaign-briefs", "Turn your best campaign brief into an AI skill your team can reuse."],
   ["/login", ""],
   ["/signup", ""],
   ["/demo", "Keep every shared skill reviewed, current, and ready to use."],
