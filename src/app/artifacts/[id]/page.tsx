@@ -14,6 +14,15 @@ import { listSharableWorkspaces } from "@/lib/shares";
 import { ShareSkillPanel } from "@/components/share-skill-panel";
 import { PrivateDraftActions } from "@/components/private-draft-actions";
 import { getProductMode } from "@/lib/product-mode";
+import type { RiskFlagKind } from "@/lib/types";
+
+const reviewNoteLabels: Record<RiskFlagKind, string> = {
+  inline_credentials: "Possible credential in the skill",
+  local_mcp: "Local connector",
+  unapproved_mcp: "Connector to review",
+  high_impact_tool: "Tool requiring review",
+  missing_owner: "Maintainer not listed"
+};
 
 export default async function ArtifactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -54,7 +63,10 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
         <Info label="Maintained by" value={artifact.owner ?? "Not listed"} />
         <Info label="Managed by" value={artifact.source_workspace_name ?? "Your workspace"} />
         <Info label="Updated" value={formatDate(artifact.updated_at)} />
-        <Info label="Review notes" value={artifact.risk_count.toString()} />
+        <div className="min-w-0 border-b border-border py-4 xl:border-b-0">
+          <div className="eyebrow text-muted-foreground">Review notes</div>
+          {artifact.risk_count ? <a className="mt-2 inline-block text-base font-bold text-primary underline underline-offset-4" href="#review-notes">{artifact.risk_count} {artifact.risk_count === 1 ? "item" : "items"} to check</a> : <div className="mt-2 text-base font-bold">No review notes found</div>}
+        </div>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
@@ -64,7 +76,7 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             <h2 className="font-black">Current Skill</h2>
           </div>
           {artifact.current_version?.summary ? <p className="mb-4 text-sm leading-6 text-muted-foreground">{artifact.current_version.summary}</p> : null}
-          <pre tabIndex={0} aria-label="Current skill instructions" className="max-h-[440px] max-w-full overflow-auto rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
+          <pre tabIndex={0} aria-label="Current skill instructions" className="max-h-[440px] max-w-full overflow-auto whitespace-pre-wrap [overflow-wrap:anywhere] rounded-md bg-muted p-4 text-xs leading-6">{artifact.current_version?.content_snapshot}</pre>
         </div>
         <aside className="min-w-0 space-y-4 xl:sticky xl:top-5">
           {artifact.can_edit_private ? <PrivateDraftActions artifactId={artifact.id} /> : null}
@@ -82,7 +94,10 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
             {artifact.approved_version ? (
               <div className="mt-3 space-y-3">
                 <p className="text-sm leading-6 text-muted-foreground">{artifact.approved_version.summary ?? "Published shared version."}</p>
-                <code className="block truncate rounded-sm bg-muted p-3 text-xs">{artifact.approved_version.content_hash}</code>
+                <details className="text-sm text-muted-foreground">
+                  <summary className="cursor-pointer font-semibold">Technical version identifier</summary>
+                  <code className="mt-2 block break-all rounded-sm bg-muted p-3 text-xs">{artifact.approved_version.content_hash}</code>
+                </details>
               </div>
             ) : (
               <p className="mt-3 text-sm leading-6 text-muted-foreground">No published shared version exists yet.</p>
@@ -91,17 +106,19 @@ export default async function ArtifactDetailPage({ params }: { params: Promise<{
           <div className="rounded-md border border-border bg-panel p-5">
             <div className="mb-4 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
-              <h2 className="font-black">Compatibility and Trust Signals</h2>
+              <h2 className="font-black">Compatibility and safety</h2>
             </div>
+            <p className="mb-4 text-sm leading-6 text-muted-foreground">Check the tools and connectors this skill uses and any notes below. A review note highlights something to consider; it does not automatically mean the skill is unsafe.</p>
             <div className="mb-4 grid gap-3">
               <Panel title="Tools" items={artifact.current_version?.tools ?? []} empty="No tools detected." />
               <Panel title="Connectors" items={artifact.current_version?.mcp_servers ?? []} empty="No connectors detected." />
             </div>
-            <div className="space-y-3">
+            <div id="review-notes" className="space-y-3 scroll-mt-6">
+              <h3 className="font-black">Review notes</h3>
               {artifact.risks.length ? (
                 artifact.risks.map((risk) => (
                   <div key={risk.id} className="rounded-sm border border-attention/40 bg-attention/10 p-3 text-sm">
-                    <div className="font-bold">{risk.kind.replaceAll("_", " ")}</div>
+                    <div className="font-bold">{reviewNoteLabels[risk.kind] ?? "Item to review"}</div>
                     <p className="mt-1 text-muted-foreground">{risk.message}</p>
                   </div>
                 ))
